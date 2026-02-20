@@ -1,0 +1,52 @@
+import { eq } from 'drizzle-orm'
+import { z } from 'zod'
+import { users } from '~~/server/database/schema'
+import crypto from 'crypto'
+
+const bodySchema = z.object({
+  email: z.email(),
+})
+
+export interface OTP {
+  otp: string
+  token: string
+  attempts: number
+  sentAt: number
+}
+
+export default defineEventHandler(async (event) => {
+  const { email } = await readValidatedBody(event, bodySchema.parse)
+  if (!email || typeof email !== 'string') {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Email is required'
+    })
+  }
+
+  const storage = useStorage('otp')
+  const record = await storage.getItem<OTP>(email)
+  if (record && Date.now() < record.sentAt! + 60000) {
+    throw createError({ statusCode: 400, message: "Wait a minute before requesting a new OTP." })
+  }
+
+  let user = (await db.select().from(users).where(eq(users.email, email)))[0]
+  if (!user) {
+    user = (await db.insert(users).values({ email }).returning())[0]
+  }
+
+  const otp = generateOTP()
+  const token = crypto.randomBytes(32).toString('base64url')
+  await storage.setItem(email, {
+    otp: await hashPassword(otp),
+    attempts: 0,
+    sentAt: Date.now(),
+    token: await hashPassword(token)
+  })
+
+  return sendEmail(email, 'Your OTP Code', `Your OTP code is: <strong>${otp}</strong> or click <a href="${useRuntimeConfig().public.url}/signin?email=${encodeURIComponent(email)}&token=${token}">here</a> to sign in.`)
+})
+
+function generateOTP(length = 6): string {
+  const otp = crypto.randomInt(Math.pow(10, length - 1), Math.pow(10, length))
+  return otp.toString()
+}
