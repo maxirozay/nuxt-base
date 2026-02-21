@@ -72,7 +72,7 @@ async function signInWithPassword() {
   if (!email.value || !password.value) return
   loading.value = true
   try {
-    await $fetch('/api/auth/signin', {
+    await $fetch('/api/auth/password', {
       method: 'POST',
       body: { email: email.value, password: password.value }
     })
@@ -99,6 +99,21 @@ function signIn() {
     else if (password.value.length === 6) signInWithOtp()
     else signInWithPassword()
   }, 100) // wait for paste event to complete
+}
+
+const { authenticate } = useWebAuthn({
+  registerEndpoint: '/api/auth/webauthn/register',
+  authenticateEndpoint: '/api/auth/webauthn/authenticate',
+})
+
+async function signInWithPasskey() {
+  try {
+    await authenticate(email.value)
+    await refreshSession()
+    navigateTo('/', { replace: true })
+  } catch (e: any) {
+    handleError(e)
+  }
 }
 
 onMounted(() => {
@@ -159,4 +174,7 @@ onMounted(() => {
       <p v-if="otpRequested">Code sent to {{ email }}</p>
     </form>
   </div>
+  <form @submit.prevent="signInWithPasskey">
+    <button type="submit">Sign in with Passkey</button>
+  </form>
 </template>

@@ -23,10 +23,13 @@ export default defineNuxtConfig({
   },
   nitro: {
     storage: {
-      otp: {
+      auth: {
         driver: 'memory'
       }
     }
+  },
+  auth: {
+    webAuthn: true
   },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },

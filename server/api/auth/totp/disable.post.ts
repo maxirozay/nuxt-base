@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { verify } from 'otplib'
-import { getUser } from '../signin.post'
 import { eq } from 'drizzle-orm/sql/expressions/conditions'
 import { auth } from '~~/server/database/schema'
 

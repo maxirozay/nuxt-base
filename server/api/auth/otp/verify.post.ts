@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { OTP } from './get.post'
-import { getUser, setSession } from '../signin.post'
+import { createUser } from '~~/server/utils/auth'
 
 const bodySchema = z.object({
   email: z.email(),
@@ -17,6 +17,11 @@ export default defineEventHandler(async (event) => {
   }
   await verifyOTP(email, otp)
   const user = await getUser(email)
+    .catch((error: any) => {
+      if (error.message === 'User not found') {
+        return createUser({ email })
+      } else throw error
+    })
   if (user.totp) {
     throw createError({
       status: 401,
@@ -27,7 +32,7 @@ export default defineEventHandler(async (event) => {
 })
 
 export async function verifyOTP(email: string, otp: string): Promise<void> {
-  const storage = useStorage('otp')
+  const storage = useStorage('auth')
   const record = await storage.getItem<OTP>(email)
   if (!record) {
     throw createError({ statusCode: 400, message: "Request a new OTP." })

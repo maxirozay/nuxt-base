@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { verify } from 'otplib'
 import { verifyOTP } from '../otp/verify.post'
-import { getUser, setSession } from '../signin.post'
 
 const bodySchema = z.object({
   email: z.email(),

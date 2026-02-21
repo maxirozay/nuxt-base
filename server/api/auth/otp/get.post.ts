@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const storage = useStorage('otp')
+  const storage = useStorage('auth')
   const record = await storage.getItem<OTP>(email)
   if (record && Date.now() < record.sentAt! + 60000) {
     throw createError({ statusCode: 400, message: "Wait a minute before requesting a new OTP." })
