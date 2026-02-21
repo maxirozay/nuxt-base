@@ -1,6 +1,4 @@
-import { eq } from 'drizzle-orm'
 import { z } from 'zod'
-import { users } from '~~/server/database/schema'
 import crypto from 'crypto'
 
 const bodySchema = z.object({
@@ -27,11 +25,6 @@ export default defineEventHandler(async (event) => {
   const record = await storage.getItem<OTP>(email)
   if (record && Date.now() < record.sentAt! + 60000) {
     throw createError({ statusCode: 400, message: "Wait a minute before requesting a new OTP." })
-  }
-
-  let user = (await db.select().from(users).where(eq(users.email, email)))[0]
-  if (!user) {
-    user = (await db.insert(users).values({ email }).returning())[0]
   }
 
   const otp = generateOTP()

@@ -4,6 +4,8 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const otpRequested = ref(false)
+const showTOTP = ref(false)
+const totp = ref('')
 const route = useRoute()
 
 const isPasswordValid = computed(() => {
@@ -26,7 +28,7 @@ async function requestOtp() {
   }
 }
 
-async function verifyOtp() {
+async function signInWithOtp() {
   loading.value = true
   try {
     await $fetch('/api/auth/otp/verify', {
@@ -36,7 +38,31 @@ async function verifyOtp() {
     await refreshSession()
     navigateTo('/', { replace: true })
   } catch (e: any) {
-    alert(e.data?.statusMessage || 'Invalid OTP')
+    handleError(e)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function signInWithTOTP() {
+  loading.value = true
+  try {
+    const body: {
+      email: string;
+      token: string;
+      otp?: string;
+      password?: string
+    } = { email: email.value, token: totp.value }
+    if (password.value.length === 6) body.otp = password.value
+    else body.password = password.value
+    await $fetch('/api/auth/totp/verify', {
+      method: 'POST',
+      body
+    })
+    await refreshSession()
+    navigateTo('/', { replace: true })
+  } catch (e: any) {
+    alert(e.data?.message || 'Invalid code')
   } finally {
     loading.value = false
   }
@@ -53,17 +79,24 @@ async function signInWithPassword() {
     await refreshSession()
     navigateTo('/', { replace: true })
   } catch (e: any) {
-    alert('Bad credentials')
+    handleError(e)
   } finally {
     loading.value = false
   }
 }
 
-function signin() {
+function handleError(error: any) {
+  if (error.data?.message === 'TOTP required') {
+    showTOTP.value = true
+  } else alert(error.data?.message || 'Bad credentials')
+}
+
+function signIn() {
   if (!email.value) return
   setTimeout(() => {
-    if (!password.value) requestOtp()
-    else if (password.value.length === 6) verifyOtp()
+    if (totp.value) signInWithTOTP()
+    else if (!password.value) requestOtp()
+    else if (password.value.length === 6) signInWithOtp()
     else signInWithPassword()
   }, 100) // wait for paste event to complete
 }
@@ -72,7 +105,7 @@ onMounted(() => {
   if (route.query.email && route.query.token) {
     email.value = route.query.email as string
     password.value = route.query.token as string
-    verifyOtp()
+    signInWithOtp()
   }
 })
 </script>
@@ -80,11 +113,11 @@ onMounted(() => {
 <template>
   <div>
     <h1>Sign In</h1>
-    <form @submit.prevent="signin">
+    <form @submit.prevent="signIn">
       <label for="email">Email</label>
       <input
         id="email"
-        v-model="email"
+        v-model.trim="email"
         type="email"
         required
         :disabled="loading"
@@ -94,13 +127,25 @@ onMounted(() => {
       <label for="password">Password or code</label>
       <input
         id="password"
-        v-model="password"
+        v-model.trim="password"
         type="password"
         :disabled="loading"
         autocomplete="current-password"
         pattern=".{12,}|[0-9]{6}"
-        @paste="signin"
+        @paste="signIn"
       >
+      <div v-if="showTOTP">
+        <label for="totp">TOTP</label>
+        <input
+          id="totp"
+          v-model.trim="totp"
+          type="text"
+          :disabled="loading"
+          autocomplete="one-time-code"
+          @paste="signInWithTOTP"
+          @change="signInWithTOTP"
+        >
+      </div>
       <p v-if="password && !isPasswordValid"">
         The password must be at least 12 characters long or be the code that you received.
       </p>

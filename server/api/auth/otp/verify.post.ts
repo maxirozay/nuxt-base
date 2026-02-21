@@ -1,7 +1,6 @@
-import { eq } from 'drizzle-orm'
-import { users } from '~~/server/database/schema'
 import { z } from 'zod'
 import { OTP } from './get.post'
+import { getUser, setSession } from '../signin.post'
 
 const bodySchema = z.object({
   email: z.email(),
@@ -16,7 +15,18 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Email and OTP are required'
     })
   }
+  await verifyOTP(email, otp)
+  const user = await getUser(email)
+  if (user.totp) {
+    throw createError({
+      status: 401,
+      message: 'TOTP required',
+    })
+  }
+  await setSession(event, user)
+})
 
+export async function verifyOTP(email: string, otp: string): Promise<void> {
   const storage = useStorage('otp')
   const record = await storage.getItem<OTP>(email)
   if (!record) {
@@ -29,26 +39,9 @@ export default defineEventHandler(async (event) => {
 
   if (await verifyPassword(otp.length > 6 ? record.token : record.otp, otp)) {
     await storage.removeItem(email)
-    const user = (await db.select().from(users).where(eq(users.email, email)))[0]
-
-    if (!user) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'User not found'
-      })
-    }
-
-    await setUserSession(event, {
-      user: {
-        id: user.id!,
-        email: user.email
-      }
-    })
-
-    return { success: true }
+  } else {
+    record.attempts++
+    await storage.setItem(email, record)
+    throw createError({ statusCode: 400, message: "Invalid OTP." })
   }
-
-  record.attempts++
-  await storage.setItem(email, record)
-  throw createError({ statusCode: 400, message: "Invalid OTP." })
-})
+}
