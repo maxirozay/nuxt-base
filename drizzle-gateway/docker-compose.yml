@@ -4,7 +4,7 @@ services:
     container_name: drizzle-gate
     restart: always
     ports:
-      - "4983:4983"
+      - '4983:4983'
     environment:
       - PORT=4983
       - STORE_PATH=/app
@@ -19,4 +19,3 @@ volumes:
 
 networks:
   gateway-net:
-  

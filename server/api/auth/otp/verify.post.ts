@@ -12,16 +12,15 @@ export default defineEventHandler(async (event) => {
   if (!email || !otp) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Email and OTP are required'
+      statusMessage: 'Email and OTP are required',
     })
   }
   await verifyOTP(email, otp)
-  const user = await getUser(email)
-    .catch((error: any) => {
-      if (error.message === 'User not found') {
-        return createUser({ email })
-      } else throw error
-    })
+  const user = await getUser(email).catch((error: any) => {
+    if (error.message === 'User not found') {
+      return createUser({ email })
+    } else throw error
+  })
   if (user.totp) {
     throw createError({
       status: 401,
@@ -35,11 +34,11 @@ export async function verifyOTP(email: string, otp: string): Promise<void> {
   const storage = useStorage('auth')
   const record = await storage.getItem<OTP>(email)
   if (!record) {
-    throw createError({ statusCode: 400, message: "Request a new OTP." })
+    throw createError({ statusCode: 400, message: 'Request a new OTP.' })
   }
   if (Date.now() > record.sentAt! + 5 * 60 * 1000 || record.attempts > 3) {
     await storage.removeItem(email)
-    throw createError({ statusCode: 400, message: "Request a new OTP." })
+    throw createError({ statusCode: 400, message: 'Request a new OTP.' })
   }
 
   if (await verifyPassword(otp.length > 6 ? record.token : record.otp, otp)) {
@@ -47,6 +46,6 @@ export async function verifyOTP(email: string, otp: string): Promise<void> {
   } else {
     record.attempts++
     await storage.setItem(email, record)
-    throw createError({ statusCode: 400, message: "Invalid OTP." })
+    throw createError({ statusCode: 400, message: 'Invalid OTP.' })
   }
 }

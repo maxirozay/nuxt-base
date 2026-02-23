@@ -8,11 +8,11 @@ export async function getTOTPSecret() {
   return ''
 }
 
-export async function confirmTOTP (secret: string, token: string) {
+export async function confirmTOTP(secret: string, token: string) {
   try {
     await $fetch('/api/auth/totp/confirm', {
       method: 'POST',
-      body: { secret, token }
+      body: { secret, token },
     })
     alert('TOTP enabled successfully!')
   } catch (e: any) {
@@ -20,11 +20,11 @@ export async function confirmTOTP (secret: string, token: string) {
   }
 }
 
-export async function disableTOTP (token: string) {
+export async function disableTOTP(token: string) {
   try {
     await $fetch('/api/auth/totp/disable', {
       method: 'POST',
-      body: { token }
+      body: { token },
     })
     alert('TOTP disabled successfully!')
   } catch (e: any) {

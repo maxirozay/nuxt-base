@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { auth } from '~~/server/database/schema'
 import { getUser, setSession } from '~~/server/utils/auth'
 
 const bodySchema = z.object({
@@ -7,13 +6,12 @@ const bodySchema = z.object({
   password: z.string().min(12),
 })
 
-
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse)
 
   const user = await getUser(email)
-  
-  if (user.password && await verifyPassword(user.password, password)) {
+
+  if (user.password && (await verifyPassword(user.password, password))) {
     if (user.totp) {
       throw createError({
         status: 401,

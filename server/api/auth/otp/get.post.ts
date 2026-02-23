@@ -17,14 +17,14 @@ export default defineEventHandler(async (event) => {
   if (!email || typeof email !== 'string') {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Email is required'
+      statusMessage: 'Email is required',
     })
   }
 
   const storage = useStorage('auth')
   const record = await storage.getItem<OTP>(email)
   if (record && Date.now() < record.sentAt! + 60000) {
-    throw createError({ statusCode: 400, message: "Wait a minute before requesting a new OTP." })
+    throw createError({ statusCode: 400, message: 'Wait a minute before requesting a new OTP.' })
   }
 
   const otp = generateOTP()
@@ -33,10 +33,14 @@ export default defineEventHandler(async (event) => {
     otp: await hashPassword(otp),
     attempts: 0,
     sentAt: Date.now(),
-    token: await hashPassword(token)
+    token: await hashPassword(token),
   })
 
-  return sendEmail(email, 'Your OTP Code', `Your OTP code is: <strong>${otp}</strong> or click <a href="${useRuntimeConfig().public.url}/signin?email=${encodeURIComponent(email)}&token=${token}">here</a> to sign in.`)
+  return sendEmail(
+    email,
+    'Your OTP Code',
+    `Your OTP code is: <strong>${otp}</strong> or click <a href="${useRuntimeConfig().public.url}/signin?email=${encodeURIComponent(email)}&token=${token}">here</a> to sign in.`,
+  )
 })
 
 function generateOTP(length = 6): string {

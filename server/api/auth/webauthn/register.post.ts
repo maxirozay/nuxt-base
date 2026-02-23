@@ -10,8 +10,7 @@ export default defineWebAuthnRegisterEventHandler({
 
     await useStorage('auth').removeItem(`attempt:${attemptId}`)
 
-    if (!challenge)
-      throw createError({ statusCode: 400, message: 'Challenge expired' })
+    if (!challenge) throw createError({ statusCode: 400, message: 'Challenge expired' })
 
     return challenge as string
   },
@@ -21,18 +20,19 @@ export default defineWebAuthnRegisterEventHandler({
       throw createError({ statusCode: 400, message: 'Email not matching curent session' })
     }
 
-    return z.object({
-      userName: z.email()
-    }).parse(userBody)
+    return z
+      .object({
+        userName: z.email(),
+      })
+      .parse(userBody)
   },
   async onSuccess(event, { credential, user }) {
     const dbUser = await getUser(user.userName)
     await db.insert(credentials).values({
       ...credential,
       userId: dbUser.id,
-      transports: credential.transports ?? [], 
+      transports: credential.transports ?? [],
     })
     await setSession(event, dbUser)
   },
 })
-  

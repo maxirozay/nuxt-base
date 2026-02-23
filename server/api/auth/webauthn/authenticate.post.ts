@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm"
-import { auth, credentials } from "~~/server/database/schema"
+import { eq } from 'drizzle-orm'
+import { auth, credentials } from '~~/server/database/schema'
 
 export default defineWebAuthnAuthenticateEventHandler({
   async storeChallenge(event, challenge, attemptId) {
@@ -10,8 +10,7 @@ export default defineWebAuthnAuthenticateEventHandler({
 
     await useStorage('auth').removeItem(`attempt:${attemptId}`)
 
-    if (!challenge)
-      throw createError({ statusCode: 400, message: 'Challenge expired' })
+    if (!challenge) throw createError({ statusCode: 400, message: 'Challenge expired' })
 
     return challenge as string
   },
@@ -23,14 +22,16 @@ export default defineWebAuthnAuthenticateEventHandler({
     const result = await db.select().from(credentials).where(eq(credentials.id, credentialId))
     const credential = result[0]
 
-    if (!credential)
-      throw createError({ statusCode: 400, message: 'Credential not found' });
+    if (!credential) throw createError({ statusCode: 400, message: 'Credential not found' })
 
     return credential
   },
   async onSuccess(event, { credential }) {
-    const user = await db.select().from(auth).where(eq(auth.id, credential.userId as string))
-      .then(result => result[0])
+    const user = await db
+      .select()
+      .from(auth)
+      .where(eq(auth.id, credential.userId as string))
+      .then((result) => result[0])
     await setSession(event, user!)
   },
 })

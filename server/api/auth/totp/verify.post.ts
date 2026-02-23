@@ -14,10 +14,10 @@ export default defineEventHandler(async (event) => {
   if (!email || !(otp || password) || !token) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Missing required fields'
+      statusMessage: 'Missing required fields',
     })
   }
-  
+
   const user = await getUser(email)
 
   if (otp) await verifyOTP(email, otp)
@@ -25,5 +25,5 @@ export default defineEventHandler(async (event) => {
 
   if (await verify({ secret: user.totp!, token })) {
     await setSession(event, user)
-  } else throw createError({ statusCode: 400, message: "Invalid TOTP." })
+  } else throw createError({ statusCode: 400, message: 'Invalid TOTP.' })
 })

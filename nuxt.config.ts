@@ -10,7 +10,7 @@ export default defineNuxtConfig({
       port: 587,
       user: '',
       pass: '',
-      from: ''
+      from: '',
     },
     s3: {
       endpoint: '',
@@ -18,20 +18,20 @@ export default defineNuxtConfig({
       bucket: '',
       accessKeyId: '',
       secretAccessKey: '',
-      publicUrl: ''
-    }
+      publicUrl: '',
+    },
   },
   nitro: {
     storage: {
       auth: {
-        driver: 'memory'
-      }
-    }
+        driver: 'memory',
+      },
+    },
   },
   auth: {
-    webAuthn: true
+    webAuthn: true,
   },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/hints', '@nuxt/icon', 'nuxt-auth-utils']
+  modules: ['@nuxt/hints', '@nuxt/icon', 'nuxt-auth-utils'],
 })

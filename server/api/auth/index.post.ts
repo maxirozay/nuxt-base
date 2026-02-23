@@ -9,7 +9,10 @@ const bodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const { password } = await readValidatedBody(event, bodySchema.parse)
   const session = await requireUserSession(event)
-  await db.update(auth).set({
-    password: await hashPassword(password),
-  }).where(eq(auth.id, session.user.id))
+  await db
+    .update(auth)
+    .set({
+      password: await hashPassword(password),
+    })
+    .where(eq(auth.id, session.user.id))
 })

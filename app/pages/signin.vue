@@ -18,7 +18,7 @@ async function requestOtp() {
   try {
     await $fetch('/api/auth/otp/get', {
       method: 'POST',
-      body: { email: email.value }
+      body: { email: email.value },
     })
     otpRequested.value = true
   } catch (e: any) {
@@ -33,7 +33,7 @@ async function signInWithOtp() {
   try {
     await $fetch('/api/auth/otp/verify', {
       method: 'POST',
-      body: { email: email.value, otp: password.value }
+      body: { email: email.value, otp: password.value },
     })
     await refreshSession()
     navigateTo('/', { replace: true })
@@ -48,16 +48,16 @@ async function signInWithTOTP() {
   loading.value = true
   try {
     const body: {
-      email: string;
-      token: string;
-      otp?: string;
+      email: string
+      token: string
+      otp?: string
       password?: string
     } = { email: email.value, token: totp.value }
     if (password.value.length === 6) body.otp = password.value
     else body.password = password.value
     await $fetch('/api/auth/totp/verify', {
       method: 'POST',
-      body
+      body,
     })
     await refreshSession()
     navigateTo('/', { replace: true })
@@ -74,7 +74,7 @@ async function signInWithPassword() {
   try {
     await $fetch('/api/auth/password', {
       method: 'POST',
-      body: { email: email.value, password: password.value }
+      body: { email: email.value, password: password.value },
     })
     await refreshSession()
     navigateTo('/', { replace: true })
@@ -137,8 +137,8 @@ onMounted(() => {
         required
         :disabled="loading"
         autocomplete="username"
-      >
-      <br>
+      />
+      <br />
       <label for="password">Password or code</label>
       <input
         id="password"
@@ -148,7 +148,7 @@ onMounted(() => {
         autocomplete="current-password"
         pattern=".{12,}|[0-9]{6}"
         @paste="signIn"
-      >
+      />
       <div v-if="showTOTP">
         <label for="totp">TOTP</label>
         <input
@@ -159,12 +159,12 @@ onMounted(() => {
           autocomplete="one-time-code"
           @paste="signInWithTOTP"
           @change="signInWithTOTP"
-        >
+        />
       </div>
-      <p v-if="password && !isPasswordValid"">
+      <p v-if="password && !isPasswordValid">
         The password must be at least 12 characters long or be the code that you received.
       </p>
-      <br>
+      <br />
       <button
         type="submit"
         :disabled="loading"

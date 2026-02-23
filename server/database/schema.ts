@@ -9,13 +9,17 @@ export const auth = pgTable('auth', {
   totp: text(),
 })
 
-export const credentials = pgTable('credentials', {
-  userId: uuid().notNull().references(() => auth.id, { onDelete: 'cascade' }),
-  id: text().unique().notNull(),
-  publicKey: text().notNull(),
-  counter: integer().notNull(),
-  backedUp: boolean().notNull(),
-  transports: text().array().notNull().$type<WebAuthnCredential['transports']>(),
-}, (table) => [
-  primaryKey({ columns: [table.userId, table.id] }),
-])
+export const credentials = pgTable(
+  'credentials',
+  {
+    userId: uuid()
+      .notNull()
+      .references(() => auth.id, { onDelete: 'cascade' }),
+    id: text().unique().notNull(),
+    publicKey: text().notNull(),
+    counter: integer().notNull(),
+    backedUp: boolean().notNull(),
+    transports: text().array().notNull().$type<WebAuthnCredential['transports']>(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.id] })],
+)

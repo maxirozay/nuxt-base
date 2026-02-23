@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { set } from 'zod'
-
 definePageMeta({
   middleware: ['authenticated'],
 })
@@ -10,18 +8,22 @@ const TOTPSecret = ref('')
 const TOTPCode = ref('')
 const password = ref('')
 
-async function signout () {
+async function signout() {
   await clearSession()
   await navigateTo('/signin')
 }
 
 const { register } = useWebAuthn({
-  registerEndpoint: '/api/auth/webauthn/register'
+  registerEndpoint: '/api/auth/webauthn/register',
 })
 
 async function registerPasskey() {
   try {
-    await register({ userName: user.value?.email! })
+    if (!user.value?.email) {
+      alert('User email is required to register a passkey')
+      return
+    }
+    await register({ userName: user.value.email })
     alert('Passkey registered successfully')
   } catch (e: any) {
     alert(e.data?.message || 'Failed to register passkey')
@@ -32,7 +34,7 @@ async function setPassword() {
   try {
     await $fetch('/api/auth', {
       method: 'POST',
-      body: { password: password.value }
+      body: { password: password.value },
     })
     alert('Password set successfully')
   } catch (e: any) {
@@ -44,9 +46,7 @@ async function setPassword() {
 <template>
   <h1>Welcome {{ user?.email }}</h1>
   <button @click="signout">Sign Out</button>
-  <button @click="getTOTPSecret().then((secret) => TOTPSecret = secret)">
-    Get TOTP Secret
-  </button>
+  <button @click="getTOTPSecret().then((secret) => (TOTPSecret = secret))">Get TOTP Secret</button>
   {{ TOTPSecret }}
   <input
     type="text"

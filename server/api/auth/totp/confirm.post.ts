@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!secret || !token) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Missing required fields'
+      statusMessage: 'Missing required fields',
     })
   }
 
@@ -21,5 +21,5 @@ export default defineEventHandler(async (event) => {
 
   if (await verify({ secret, token })) {
     await db.update(auth).set({ totp: secret }).where(eq(auth.id, user.id))
-  } else throw createError({ statusCode: 400, message: "Invalid code." })
+  } else throw createError({ statusCode: 400, message: 'Invalid code.' })
 })

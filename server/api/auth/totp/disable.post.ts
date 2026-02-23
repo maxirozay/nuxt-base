@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   if (!token) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Missing required fields'
+      statusMessage: 'Missing required fields',
     })
   }
   const session = await requireUserSession(event)
@@ -20,6 +20,5 @@ export default defineEventHandler(async (event) => {
 
   if (await verify({ secret: user.totp!, token })) {
     await db.update(auth).set({ totp: null }).where(eq(auth.id, session.user.id))
-  } else throw createError({ statusCode: 400, message: "Invalid TOTP." })
+  } else throw createError({ statusCode: 400, message: 'Invalid TOTP.' })
 })
-  
