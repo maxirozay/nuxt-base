@@ -19,6 +19,7 @@
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.995.0",
     "@nuxt/hints": "1.0.0-alpha.7",
     "@nuxt/icon": "2.2.1",
     "@simplewebauthn/browser": "^11.0.0",
