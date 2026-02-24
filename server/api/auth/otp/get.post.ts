@@ -36,10 +36,14 @@ export default defineEventHandler(async (event) => {
     token: await hashPassword(token),
   })
 
-  return sendEmail(
+  return sendEmailTemplate(
+    'otp',
+    'en',
+    {
+      otp,
+      magicLink: `${useRuntimeConfig().public.url}/signin?email=${encodeURIComponent(email)}&token=${token}`,
+    },
     email,
-    'Your OTP Code',
-    `Your OTP code is: <strong>${otp}</strong> or click <a href="${useRuntimeConfig().public.url}/signin?email=${encodeURIComponent(email)}&token=${token}">here</a> to sign in.`,
   )
 })
 
