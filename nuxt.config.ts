@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       url: 'http://localhost:3000',
+      name: '',
     },
     db: '',
     smtp: {

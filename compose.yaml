@@ -1,0 +1,30 @@
+services:
+  nuxt-app:
+    image: ${PROJECT_NAME}:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      HOST: 0.0.0.0
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
+      NUXT_DB: ${NUXT_DB}
+      NUXT_S3_ENDPOINT: ${NUXT_S3_ENDPOINT}
+      NUXT_S3_BUCKET: ${NUXT_S3_BUCKET}
+      NUXT_S3_ACCESS_KEY_ID: ${NUXT_S3_ACCESS_KEY_ID}
+      NUXT_S3_SECRET_ACCESS_KEY: ${NUXT_S3_SECRET_ACCESS_KEY}
+      NUXT_S3_PUBLIC_URL: ${NUXT_S3_PUBLIC_URL}
+      NUXT_SMTP_HOST: ${NUXT_SMTP_HOST}
+      NUXT_SMTP_PORT: ${NUXT_SMTP_PORT}
+      NUXT_SMTP_USER: ${NUXT_SMTP_USER}
+      NUXT_SMTP_FROM: ${NUXT_SMTP_FROM}
+      NUXT_SMTP_PASS: ${NUXT_SMTP_PASS}
+      NUXT_PUBLIC_NAME: ${NUXT_PUBLIC_NAME}
+      NUXT_PUBLIC_URL: ${NUXT_PUBLIC_URL}
+    ports:
+      - 3000:3000
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true
+    name: shared-network

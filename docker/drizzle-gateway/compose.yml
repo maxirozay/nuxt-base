@@ -8,14 +8,16 @@ services:
     environment:
       - PORT=4983
       - STORE_PATH=/app
-      - MASTERPASS=password
+      - MASTERPASS=${PASSWORD}
     volumes:
       - gateway-data:/app
     networks:
-      - gateway-net
+      - shared-network
 
 volumes:
   gateway-data:
 
 networks:
-  gateway-net:
+  shared-network:
+    external: true
+    name: shared-network
