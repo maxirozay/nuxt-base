@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AuthSettings from '~/components/AuthSettings.vue'
 import FileDelete from '~/components/storage/FileDelete.vue'
 import FileUpload from '~/components/storage/FileUpload.vue'
 
@@ -18,8 +17,13 @@ async function signout() {
 <template>
   <div class="portrait">
     <h1>Welcome {{ user?.email }}</h1>
-    <button @click="signout">Sign Out</button>
-    <AuthSettings />
+    <i18n-link :to="{ name: 'user-settings' }">{{ $t('settings') }}</i18n-link>
+    <button
+      class="ml2"
+      @click="signout"
+    >
+      {{ $t('signout') }}
+    </button>
     <h2>File Management</h2>
     <FileUpload
       path="test"

@@ -20,7 +20,7 @@ async function registerPasskey() {
   try {
     await register({ userName: user.value!.email })
     getAuth()
-    appStore.notify('Passkey registered successfully', 'success')
+    appStore.notify('saved', 'success')
   } catch (e: any) {
     appStore.notify(e.data?.message, 'error')
   }
@@ -32,7 +32,7 @@ async function setPasskeyName(name: string, credentialId: string) {
       method: 'POST',
       body: { name, credentialId },
     })
-    appStore.notify('Passkey name set successfully', 'success')
+    appStore.notify('saved', 'success')
   } catch (e: any) {
     appStore.notify(e.data?.message, 'error')
   }
@@ -45,7 +45,7 @@ async function deletePasskey(credentialId: string) {
       body: { credentialId },
     })
     auth.value.credentials = auth.value.credentials.filter((c: any) => c.id !== credentialId)
-    appStore.notify('Passkey deleted successfully', 'success')
+    appStore.notify('deleted', 'success')
   } catch (e: any) {
     appStore.notify(e.data?.message, 'error')
   }
@@ -57,8 +57,10 @@ async function setPassword() {
       method: 'POST',
       body: { password: password.value },
     })
-    appStore.notify('Password set successfully', 'success')
+    appStore.notify('saved', 'success')
   } catch (e: any) {
+    console.log(e.data)
+
     appStore.notify(e.data?.message, 'error')
   }
 }
@@ -67,9 +69,11 @@ onMounted(getAuth)
 </script>
 
 <template>
-  <h1>Auth settings for {{ user?.email }}</h1>
+  <h1>{{ $t('settings') }}</h1>
   <form @submit.prevent="setPassword">
-    <label for="password"><h2>Password</h2></label>
+    <label for="password">
+      <h2>{{ $t('password') }}</h2>
+    </label>
     <div class="flex-row group">
       <input
         type="text"
@@ -77,12 +81,12 @@ onMounted(getAuth)
         v-model.trim="password"
         required
       />
-      <button type="submit">Save</button>
+      <button type="submit">{{ $t('save') }}</button>
     </div>
   </form>
 
   <h2>Passkeys</h2>
-  <button @click="registerPasskey">Add a passkey</button>
+  <button @click="registerPasskey">{{ $t('add') }}</button>
   <form
     v-for="credential in auth?.credentials || []"
     :key="credential.id"
@@ -99,22 +103,22 @@ onMounted(getAuth)
       class="bg"
       @click="deletePasskey(credential.id)"
     >
-      Delete
+      {{ $t('delete') }}
     </button>
-    <button>Rename</button>
+    <button>{{ $t('rename') }}</button>
   </form>
 
-  <h2>TOTP second factor</h2>
+  <h2>{{ $t('totp') }}</h2>
   <button
     v-if="auth?.totp"
     class="bg"
     @click="disableTOTP(TOTPCode)"
   >
-    Disable TOTP
+    {{ $t('disable') }}
   </button>
   <div v-else-if="TOTPSecret">
     <p>{{ TOTPSecret }}</p>
-    <label for="totp">Code</label>
+    <label for="totp">{{ $t('code') }}</label>
     <div class="flex-row group">
       <input
         id="totp"
@@ -129,7 +133,7 @@ onMounted(getAuth)
           })
         "
       >
-        Confirm
+        {{ $t('confirm') }}
       </button>
     </div>
   </div>
@@ -137,6 +141,6 @@ onMounted(getAuth)
     v-else
     @click="getTOTPSecret().then((secret) => (TOTPSecret = secret))"
   >
-    Enable TOTP
+    {{ $t('enable') }}
   </button>
 </template>

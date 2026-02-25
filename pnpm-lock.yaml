@@ -44,6 +44,9 @@ importers:
       nuxt-auth-utils:
         specifier: 0.5.29
         version: 0.5.29(@simplewebauthn/browser@11.0.0)(@simplewebauthn/server@11.0.0)(magicast@0.5.2)
+      nuxt-i18n-micro:
+        specifier: ^3.12.0
+        version: 3.12.0(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.28))
       otplib:
         specifier: ^13.3.0
         version: 13.3.0
@@ -806,6 +809,25 @@ packages:
   '@hexagon/base64@1.1.28':
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
 
+  '@i18n-micro/core@1.2.0':
+    resolution: {integrity: sha512-ctUT6QcuNWQ01iMBrhW6zMTS64oq3JRBPpYNdKcGa/AbuyhSSaVptfuo34I4fZgD507C320Cf2wCCYiZ1tpe3w==}
+
+  '@i18n-micro/path-strategy@1.3.0':
+    resolution: {integrity: sha512-7qqPLeROwI69hmPGG6ktwKpryxM9xhKJlYZry4xeUlNF4Jkv8NSNAZoIIdggJX5m5+SP4U0VzLe1Ly/7Kt/NBQ==}
+
+  '@i18n-micro/route-strategy@1.1.4':
+    resolution: {integrity: sha512-m9e8TqD13wA5R+AZd6ed2cA8Rp4RPUd30qjrrO7eo0iVIX9Lqjq7wnj3cSx4PVZ+kkJCM7457VPQQRr2xrKrVA==}
+    engines: {node: '>=18'}
+
+  '@i18n-micro/test-utils@1.2.0':
+    resolution: {integrity: sha512-jKykFyIT1jfa7zTG0qLx+RKroDqqw/jVDUkipks/XBYcHirRhbMMXKetVueU36H7+LRaiRWM4gi0a9mANcBVvQ==}
+
+  '@i18n-micro/types@1.1.5':
+    resolution: {integrity: sha512-88tb/cpfKxA6X5GkURO/dAb5MATNC0A3dBa4Zvh4VBcvl+RXLkJEIWcE4RrOyWdli7NCpuFDkUfM6zZN7px5Ng==}
+
+  '@i18n-micro/types@1.1.6':
+    resolution: {integrity: sha512-bHtQw+81t9CZGFb1JReMReuMi03RFmhzI/3AmZBANXVZ2/Cr9Xk0h6Xv7eXNonbVZOXI0lciWWISDnGGrG+wnQ==}
+
   '@iconify/collections@1.0.652':
     resolution: {integrity: sha512-RJhGvFA27VPidZPewkSPHncr1NgAo7qnaO+aUA2vEfFTnYvAfVoZGn1CPIK1y2J+N+3w/KHpEHAEf1pQAHiNDQ==}
 
@@ -903,6 +925,11 @@ packages:
   '@nuxt/devalue@2.0.2':
     resolution: {integrity: sha512-GBzP8zOc7CGWyFQS6dv1lQz8VVpz5C2yRszbXufwG/9zhStTIH50EtD87NmWbTMwXDvZLNg8GIpb1UFdH93JCA==}
 
+  '@nuxt/devtools-kit@2.7.0':
+    resolution: {integrity: sha512-MIJdah6CF6YOW2GhfKnb8Sivu6HpcQheqdjOlZqShBr+1DyjtKQbAKSCAyKPaoIzZP4QOo2SmTFV6aN8jBeEIQ==}
+    peerDependencies:
+      vite: '>=6.0'
+
   '@nuxt/devtools-kit@3.2.1':
     resolution: {integrity: sha512-lwCtTgqH2izU/d+mAmddnPG3mBaia9BsknxYkMFAPbxtph/ex5tPkmQjKACPQU5q4Tl5bTgWgZWo9pa3oz4LMQ==}
     peerDependencies:
@@ -927,6 +954,10 @@ packages:
 
   '@nuxt/icon@2.2.1':
     resolution: {integrity: sha512-GI840yYGuvHI0BGDQ63d6rAxGzG96jQcWrnaWIQKlyQo/7sx9PjXkSHckXUXyX1MCr9zY6U25Td6OatfY6Hklw==}
+
+  '@nuxt/kit@3.21.1':
+    resolution: {integrity: sha512-QORZRjcuTKgo++XP1Pc2c2gqwRydkaExrIRfRI9vFsPA3AzuHVn5Gfmbv1ic8y34e78mr5DMBvJlelUaeOuajg==}
+    engines: {node: '>=18.12.0'}
 
   '@nuxt/kit@4.3.1':
     resolution: {integrity: sha512-UjBFt72dnpc+83BV3OIbCT0YHLevJtgJCHpxMX0YRKWLDhhbcDdUse87GtsQBrjvOzK7WUNUYLDS/hQLYev5rA==}
@@ -2048,6 +2079,10 @@ packages:
     resolution: {integrity: sha512-P1Cz1dWaFfR4IR+U13mqqiGsLFf1KbayybWwdd2vfctdV6hDpUkgCY0nKOLLTMSoRd/jJNjtbqzf13K8DCCXQw==}
     engines: {node: '>=18'}
 
+  '@sindresorhus/merge-streams@2.3.0':
+    resolution: {integrity: sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg==}
+    engines: {node: '>=18'}
+
   '@sindresorhus/merge-streams@4.0.0':
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
@@ -2528,6 +2563,10 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  binary-extensions@2.3.0:
+    resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
+    engines: {node: '>=8'}
+
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
@@ -2600,6 +2639,10 @@ packages:
   case-anything@3.1.2:
     resolution: {integrity: sha512-wljhAjDDIv/hM2FzgJnYQg90AWmZMNtESCjTeLH680qTzdo0nErlCxOmgzgX4ZsZAtIvqHyD87ES8QyriXB+BQ==}
     engines: {node: '>=18'}
+
+  chokidar@3.6.0:
+    resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
+    engines: {node: '>= 8.10.0'}
 
   chokidar@4.0.3:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
@@ -3186,6 +3229,10 @@ packages:
     resolution: {integrity: sha512-wHTUcDUoZ1H5/0iVqEudYW4/kAlN5cZ3j/bXn0Dpbizl9iaUVeWSHqiOjsgk6OW2bkLclbBjzewBz6weQ1zA2Q==}
     engines: {node: '>=18'}
 
+  globby@14.1.0:
+    resolution: {integrity: sha512-0Ia46fDOaT7k4og1PDW4YbodWWr3scS2vAr2lTbsplOt2WkKp0vQbkI9wKis/T5LV/dqPjO3bpS/z6GTJB82LA==}
+    engines: {node: '>=18'}
+
   globby@16.1.1:
     resolution: {integrity: sha512-dW7vl+yiAJSp6aCekaVnVJxurRv7DCOLyXqEG3RYMYUg7AuJ2jCqPkZTA8ooqC2vtnkaMcV5WfFBMuEnTu1OQg==}
     engines: {node: '>=20'}
@@ -3274,6 +3321,10 @@ packages:
 
   iron-webcrypto@1.2.1:
     resolution: {integrity: sha512-feOM6FaSr6rEABp/eDfVseKyTMDt+KGpeB35SkVn9Tyn0CqvVsY3EwI0v5i8nMHyJnzCIQf7nsy3p41TPkJZhg==}
+
+  is-binary-path@2.1.0:
+    resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
+    engines: {node: '>=8'}
 
   is-core-module@2.16.1:
     resolution: {integrity: sha512-UfoeMA6fIJ8wTYFEUjelnaGI67v6+N7qXJEvQuIGa99l4xsCruSYOVSQ0uPANn4dAzm8lkYPaKLrrijLq7x23w==}
@@ -3667,6 +3718,11 @@ packages:
       '@simplewebauthn/server':
         optional: true
 
+  nuxt-i18n-micro@3.12.0:
+    resolution: {integrity: sha512-/a7JAGRIkaEuImhVozpo0PYwpLRbYn6MTfX4r5DZidQzWvyLyOclunl5eMMp/Iv/aoo0JE9VqjRhrMsIqURE5A==}
+    peerDependencies:
+      vue-router: '>=4.4.0'
+
   nuxt@4.3.1:
     resolution: {integrity: sha512-bl+0rFcT5Ax16aiWFBFPyWcsTob19NTZaDL5P6t0MQdK63AtgS6fN6fwvwdbXtnTk6/YdCzlmuLzXhSM22h0OA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -3793,6 +3849,10 @@ packages:
   path-scurry@2.0.2:
     resolution: {integrity: sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg==}
     engines: {node: 18 || 20 || >=22}
+
+  path-type@6.0.0:
+    resolution: {integrity: sha512-Vj7sf++t5pBD637NSfkxpHSMfWaeig5+DKWLhcqIYx6mWQz5hdJTGDVMQiJcw1ZYkhs7AazKDGpRVji1LJCZUQ==}
+    engines: {node: '>=18'}
 
   pathe@1.1.2:
     resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
@@ -4115,6 +4175,10 @@ packages:
 
   readdir-glob@1.1.3:
     resolution: {integrity: sha512-v05I2k7xN8zXvPD9N+z/uhXPaj0sUFCe2rcWZIpBsqxfP7xXFQ0tipAd/wjj1YxWyWtUS5IDJpOG82JKt2EAVA==}
+
+  readdirp@3.6.0:
+    resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
+    engines: {node: '>=8.10.0'}
 
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
@@ -5846,6 +5910,28 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
+  '@i18n-micro/core@1.2.0':
+    dependencies:
+      '@i18n-micro/types': 1.1.5
+
+  '@i18n-micro/path-strategy@1.3.0':
+    dependencies:
+      '@i18n-micro/types': 1.1.5
+
+  '@i18n-micro/route-strategy@1.1.4':
+    dependencies:
+      '@i18n-micro/core': 1.2.0
+      '@i18n-micro/types': 1.1.6
+      '@nuxt/schema': 4.3.1
+
+  '@i18n-micro/test-utils@1.2.0':
+    dependencies:
+      '@i18n-micro/core': 1.2.0
+
+  '@i18n-micro/types@1.1.5': {}
+
+  '@i18n-micro/types@1.1.6': {}
+
   '@iconify/collections@1.0.652':
     dependencies:
       '@iconify/types': 2.0.0
@@ -5992,6 +6078,14 @@ snapshots:
 
   '@nuxt/devalue@2.0.2': {}
 
+  '@nuxt/devtools-kit@2.7.0(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))':
+    dependencies:
+      '@nuxt/kit': 3.21.1(magicast@0.5.2)
+      execa: 8.0.1
+      vite: 7.3.1(@types/node@25.3.0)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2)
+    transitivePeerDependencies:
+      - magicast
+
   '@nuxt/devtools-kit@3.2.1(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))':
     dependencies:
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
@@ -6125,6 +6219,32 @@ snapshots:
       - magicast
       - vite
       - vue
+
+  '@nuxt/kit@3.21.1(magicast@0.5.2)':
+    dependencies:
+      c12: 3.3.3(magicast@0.5.2)
+      consola: 3.4.2
+      defu: 6.1.4
+      destr: 2.0.5
+      errx: 0.1.0
+      exsolve: 1.0.8
+      ignore: 7.0.5
+      jiti: 2.6.1
+      klona: 2.0.6
+      knitwork: 1.3.0
+      mlly: 1.8.0
+      ohash: 2.0.11
+      pathe: 2.0.3
+      pkg-types: 2.3.0
+      rc9: 3.0.0
+      scule: 1.3.0
+      semver: 7.7.4
+      tinyglobby: 0.2.15
+      ufo: 1.6.3
+      unctx: 2.5.0
+      untyped: 2.0.0
+    transitivePeerDependencies:
+      - magicast
 
   '@nuxt/kit@4.3.1(magicast@0.5.2)':
     dependencies:
@@ -6992,6 +7112,8 @@ snapshots:
 
   '@sindresorhus/is@7.2.0': {}
 
+  '@sindresorhus/merge-streams@2.3.0': {}
+
   '@sindresorhus/merge-streams@4.0.0': {}
 
   '@smithy/abort-controller@4.2.8':
@@ -7677,6 +7799,8 @@ snapshots:
 
   baseline-browser-mapping@2.10.0: {}
 
+  binary-extensions@2.3.0: {}
+
   bindings@1.5.0:
     dependencies:
       file-uri-to-path: 1.0.0
@@ -7760,6 +7884,18 @@ snapshots:
   caniuse-lite@1.0.30001770: {}
 
   case-anything@3.1.2: {}
+
+  chokidar@3.6.0:
+    dependencies:
+      anymatch: 3.1.3
+      braces: 3.0.3
+      glob-parent: 5.1.2
+      is-binary-path: 2.1.0
+      is-glob: 4.0.3
+      normalize-path: 3.0.0
+      readdirp: 3.6.0
+    optionalDependencies:
+      fsevents: 2.3.3
 
   chokidar@4.0.3:
     dependencies:
@@ -8236,6 +8372,15 @@ snapshots:
     dependencies:
       ini: 4.1.1
 
+  globby@14.1.0:
+    dependencies:
+      '@sindresorhus/merge-streams': 2.3.0
+      fast-glob: 3.3.3
+      ignore: 7.0.5
+      path-type: 6.0.0
+      slash: 5.1.0
+      unicorn-magic: 0.3.0
+
   globby@16.1.1:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
@@ -8346,6 +8491,10 @@ snapshots:
       - supports-color
 
   iron-webcrypto@1.2.1: {}
+
+  is-binary-path@2.1.0:
+    dependencies:
+      binary-extensions: 2.3.0
 
   is-core-module@2.16.1:
     dependencies:
@@ -8792,6 +8941,26 @@ snapshots:
       - bcrypt
       - magicast
 
+  nuxt-i18n-micro@3.12.0(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.28)):
+    dependencies:
+      '@i18n-micro/core': 1.2.0
+      '@i18n-micro/path-strategy': 1.3.0
+      '@i18n-micro/route-strategy': 1.1.4
+      '@i18n-micro/test-utils': 1.2.0
+      '@i18n-micro/types': 1.1.6
+      '@nuxt/devtools-kit': 2.7.0(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))
+      '@nuxt/kit': 4.3.1(magicast@0.5.2)
+      chokidar: 3.6.0
+      globby: 14.1.0
+      ufo: 1.6.3
+      vue-router: 4.6.4(vue@3.5.28)
+    optionalDependencies:
+      '@rollup/rollup-linux-x64-gnu': 4.58.0
+      '@rollup/rollup-win32-x64-msvc': 4.58.0
+    transitivePeerDependencies:
+      - magicast
+      - vite
+
   nuxt@4.3.1(@azure/identity@4.13.0)(@parcel/watcher@2.5.6)(@types/node@25.3.0)(@vue/compiler-sfc@3.5.28)(cac@6.7.14)(db0@0.3.4(drizzle-orm@1.0.0-beta.15-859cf75(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.16.0)(mssql@11.0.1(@azure/core-client@1.10.1))(pg@8.18.0)(valibot@1.2.0)(zod@4.3.6)))(drizzle-orm@1.0.0-beta.15-859cf75(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.16.0)(mssql@11.0.1(@azure/core-client@1.10.1))(pg@8.18.0)(valibot@1.2.0)(zod@4.3.6))(ioredis@5.9.3)(magicast@0.5.2)(oxlint@1.49.0)(rollup@4.58.0)(terser@5.46.0)(vite@7.3.1(@types/node@25.3.0)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))(yaml@2.8.2):
     dependencies:
       '@dxup/nuxt': 0.3.2(magicast@0.5.2)
@@ -9143,6 +9312,8 @@ snapshots:
       lru-cache: 11.2.6
       minipass: 7.1.3
 
+  path-type@6.0.0: {}
+
   pathe@1.1.2: {}
 
   pathe@2.0.3: {}
@@ -9445,6 +9616,10 @@ snapshots:
   readdir-glob@1.1.3:
     dependencies:
       minimatch: 5.1.6
+
+  readdirp@3.6.0:
+    dependencies:
+      picomatch: 2.3.1
 
   readdirp@4.1.2: {}
 

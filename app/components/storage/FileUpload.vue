@@ -22,7 +22,7 @@ async function uploadFile(event: Event) {
       body: formData,
     })
     emits('uploaded', response)
-    appStore.notify('File uploaded', 'success')
+    appStore.notify('saved', 'success')
   } catch (e: any) {
     appStore.notify(e.data?.message, 'error')
   }

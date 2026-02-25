@@ -17,10 +17,6 @@ const options = ref({
   hasPasskey: false,
 })
 
-const isPasswordValid = computed(() => {
-  return /.{12,}|[0-9]{6}/.test(password.value)
-})
-
 async function requestOtp() {
   if (!email.value) return
   appStore.setLoading(true)
@@ -152,13 +148,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="signin p3 mx my2">
-    <h1 class="mt0 text-center">Sign In</h1>
+  <div class="signin p3 mx">
+    <h1 class="text-center">{{ $t('signin') }}</h1>
     <form
       v-if="optionsFetched"
       @submit.prevent="signIn"
     >
-      <label for="password">Password or code</label>
+      <label for="password">{{ $t('password') }}</label>
       <input
         id="password"
         v-model.trim="password"
@@ -168,11 +164,8 @@ onMounted(() => {
         pattern=".{12,}|[0-9]{6}"
         @paste="signIn"
       />
-      <small v-if="password && !isPasswordValid">
-        The password must be at least 12 characters long.
-      </small>
       <div v-if="options.hasTOTP">
-        <label for="totp">TOTP</label>
+        <label for="totp">{{ $t('totp') }}</label>
         <input
           id="totp"
           v-model.trim="totp"
@@ -189,7 +182,7 @@ onMounted(() => {
           :disabled="loading"
           class="flex-1"
         >
-          {{ password ? 'Sign In' : 'Get Code' }}
+          {{ password ? $t('signin') : $t('getCode') }}
         </button>
         <button
           v-if="options.hasPasskey"
@@ -201,13 +194,13 @@ onMounted(() => {
           Passkey
         </button>
       </div>
-      <p v-if="otpRequested">Code sent to {{ email }}</p>
+      <p v-if="otpRequested">{{ $t('otpSent', { email }) }}</p>
     </form>
     <form
       v-else
       @submit.prevent="getSignInOptions(email)"
     >
-      <label for="email">Email</label>
+      <label for="email">{{ $t('email') }}</label>
       <input
         id="email"
         v-model.trim="email"
@@ -216,7 +209,7 @@ onMounted(() => {
         :disabled="loading"
         autocomplete="username"
       />
-      <button class="w">Next</button>
+      <button class="w">{{ $t('next') }}</button>
     </form>
   </div>
 </template>

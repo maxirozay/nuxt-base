@@ -1,0 +1,9 @@
+{
+  "email": "Email",
+  "getCode": "Get code",
+  "next": "Next",
+  "otpSent": "Code sent to {{ email }}",
+  "password": "Password or code",
+  "signin": "Sign in",
+  "totp": "TOTP"
+}

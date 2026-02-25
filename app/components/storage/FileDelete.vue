@@ -15,7 +15,7 @@ async function deleteFile() {
       method: 'DELETE',
       body: { path: props.path },
     })
-    appStore.notify('File deleted', 'success')
+    appStore.notify('deleted', 'success')
     emits('deleted')
   } catch (e: any) {
     appStore.notify(e.data?.message, 'error')
@@ -24,5 +24,5 @@ async function deleteFile() {
 </script>
 
 <template>
-  <button @click="deleteFile">Delete</button>
+  <button @click="deleteFile">{{ $t('delete') }}</button>
 </template>

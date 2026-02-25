@@ -1,6 +1,8 @@
 export const useAppStore = defineStore('app', () => {
   const isLoading = ref(false)
-  const notifications = ref([] as { id: number; message: string; type: 'error' | 'success' }[])
+  const notifications = ref(
+    [] as { id: number; message: string; type: 'error' | 'success'; isSticky: boolean }[],
+  )
 
   function setLoading(state: boolean) {
     isLoading.value = state
@@ -8,7 +10,7 @@ export const useAppStore = defineStore('app', () => {
 
   function notify(message: string, type: 'success' | 'error' = 'success', isSticky = false) {
     const id = Date.now()
-    notifications.value.push({ id, message: handleZodError(message), type })
+    notifications.value.push({ id, message: handleZodError(message), type, isSticky })
 
     if (!isSticky) {
       setTimeout(() => removeNotification(id), 5000)

@@ -9,11 +9,12 @@ const appStore = useAppStore()
     <div
       v-for="notification in appStore.notifications"
       :key="notification.id"
-      :class="['pl2', notification.type]"
+      :class="['px2 py1 flex-row flex-center', notification.type]"
     >
-      {{ notification.message }}
+      {{ $t(notification.message) }}
       <button
-        :class="[notification.type, notification.type + '-border']"
+        v-if="notification.isSticky"
+        :class="[notification.type, notification.type + '-border', 'py0 pr0']"
         @click="appStore.removeNotification(notification.id)"
       >
         <svg
