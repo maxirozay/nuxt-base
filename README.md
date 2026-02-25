@@ -16,14 +16,3 @@ Run `./scripts/deploy.sh` to deploy the website.
 Setup nginx.
 
 push your migration with `./scripts/db/push.sh`.
-
-## File upload
-
-Send a FormData in the body of the upload route.
-
-```
-const file = input.files[0] as any
-const formData = new FormData()
-formData.append('file', file)
-formData.append('path', path)
-```

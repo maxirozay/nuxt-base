@@ -25,8 +25,5 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return {
-    success: true,
-    files: uploadedFiles,
-  }
+  return uploadedFiles
 })
