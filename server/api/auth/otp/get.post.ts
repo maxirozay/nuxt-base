@@ -16,15 +16,15 @@ export default defineEventHandler(async (event) => {
   const { email } = await readValidatedBody(event, bodySchema.parse)
   if (!email || typeof email !== 'string') {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Email is required',
+      status: 400,
+      message: 'Email is required',
     })
   }
 
   const storage = useStorage('auth')
   const record = await storage.getItem<OTP>(email)
   if (record && Date.now() < record.sentAt! + 60000) {
-    throw createError({ statusCode: 400, message: 'Wait a minute before requesting a new OTP.' })
+    throw createError({ status: 400, message: 'Wait a minute before requesting a new OTP.' })
   }
 
   const otp = generateOTP()

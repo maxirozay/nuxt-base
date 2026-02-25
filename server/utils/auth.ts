@@ -1,14 +1,6 @@
-import { eq } from 'drizzle-orm'
 import { auth } from '~~/server/database/schema'
 
-export interface User {
-  id: string
-  email: string
-  password?: string | null
-  totp?: string | null
-}
-
-export async function createUser(user: any): Promise<User> {
+export async function createAuth(user: any) {
   const insertedUsers = await db
     .insert(auth)
     .values({
@@ -24,12 +16,15 @@ export async function createUser(user: any): Promise<User> {
   return insertedUsers[0]
 }
 
-export async function getUser(email: string): Promise<User> {
-  let user = await db
-    .select()
-    .from(auth)
-    .where(eq(auth.email, email))
-    .then((result) => result[0])
+export async function getAuth(email: string, credentials = false) {
+  const user = await db.query.auth.findFirst({
+    where: {
+      email,
+    },
+    with: {
+      credentials,
+    },
+  })
   if (!user) {
     throw createError({
       status: 404,
@@ -39,7 +34,7 @@ export async function getUser(email: string): Promise<User> {
   return user
 }
 
-export function setSession(event: any, user: User) {
+export function setSession(event: any, user: any) {
   return setUserSession(event, {
     user: {
       id: user.id,

@@ -1,4 +1,4 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import * as schema from '../database/schema'
+import { relations } from '../database/relations'
 
-export const db = drizzle(useRuntimeConfig().db, { schema, casing: 'snake_case' })
+export const db = drizzle(useRuntimeConfig().db, { relations, casing: 'snake_case' })

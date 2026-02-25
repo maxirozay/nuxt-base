@@ -13,17 +13,17 @@ export default defineEventHandler(async (event) => {
   const { email, password, otp, token } = await readValidatedBody(event, bodySchema.parse)
   if (!email || !(otp || password) || !token) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing required fields',
+      status: 400,
+      message: 'Missing required fields',
     })
   }
 
-  const user = await getUser(email)
+  const user = await getAuth(email)
 
   if (otp) await verifyOTP(email, otp)
   else if (password) await verifyPassword(user.password!, password)
 
   if (await verify({ secret: user.totp!, token })) {
     await setSession(event, user)
-  } else throw createError({ statusCode: 400, message: 'Invalid TOTP.' })
+  } else throw createError({ status: 400, message: 'Invalid TOTP.' })
 })

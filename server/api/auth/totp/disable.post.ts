@@ -11,14 +11,14 @@ export default defineEventHandler(async (event) => {
   const { token } = await readValidatedBody(event, bodySchema.parse)
   if (!token) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing required fields',
+      status: 400,
+      message: 'Missing required fields',
     })
   }
   const session = await requireUserSession(event)
-  const user = await getUser(session.user.email)
+  const user = await getAuth(session.user.email)
 
   if (await verify({ secret: user.totp!, token })) {
     await db.update(auth).set({ totp: null }).where(eq(auth.id, session.user.id))
-  } else throw createError({ statusCode: 400, message: 'Invalid TOTP.' })
+  } else throw createError({ status: 400, message: 'Invalid TOTP.' })
 })

@@ -12,8 +12,8 @@ export default defineEventHandler(async (event) => {
   const { secret, token } = await readValidatedBody(event, bodySchema.parse)
   if (!secret || !token) {
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing required fields',
+      status: 400,
+      message: 'Missing required fields',
     })
   }
 
@@ -21,5 +21,5 @@ export default defineEventHandler(async (event) => {
 
   if (await verify({ secret, token })) {
     await db.update(auth).set({ totp: secret }).where(eq(auth.id, user.id))
-  } else throw createError({ statusCode: 400, message: 'Invalid code.' })
+  } else throw createError({ status: 400, message: 'Invalid code.' })
 })

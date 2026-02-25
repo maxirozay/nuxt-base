@@ -1,12 +1,21 @@
 <script setup lang="ts">
+import { useAppStore } from '~/stores/app'
+
+const appStore = useAppStore()
 const { user, fetch: refreshSession } = useUserSession()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const otpRequested = ref(false)
-const showTOTP = ref(false)
 const totp = ref('')
 const route = useRoute()
+const optionsFetched = ref(false)
+const options = ref({
+  hasOTP: false,
+  hasPassword: false,
+  hasTOTP: false,
+  hasPasskey: false,
+})
 
 const isPasswordValid = computed(() => {
   return /.{12,}|[0-9]{6}/.test(password.value)
@@ -14,7 +23,7 @@ const isPasswordValid = computed(() => {
 
 async function requestOtp() {
   if (!email.value) return
-  loading.value = true
+  appStore.setLoading(true)
   try {
     await $fetch('/api/auth/otp/get', {
       method: 'POST',
@@ -22,14 +31,14 @@ async function requestOtp() {
     })
     otpRequested.value = true
   } catch (e: any) {
-    alert(e.data?.statusMessage || 'Failed to request OTP')
+    handleError(e)
   } finally {
-    loading.value = false
+    appStore.setLoading(false)
   }
 }
 
 async function signInWithOtp() {
-  loading.value = true
+  appStore.setLoading(true)
   try {
     await $fetch('/api/auth/otp/verify', {
       method: 'POST',
@@ -40,12 +49,13 @@ async function signInWithOtp() {
   } catch (e: any) {
     handleError(e)
   } finally {
-    loading.value = false
+    appStore.setLoading(false)
   }
 }
 
 async function signInWithTOTP() {
-  loading.value = true
+  if (!email.value || !totp.value || !password.value) return
+  appStore.setLoading(true)
   try {
     const body: {
       email: string
@@ -62,15 +72,15 @@ async function signInWithTOTP() {
     await refreshSession()
     navigateTo('/', { replace: true })
   } catch (e: any) {
-    alert(e.data?.message || 'Invalid code')
+    handleError(e)
   } finally {
-    loading.value = false
+    appStore.setLoading(false)
   }
 }
 
 async function signInWithPassword() {
   if (!email.value || !password.value) return
-  loading.value = true
+  appStore.setLoading(true)
   try {
     await $fetch('/api/auth/password', {
       method: 'POST',
@@ -81,14 +91,12 @@ async function signInWithPassword() {
   } catch (e: any) {
     handleError(e)
   } finally {
-    loading.value = false
+    appStore.setLoading(false)
   }
 }
 
 function handleError(error: any) {
-  if (error.data?.message === 'TOTP required') {
-    showTOTP.value = true
-  } else alert(error.data?.message || 'Bad credentials')
+  appStore.notify(error.data?.message || 'Bad credentials', 'error')
 }
 
 function signIn() {
@@ -116,6 +124,24 @@ async function signInWithPasskey() {
   }
 }
 
+async function getSignInOptions(email: string) {
+  appStore.setLoading(true)
+  try {
+    options.value = await $fetch<typeof options.value>('/api/auth/options', {
+      method: 'POST',
+      body: { email },
+    })
+    optionsFetched.value = true
+    if (!options.value.hasPassword && !options.value.hasPasskey) {
+      requestOtp()
+    }
+  } catch (e: any) {
+    handleError(e)
+  } finally {
+    appStore.setLoading(false)
+  }
+}
+
 onMounted(() => {
   if (route.query.email && route.query.token) {
     email.value = route.query.email as string
@@ -126,19 +152,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <h1>Sign In</h1>
-    <form @submit.prevent="signIn">
-      <label for="email">Email</label>
-      <input
-        id="email"
-        v-model.trim="email"
-        type="email"
-        required
-        :disabled="loading"
-        autocomplete="username"
-      />
-      <br />
+  <div class="signin p3 mx my2">
+    <h1 class="mt0 text-center">Sign In</h1>
+    <form
+      v-if="optionsFetched"
+      @submit.prevent="signIn"
+    >
       <label for="password">Password or code</label>
       <input
         id="password"
@@ -149,7 +168,10 @@ onMounted(() => {
         pattern=".{12,}|[0-9]{6}"
         @paste="signIn"
       />
-      <div v-if="showTOTP">
+      <small v-if="password && !isPasswordValid">
+        The password must be at least 12 characters long.
+      </small>
+      <div v-if="options.hasTOTP">
         <label for="totp">TOTP</label>
         <input
           id="totp"
@@ -161,20 +183,46 @@ onMounted(() => {
           @change="signInWithTOTP"
         />
       </div>
-      <p v-if="password && !isPasswordValid">
-        The password must be at least 12 characters long or be the code that you received.
-      </p>
-      <br />
-      <button
-        type="submit"
-        :disabled="loading"
-      >
-        {{ loading ? 'Signing in...' : password ? 'Sign In' : 'Request Code' }}
-      </button>
+      <div class="flex-row g2 mt1">
+        <button
+          type="submit"
+          :disabled="loading"
+          class="flex-1"
+        >
+          {{ password ? 'Sign In' : 'Get Code' }}
+        </button>
+        <button
+          v-if="options.hasPasskey"
+          type="button"
+          class="flex-1"
+          :disabled="loading"
+          @click="signInWithPasskey"
+        >
+          Passkey
+        </button>
+      </div>
       <p v-if="otpRequested">Code sent to {{ email }}</p>
     </form>
+    <form
+      v-else
+      @submit.prevent="getSignInOptions(email)"
+    >
+      <label for="email">Email</label>
+      <input
+        id="email"
+        v-model.trim="email"
+        type="email"
+        required
+        :disabled="loading"
+        autocomplete="username"
+      />
+      <button class="w">Next</button>
+    </form>
   </div>
-  <form @submit.prevent="signInWithPasskey">
-    <button type="submit">Sign in with Passkey</button>
-  </form>
 </template>
+
+<style scoped>
+.signin {
+  max-width: 400px;
+}
+</style>

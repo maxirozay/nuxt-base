@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { getUser, setSession } from '~~/server/utils/auth'
+import { getAuth, setSession } from '~~/server/utils/auth'
 
 const bodySchema = z.object({
   email: z.email(),
@@ -9,7 +9,7 @@ const bodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse)
 
-  const user = await getUser(email)
+  const user = await getAuth(email)
 
   if (user.password && (await verifyPassword(user.password, password))) {
     if (user.totp) {

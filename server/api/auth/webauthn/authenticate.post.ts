@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm'
-import { auth, credentials } from '~~/server/database/schema'
+import { auth } from '~~/server/database/schema'
 
 export default defineWebAuthnAuthenticateEventHandler({
   async storeChallenge(event, challenge, attemptId) {
@@ -10,21 +10,23 @@ export default defineWebAuthnAuthenticateEventHandler({
 
     await useStorage('auth').removeItem(`attempt:${attemptId}`)
 
-    if (!challenge) throw createError({ statusCode: 400, message: 'Challenge expired' })
+    if (!challenge) throw createError({ status: 400, message: 'Challenge expired' })
 
     return challenge as string
   },
   async allowCredentials(event, userName) {
-    const user = await getUser(userName)
-    return await db.select().from(credentials).where(eq(credentials.userId, user.id))
+    const user = await getAuth(userName, true)
+    return user.credentials as any[]
   },
   async getCredential(event, credentialId) {
-    const result = await db.select().from(credentials).where(eq(credentials.id, credentialId))
-    const credential = result[0]
+    const credential = await db.query.credentials.findFirst({
+      where: {
+        id: credentialId,
+      },
+    })
 
-    if (!credential) throw createError({ statusCode: 400, message: 'Credential not found' })
-
-    return credential
+    if (!credential) throw createError({ status: 400, message: 'Credential not found' })
+    return credential as any
   },
   async onSuccess(event, { credential }) {
     const user = await db
