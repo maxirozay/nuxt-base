@@ -1,5 +1,6 @@
 <template>
   <div class="page flex-column">
+    <TheHeader />
     <div class="portrait px2">
       <slot />
     </div>
