@@ -67,7 +67,7 @@ onMounted(getAuth)
 </script>
 
 <template>
-  <h1>Auth settings for {{ user!.email }}</h1>
+  <h1>Auth settings for {{ user?.email }}</h1>
   <form @submit.prevent="setPassword">
     <label for="password"><h2>Password</h2></label>
     <div class="flex-row group">
