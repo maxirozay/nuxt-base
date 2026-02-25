@@ -9,10 +9,8 @@ const TOTPCode = ref('')
 const password = ref('')
 
 async function getAuth() {
-  if (!user.value) return
   auth.value = await $fetch('/api/auth')
 }
-getAuth()
 
 const { register } = useWebAuthn({
   registerEndpoint: '/api/auth/webauthn/register',
@@ -64,6 +62,8 @@ async function setPassword() {
     appStore.notify(e.data?.message, 'error')
   }
 }
+
+onMounted(getAuth)
 </script>
 
 <template>
