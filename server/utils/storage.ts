@@ -7,7 +7,8 @@ import {
   ListObjectsCommand,
 } from '@aws-sdk/client-s3'
 
-export async function uploadFile(file: any, folder = 'files') {
+export async function uploadFile(event: any, file: any, folder = 'files') {
+  await checkStorageAccess(event, folder)
   const filename = file.filename
 
   let url
@@ -26,7 +27,8 @@ export async function uploadFile(file: any, folder = 'files') {
   return url
 }
 
-export async function deleteFile(path: string) {
+export async function deleteFile(event: any, path: string) {
+  await checkStorageAccess(event, path)
   if (useS3()) await deleteFromS3(path)
   else {
     const relativePath = path.replace(/^\//, '')
@@ -35,7 +37,8 @@ export async function deleteFile(path: string) {
   }
 }
 
-export async function listFolder(path: string) {
+export async function listFolder(event: any, path: string) {
+  await checkStorageAccess(event, path)
   if (useS3()) return listFromS3(path)
   else {
     const relativePath = path.replace(/^\//, '')
@@ -56,6 +59,29 @@ export async function listFolder(path: string) {
     )
     return fileStats
   }
+}
+
+async function checkStorageAccess(event: any, path: string) {
+  const user = event.context.user
+  if (!user) throw createError({ statusCode: 401, message: 'Unauthorized' })
+
+  const root = `u/${user.id}`
+  if (path.startsWith(root) && (root[root.length] === '/' || path.length === root.length)) {
+    return true
+  }
+
+  if (path.startsWith('o/')) {
+    const orgId = path.substring(2).replace(/\/.*/, '')
+    const membership = await db.query.organizationMembers.findFirst({
+      where: {
+        userId: user.id,
+        organizationId: orgId,
+      },
+    })
+    if (membership?.role === 'admin') return true
+  } else if (user.role === 'admin') return true
+
+  throw createError({ statusCode: 403, message: 'Insufficient permissions' })
 }
 
 // S3

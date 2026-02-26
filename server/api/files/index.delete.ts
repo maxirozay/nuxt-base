@@ -5,8 +5,7 @@ const bodySchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
   const { path } = await readValidatedBody(event, bodySchema.parse)
-  await deleteFile(path)
+  await deleteFile(event, path)
   return { success: true }
 })

@@ -1,6 +1,4 @@
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
-
   const body = await readMultipartFormData(event)
   if (!body) {
     throw createError({ status: 400, message: 'No file uploaded' })
@@ -20,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
   for (const file of body) {
     if (file.filename) {
-      const url = await uploadFile(file, folder)
+      const url = await uploadFile(event, file, folder)
       uploadedFiles.push(url)
     }
   }

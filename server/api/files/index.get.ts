@@ -8,8 +8,7 @@ const querySchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
   const query = getQuery(event)
   const { path } = querySchema.parse(query)
-  return listFolder(path)
+  return listFolder(event, path)
 })

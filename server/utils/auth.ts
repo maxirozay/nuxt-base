@@ -39,6 +39,7 @@ export function setSession(event: any, user: any) {
     user: {
       id: user.id,
       email: user.email,
+      role: user.role,
     },
   })
 }
