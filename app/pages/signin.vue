@@ -1,4 +1,12 @@
 <script setup lang="ts">
+const { $t } = useI18n()
+useSeoMeta({
+  title: $t('signin') as string,
+  ogTitle: $t('signin') as string,
+  description: $t('signin') as string,
+  ogDescription: $t('signin') as string,
+})
+
 const appStore = useAppStore()
 const { user, fetch: refreshSession } = useUserSession()
 const email = ref('')
