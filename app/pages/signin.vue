@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useAppStore } from '~/stores/app'
-
 const appStore = useAppStore()
 const { user, fetch: refreshSession } = useUserSession()
 const email = ref('')

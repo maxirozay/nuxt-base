@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAppStore } from '~/stores/app'
+import QRCode from 'qrcode'
 
 const appStore = useAppStore()
 const { user } = useUserSession()
@@ -59,8 +59,51 @@ async function setPassword() {
     })
     appStore.notify('saved', 'success')
   } catch (e: any) {
-    console.log(e.data)
+    appStore.notify(e.data?.message, 'error')
+  }
+}
 
+async function showTOTPSecret() {
+  try {
+    const response = await $fetch<{ secret: string }>('/api/auth/totp/generate')
+    TOTPSecret.value = response.secret
+    await nextTick()
+    const canvas = document.getElementById('totp-qrcode') as HTMLCanvasElement
+
+    const config = useRuntimeConfig()
+    const issuer = config.public.name
+    const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(user.value!.email)}?secret=${TOTPSecret.value}&issuer=${encodeURIComponent(issuer)}`
+    QRCode.toCanvas(canvas, uri)
+  } catch (e: any) {
+    appStore.notify(e.data?.message, 'error')
+  }
+}
+
+async function confirmTOTP() {
+  if (TOTPCode.value.length !== 6) return
+  try {
+    await $fetch('/api/auth/totp/confirm', {
+      method: 'POST',
+      body: { secret: TOTPSecret.value, token: TOTPCode.value },
+    })
+    TOTPSecret.value = ''
+    TOTPCode.value = ''
+    auth.value.totp = true
+  } catch (e: any) {
+    appStore.notify(e.data?.message, 'error')
+  }
+}
+
+async function disableTOTP() {
+  if (TOTPCode.value.length !== 6) return appStore.notify('codeInvalid', 'error')
+  try {
+    await $fetch('/api/auth/totp/disable', {
+      method: 'POST',
+      body: { token: TOTPCode.value },
+    })
+    TOTPCode.value = ''
+    auth.value.totp = null
+  } catch (e: any) {
     appStore.notify(e.data?.message, 'error')
   }
 }
@@ -109,15 +152,28 @@ onMounted(getAuth)
   </form>
 
   <h2>{{ $t('totp') }}</h2>
-  <button
+  <div
     v-if="auth?.totp"
-    class="bg"
-    @click="disableTOTP(TOTPCode)"
+    class="flex-row group"
   >
-    {{ $t('disable') }}
-  </button>
+    <input
+      id="totp"
+      type="text"
+      v-model.trim="TOTPCode"
+    />
+    <button
+      class="bg"
+      @click="disableTOTP"
+    >
+      {{ $t('disable') }}
+    </button>
+  </div>
   <div v-else-if="TOTPSecret">
-    <p>{{ TOTPSecret }}</p>
+    <p>{{ $t('totpSecret') }}</p>
+    <div class="text-center">
+      <canvas id="totp-qrcode"></canvas>
+      <p>{{ TOTPSecret }}</p>
+    </div>
     <label for="totp">{{ $t('code') }}</label>
     <div class="flex-row group">
       <input
@@ -125,21 +181,13 @@ onMounted(getAuth)
         type="text"
         v-model.trim="TOTPCode"
         autocomplete="one-time-code"
+        @keyup="confirmTOTP"
       />
-      <button
-        @click="
-          confirmTOTP(TOTPSecret, TOTPCode).then(() => {
-            TOTPSecret = ''
-          })
-        "
-      >
-        {{ $t('confirm') }}
-      </button>
     </div>
   </div>
   <button
     v-else
-    @click="getTOTPSecret().then((secret) => (TOTPSecret = secret))"
+    @click="showTOTPSecret"
   >
     {{ $t('enable') }}
   </button>

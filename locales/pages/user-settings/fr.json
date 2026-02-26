@@ -1,6 +1,8 @@
 {
   "code": "Code",
+  "codeInvalid": "Code invalide",
   "password": "Mot de passe",
   "settings": "Paramètres",
-  "totp": "TOTP"
+  "totp": "TOTP",
+  "totpSecret": "Scannez ce code QR avec votre application TOTP ou copiez le code manuellement."
 }
