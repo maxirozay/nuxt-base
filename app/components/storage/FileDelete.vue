@@ -24,5 +24,10 @@ async function deleteFile() {
 </script>
 
 <template>
-  <button @click="deleteFile">{{ $t('delete') }}</button>
+  <button
+    @click="deleteFile"
+    class="flex-row g2"
+  >
+    {{ $t('delete') }}<Icon name="uil:trash" />
+  </button>
 </template>
