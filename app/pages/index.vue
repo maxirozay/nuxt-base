@@ -12,17 +12,28 @@ const path = ref('u/' + user.value!.id)
 <template>
   <div class="portrait">
     <h2>File Management</h2>
-    <label>
-      Path
+    <label for="path">Path</label>
+    <div class="flex-row group">
       <input
         type="text"
+        id="path"
         v-model="path"
       />
-    </label>
-    <FileUpload
-      :path="path"
-      @uploaded="(response) => console.log('File uploaded', response)"
-    />
-    <FileDelete :path="path" />
+      <label
+        for="upload"
+        class="label__file primary flex-row g2"
+      >
+        {{ $t('upload') }}<Icon name="uil:upload" />
+        <FileUpload
+          id="upload"
+          :path="path"
+          @uploaded="(response) => console.log('File uploaded', response)"
+        />
+      </label>
+      <FileDelete
+        :path="path"
+        class="bg"
+      />
+    </div>
   </div>
 </template>
