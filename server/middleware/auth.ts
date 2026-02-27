@@ -1,5 +1,6 @@
 export default defineEventHandler(async (event) => {
-  if (!event.path.startsWith('/api') || event.path.startsWith('/api/auth')) return
+  const [root, type] = event.path.substring(1, 10).split('/')
+  if (root !== 'api' || type?.endsWith('auth')) return
 
   const session = await requireUserSession(event)
   const user = session.user

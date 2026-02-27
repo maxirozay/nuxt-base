@@ -305,7 +305,7 @@ onMounted(getAuth)
       </div>
     </div>
   </div>
-  <AuthCheck
+  <LazyAuthCheck
     v-if="showAuthConfirmation && !authConfirmed"
     @authenticated="authConfirmed = true"
     @cancel="showAuthConfirmation = false"
