@@ -12,6 +12,16 @@ const showPasswordChange = ref(false)
 const showPassword1 = ref(false)
 const showPassword2 = ref(false)
 const showTOTP = ref(false)
+const showAuthConfirmation = ref(false)
+const authConfirmed = ref(false)
+
+function checkAuthConfirmation() {
+  if (authConfirmed.value) {
+    return true
+  }
+  showAuthConfirmation.value = true
+  return false
+}
 
 async function getAuth() {
   auth.value = await $fetch('/api/auth')
@@ -58,6 +68,7 @@ async function deletePasskey(credentialId: string) {
 
 async function setPassword() {
   try {
+    if (!checkAuthConfirmation()) return
     await $fetch('/api/auth', {
       method: 'POST',
       body: { password: password1.value },
@@ -294,4 +305,9 @@ onMounted(getAuth)
       </div>
     </div>
   </div>
+  <AuthCheck
+    v-if="showAuthConfirmation && !authConfirmed"
+    @authenticated="authConfirmed = true"
+    @cancel="showAuthConfirmation = false"
+  />
 </template>

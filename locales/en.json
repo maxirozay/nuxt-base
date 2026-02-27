@@ -5,11 +5,20 @@
   "deleted": "Deleted",
   "description": "Website",
   "disable": "Disable",
+  "email": "Email",
   "enable": "Enable",
+  "next": "Next",
   "rename": "Rename",
   "save": "Save",
   "saved": "Saved",
   "settings": "Settings",
   "signout": "Sign Out",
-  "upload": "Upload"
+  "upload": "Upload",
+  "authCheck": {
+    "authenticatorCode": "Authenticator code",
+    "code": "Code",
+    "getCode": "Get code",
+    "otpSent": "Code sent to {email}",
+    "password": "Password"
+  }
 }

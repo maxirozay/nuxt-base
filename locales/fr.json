@@ -5,11 +5,20 @@
   "deleted": "Supprimé",
   "description": "Site web",
   "disable": "Désactiver",
+  "email": "Email",
   "enable": "Activer",
+  "next": "Suivant",
   "rename": "Renommer",
   "save": "Enregistrer",
   "saved": "Enregistré",
   "settings": "Paramètres",
   "signout": "Se déconnecter",
-  "upload": "Téléverser"
+  "upload": "Téléverser",
+  "authCheck": {
+    "authenticatorCode": "Code de l'application d'authentification",
+    "code": "Code",
+    "getCode": "Demander le code",
+    "otpSent": "Code envoyé à {email}",
+    "password": "Mot de passe"
+  }
 }
