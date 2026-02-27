@@ -171,7 +171,7 @@ onMounted(() => {
         @paste="signIn"
       />
       <div v-if="options.hasTOTP">
-        <label for="totp">{{ $t('totp') }}</label>
+        <label for="totp">{{ $t('authenticatorCode') }}</label>
         <input
           id="totp"
           v-model.trim="totp"

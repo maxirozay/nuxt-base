@@ -1,8 +1,10 @@
 {
+  "2fa": "Two-Factor Authentication",
+  "authenticatorApp": "Authenticator App",
   "code": "Code",
   "codeInvalid": "Code invalid",
   "password": "Password",
+  "passwordPolicy": "at least 12 characters",
   "settings": "Settings",
-  "totp": "TOTP",
-  "totpSecret": "Scan this QR code with your TOTP app or copy the code manually."
+  "totpSecret": "Scan this QR code with your authenticator app or copy the code manually."
 }

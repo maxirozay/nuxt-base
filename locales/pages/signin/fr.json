@@ -1,9 +1,9 @@
 {
+  "authenticatorCode": "Code de l'application d'authentification",
   "email": "Email",
   "getCode": "Demander le code",
   "next": "Suivant",
   "otpSent": "Code envoyé à {{ email }}",
   "password": "Mot de passe ou code",
-  "signin": "Se connecter",
-  "totp": "TOTP"
+  "signin": "Se connecter"
 }
