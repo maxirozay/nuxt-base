@@ -17,7 +17,7 @@ export const auth = pgTable('auth', {
   password: text(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   totp: text(),
-  role: appRoleEnum('role').notNull().default('user'),
+  role: appRoleEnum().notNull().default('user'),
 })
 
 export const credentials = pgTable(
@@ -46,13 +46,13 @@ export const memberRoleEnum = pgEnum('member_role', ['admin', 'member'])
 export const organizationMembers = pgTable(
   'organization_members',
   {
-    userId: uuid('user_id')
+    userId: uuid()
       .notNull()
       .references(() => auth.id, { onDelete: 'cascade' }),
     organizationId: uuid('organization_id')
       .notNull()
       .references(() => organizations.id, { onDelete: 'cascade' }),
-    role: memberRoleEnum('role').notNull().default('member'),
+    role: memberRoleEnum().notNull().default('member'),
   },
   (table) => [primaryKey({ columns: [table.userId, table.organizationId] })],
 )
