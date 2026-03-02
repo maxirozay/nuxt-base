@@ -43,7 +43,7 @@ export async function listFolder(event: any, path: string) {
   else {
     const relativePath = path.replace(/^\//, '')
     const localPath = join(process.cwd(), 'public', relativePath)
-    const files = await readdir(localPath)
+    const files = await readdir(localPath).catch(() => [])
     const fileStats = await Promise.all(
       files.map(async (name) => {
         const filePath = join(localPath, name)
