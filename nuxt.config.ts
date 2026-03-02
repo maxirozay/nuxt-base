@@ -39,7 +39,6 @@ export default defineNuxtConfig({
     locales: [{ code: 'en' }, { code: 'fr' }],
     defaultLocale: 'en',
     translationDir: 'locales',
-    strategy: 'prefix_and_default',
   },
   auth: {
     webAuthn: true,
