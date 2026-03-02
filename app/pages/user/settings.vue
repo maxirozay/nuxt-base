@@ -214,10 +214,10 @@ onMounted(getAuth)
 
   <h2>{{ $t('2fa') }}</h2>
   <div class="flex-row flex-center g2">
-    <h3 class="m0">Passkeys</h3>
+    <h3 class="my0">Passkeys</h3>
     <button
-      v-if="auth?.credentials.length < 4"
       class="flex mr"
+      :disabled="auth?.credentials.length >= 4"
       @click="registerPasskey"
     >
       <Icon name="uil:plus" />
