@@ -15,7 +15,7 @@ export const auth = pgTable('auth', {
   id: uuid().primaryKey().defaultRandom(),
   email: text().notNull().unique(),
   password: text(),
-  createdAt: timestamp().notNull().defaultNow(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   totp: text(),
   role: appRoleEnum('role').notNull().default('user'),
 })
