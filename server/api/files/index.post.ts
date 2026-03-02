@@ -5,20 +5,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const uploadedFiles = []
-
-  let folder = ''
   const pathPart = body.find((p) => p.name === 'path')
-  if (pathPart) {
-    folder = pathPart.data.toString().trim()
-    // Prevent directory traversal
-    if (folder.includes('..') || folder.startsWith('/')) {
-      throw createError({ status: 400, message: 'Invalid path' })
-    }
-  }
+  const path = pathPart?.data.toString().trim()
 
   for (const file of body) {
     if (file.filename) {
-      const url = await uploadFile(event, file, folder)
+      const url = await uploadFile(event, file, path)
       uploadedFiles.push(url)
     }
   }

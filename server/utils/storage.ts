@@ -7,28 +7,30 @@ import {
   ListObjectsCommand,
 } from '@aws-sdk/client-s3'
 
-export async function uploadFile(event: any, file: any, folder = 'files') {
-  await checkStorageAccess(event, folder)
+export async function uploadFile(event: any, file: any, path = 'files') {
+  await checkStorageAccess(event, path)
   const filename = file.filename
+  path = getSecurePath(path)
 
   let url
   if (useS3()) {
-    const s3Key = getS3Key(join(folder, filename))
+    const s3Key = getS3Key(join(path, filename))
     url = await uploadToS3(s3Key, file.data, file.type || 'application/octet-stream')
   } else {
-    const uploadFolder = join(process.cwd(), 'public', folder)
+    const uploadFolder = join(process.cwd(), 'public', path)
     await mkdir(uploadFolder, { recursive: true })
 
     const savedPath = join(uploadFolder, filename)
     await writeFile(savedPath, file.data)
 
-    url = join('/', folder, filename)
+    url = join('/', path, filename)
   }
   return url
 }
 
 export async function deleteFile(event: any, path: string) {
   await checkStorageAccess(event, path)
+  path = getSecurePath(path)
   if (useS3()) await deleteFromS3(path)
   else {
     const relativePath = path.replace(/^\//, '')
@@ -39,6 +41,7 @@ export async function deleteFile(event: any, path: string) {
 
 export async function listFolder(event: any, path: string) {
   await checkStorageAccess(event, path)
+  path = getSecurePath(path)
   if (useS3()) return listFromS3(path)
   else {
     const relativePath = path.replace(/^\//, '')
@@ -59,6 +62,20 @@ export async function listFolder(event: any, path: string) {
     )
     return fileStats
   }
+}
+
+export function getSecurePath(path: string) {
+  const config = useRuntimeConfig()
+  let normalizedPath = path.replace(/^\//g, '')
+  if (normalizedPath.startsWith(config.storageFolder)) {
+    normalizedPath = join('/', path)
+  } else {
+    normalizedPath = join('/', config.storageFolder, path)
+  }
+  if (normalizedPath.includes('..')) {
+    throw createError({ statusCode: 400, message: 'Invalid path' })
+  }
+  return normalizedPath
 }
 
 async function checkStorageAccess(event: any, path: string) {
