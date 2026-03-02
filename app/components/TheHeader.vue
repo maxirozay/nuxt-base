@@ -21,14 +21,14 @@ watch(
 
 <template>
   <nav class="p2 g2 fg">
-    <i18n-link :to="{ name: 'index' }">{{ config.public.name }}</i18n-link>
+    <I18nLink :to="{ name: 'index' }">{{ config.public.name }}</I18nLink>
     <input
       id="nav-toggle"
       type="checkbox"
     />
     <div class="content ml">
       <template v-if="loggedIn">
-        <i18n-link :to="{ name: 'user-settings' }">{{ $t('settings') }}</i18n-link>
+        <I18nLink :to="{ name: 'user-settings' }">{{ $t('settings') }}</I18nLink>
         <button @click="signout">
           {{ $t('signout') }}
         </button>
