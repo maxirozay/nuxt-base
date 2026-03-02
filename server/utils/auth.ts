@@ -1,4 +1,4 @@
-import { auth } from '~~/server/database/schema'
+import { auth } from '#server/database/schema'
 
 export async function createAuth(user: any) {
   const insertedUsers = await db

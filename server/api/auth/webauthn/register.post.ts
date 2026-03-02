@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { credentials } from '~~/server/database/schema'
+import { credentials } from '#server/database/schema'
 
 export default defineWebAuthnRegisterEventHandler({
   async storeChallenge(event, challenge, attemptId) {

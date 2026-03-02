@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
-import { credentials } from '~~/server/database/schema'
+import { credentials } from '#server/database/schema'
 
 const bodySchema = z.object({
   name: z.string().min(1).max(32),
