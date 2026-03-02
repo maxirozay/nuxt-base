@@ -16,10 +16,14 @@ export default defineEventHandler(async (event) => {
     })
   }
   await verifyOTP(email, otp)
-  const user = await getAuth(email).catch((error: any) => {
-    if (error.message === 'User not found') {
+  const user = await getAuth(email).catch((error) => {
+    const config = useRuntimeConfig()
+    console.log(typeof config.autoSignup, config.autoSignup, error.statusCode)
+
+    if (error.statusCode === 404 && config.autoSignup) {
       return createAuth({ email })
-    } else throw error
+    }
+    throw error
   })
   if (user.totp) {
     throw createError({

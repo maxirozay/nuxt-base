@@ -10,6 +10,7 @@ export default defineNuxtConfig({
       url: 'http://localhost:3000',
       name: '',
     },
+    autoSignup: false,
     db: '',
     smtp: {
       host: '',
