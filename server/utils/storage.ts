@@ -1,5 +1,5 @@
-import { join } from 'path'
-import { mkdir, readdir, unlink, writeFile, stat } from 'fs/promises'
+import { join, dirname } from 'path'
+import { mkdir, readdir, unlink, writeFile, stat, rmdir } from 'fs/promises'
 import {
   S3Client,
   PutObjectCommand,
@@ -36,7 +36,20 @@ export async function deleteFile(event: any, path: string) {
     const relativePath = path.replace(/^\//, '')
     const localPath = join(process.cwd(), 'public', relativePath)
     await unlink(localPath)
+    await deleteEmptyFolder(dirname(localPath))
   }
+}
+
+async function deleteEmptyFolder(directory: string) {
+  try {
+    const config = useRuntimeConfig()
+    if (directory === join(process.cwd(), 'public', config.storageFolder)) return
+    const files = await readdir(directory)
+    if (files.length > 0) return
+
+    await rmdir(directory)
+    await deleteEmptyFolder(dirname(directory))
+  } catch {}
 }
 
 export async function listFolder(event: any, path: string) {
