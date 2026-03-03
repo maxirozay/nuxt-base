@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     db: '',
     smtp: {
       host: '',
-      port: 587,
+      port: 465,
       user: '',
       pass: '',
       from: '',
