@@ -1,4 +1,4 @@
-import { WebAuthnCredential } from '#auth-utils'
+import type { WebAuthnCredential } from '#auth-utils'
 import {
   pgSchema,
   pgTable,
