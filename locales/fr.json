@@ -19,6 +19,7 @@
     "code": "Code",
     "getCode": "Demander le code",
     "otpSent": "Code envoyé à {email}",
-    "password": "Mot de passe"
+    "password": "Mot de passe",
+    "signin": "Se connecter"
   }
 }

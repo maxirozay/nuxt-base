@@ -19,6 +19,7 @@
     "code": "Code",
     "getCode": "Get code",
     "otpSent": "Code sent to {email}",
-    "password": "Password"
+    "password": "Password",
+    "signin": "Sign In"
   }
 }
