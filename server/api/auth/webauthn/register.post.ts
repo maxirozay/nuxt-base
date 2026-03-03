@@ -16,8 +16,8 @@ export default defineWebAuthnRegisterEventHandler({
   },
   async validateUser(userBody, event) {
     const session = await requireUserSession(event)
-    if (session.user?.email && session.user.email !== userBody.userName) {
-      throw createError({ status: 400, message: 'Email not matching curent session' })
+    if (!session.user?.email || session.user.email !== userBody.userName) {
+      throw createError({ status: 400, message: 'Email incorrect' })
     }
 
     return z
@@ -26,17 +26,16 @@ export default defineWebAuthnRegisterEventHandler({
       })
       .parse(userBody)
   },
-  async onSuccess(event, { credential, user }) {
-    const dbUser = await getAuth(user.userName)
+  async onSuccess(event, { credential }) {
+    const session = await requireUserSession(event)
     await db.insert(credentials).values({
       name: new Date().toISOString().substring(0, 10),
-      userId: dbUser.id,
+      userId: session.user.id,
       id: credential.id,
       publicKey: credential.publicKey,
       counter: credential.counter,
       backedUp: credential.backedUp,
       transports: credential.transports as any[],
     })
-    await setSession(event, dbUser)
   },
 })

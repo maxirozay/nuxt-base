@@ -16,7 +16,7 @@ export const authSchema = pgSchema('auth')
 export const appRoleEnum = pgEnum('app_role', ['admin', 'user'])
 export const auth = authSchema.table('users', {
   id: uuid().primaryKey().defaultRandom(),
-  email: text().notNull().unique(),
+  email: text().unique(),
   password: text(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   totp: text(),

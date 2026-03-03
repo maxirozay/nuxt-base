@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const user = await getAuth(email)
+  const user = await getAuth(event, email)
 
   if (otp) await verifyOTP(email, otp)
   else if (password) await verifyPassword(user.password!, password)

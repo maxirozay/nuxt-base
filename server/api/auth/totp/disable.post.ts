@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     })
   }
   const session = await requireUserSession(event)
-  const user = await getAuth(session.user.email)
+  const user = await getAuth(event, session.user.email)
 
   if (await verify({ secret: user.totp!, token })) {
     await db.update(auth).set({ totp: null }).where(eq(auth.id, session.user.id))

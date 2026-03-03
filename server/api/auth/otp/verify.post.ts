@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { OTP } from './get.post'
-import { createAuth } from '#server/utils/auth'
+import { createAuthUser, setAuthUser } from '#server/utils/auth'
 
 const bodySchema = z.object({
   email: z.email(),
@@ -16,11 +16,22 @@ export default defineEventHandler(async (event) => {
     })
   }
   await verifyOTP(email, otp)
-  const user = await getAuth(email).catch((error) => {
+
+  const session = await getUserSession(event)
+  if (session?.user?.isAnonymous) {
+    const user = {
+      id: session.user.id,
+      email,
+    }
+    setAuthUser(user)
+    return await setSession(event, user)
+  }
+
+  const user = await getAuth(event, email).catch(async (error) => {
     const config = useRuntimeConfig()
 
     if (error.statusCode === 404 && config.autoSignup) {
-      return createAuth({ email })
+      return createAuthUser({ email })
     }
     throw error
   })

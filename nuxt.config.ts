@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     public: {
       url: 'http://localhost:3000',
       name: '',
+      anonymousSignup: false,
     },
     autoSignup: false,
     db: '',

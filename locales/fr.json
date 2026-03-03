@@ -17,6 +17,7 @@
   "authCheck": {
     "authenticatorCode": "Code de l'application d'authentification",
     "code": "Code",
+    "continueAsGuest": "Continuer en tant qu'invité",
     "getCode": "Demander le code",
     "otpSent": "Code envoyé à {email}",
     "password": "Mot de passe",

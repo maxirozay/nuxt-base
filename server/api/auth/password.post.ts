@@ -9,7 +9,7 @@ const bodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const { email, password } = await readValidatedBody(event, bodySchema.parse)
 
-  const user = await getAuth(email)
+  const user = await getAuth(event, email)
 
   if (user.password && (await verifyPassword(user.password, password))) {
     if (user.totp) {

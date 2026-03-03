@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const { email } = await readValidatedBody(event, bodySchema.parse)
 
   try {
-    const user = await getAuth(email, true)
+    const user = await getAuth(event, email, true)
     return {
       hasOTP: true,
       hasPassword: !!user.password,

@@ -33,7 +33,8 @@ const { register } = useWebAuthn({
 
 async function registerPasskey() {
   try {
-    await register({ userName: user.value!.email })
+    if (!checkAuthConfirmation()) return
+    await register({ userName: user.value!.email! })
     getAuth()
     appStore.notify('saved', 'success')
   } catch (e: any) {
@@ -89,6 +90,7 @@ function toggleTOTP() {
 
 async function showTOTPSecret() {
   try {
+    if (!checkAuthConfirmation()) return
     const response = await $fetch<{ secret: string }>('/api/auth/totp/generate')
     TOTPSecret.value = response.secret
     await nextTick()
@@ -96,7 +98,7 @@ async function showTOTPSecret() {
 
     const config = useRuntimeConfig()
     const issuer = config.public.name
-    const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(user.value!.email)}?secret=${TOTPSecret.value}&issuer=${encodeURIComponent(issuer)}`
+    const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(user.value!.email!)}?secret=${TOTPSecret.value}&issuer=${encodeURIComponent(issuer)}`
     QRCode.toCanvas(canvas, uri)
   } catch (e: any) {
     appStore.notify(e.data?.message, 'error')
@@ -308,6 +310,6 @@ onMounted(getAuth)
   <LazyAuthCheck
     v-if="showAuthConfirmation && !authConfirmed"
     @authenticated="authConfirmed = true"
-    @cancel="showAuthConfirmation = false"
+    @cancel="((showAuthConfirmation = false), (showTOTP = false), (showPasswordChange = false))"
   />
 </template>

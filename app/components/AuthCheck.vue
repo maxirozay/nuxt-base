@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const emits = defineEmits(['authenticated', 'cancel'])
 const appStore = useAppStore()
-const session = useUserSession()
+const { loggedIn, user, fetch: fetchUserSession } = useUserSession()
+const config = useRuntimeConfig()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
@@ -10,14 +11,14 @@ const totp = ref('')
 const route = useRoute()
 const optionsFetched = ref(false)
 const options = ref({
-  hasOTP: false,
+  hasOTP: true,
   hasPassword: false,
   hasTOTP: false,
   hasPasskey: false,
 })
 
 async function refreshSession() {
-  await session.fetch()
+  await fetchUserSession()
   emits('authenticated')
 }
 
@@ -120,6 +121,20 @@ async function signInWithPasskey() {
   }
 }
 
+async function signInAnonymously() {
+  appStore.setLoading(true)
+  try {
+    await $fetch('/api/auth/anonymous', {
+      method: 'POST',
+    })
+    await refreshSession()
+  } catch (e: any) {
+    handleError(e)
+  } finally {
+    appStore.setLoading(false)
+  }
+}
+
 async function getSignInOptions(email: string) {
   appStore.setLoading(true)
   try {
@@ -139,8 +154,8 @@ async function getSignInOptions(email: string) {
 }
 
 onMounted(() => {
-  if (session.user.value) {
-    email.value = session.user.value.email
+  if (user.value?.email) {
+    email.value = user.value.email
     getSignInOptions(email.value)
   } else if (route.query.email && route.query.token) {
     email.value = route.query.email as string
@@ -167,9 +182,11 @@ onMounted(() => {
           :value="email"
           autocomplete="username email"
         />
-        <label for="password">{{
-          options.hasPassword && !otpRequested ? $t('authCheck.password') : $t('authCheck.code')
-        }}</label>
+        <label for="password">
+          {{
+            options.hasPassword && !otpRequested ? $t('authCheck.password') : $t('authCheck.code')
+          }}
+        </label>
         <input
           id="password"
           v-model.trim="password"
@@ -226,6 +243,15 @@ onMounted(() => {
         />
         <button class="w">{{ $t('next') }}</button>
       </form>
+      <button
+        v-if="!loggedIn && config.public.anonymousSignup"
+        type="button"
+        class="mt2 w bg bg-border"
+        :disabled="loading"
+        @click="signInAnonymously"
+      >
+        {{ $t('authCheck.continueAsGuest') }}
+      </button>
     </div>
   </div>
 </template>

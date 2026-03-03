@@ -15,8 +15,8 @@ export default defineWebAuthnAuthenticateEventHandler({
     return challenge as string
   },
   async allowCredentials(event, userName) {
-    const user = await getAuth(userName, true)
-    return user.credentials as any[]
+    const user = await getAuth(event, userName, true)
+    return (user as any).credentials || []
   },
   async getCredential(event, credentialId) {
     const credential = await db.query.credentials.findFirst({

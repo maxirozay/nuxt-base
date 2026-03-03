@@ -17,6 +17,7 @@
   "authCheck": {
     "authenticatorCode": "Authenticator code",
     "code": "Code",
+    "continueAsGuest": "Continue as Guest",
     "getCode": "Get code",
     "otpSent": "Code sent to {email}",
     "password": "Password",
