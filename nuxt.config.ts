@@ -3,7 +3,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/signin': { ssr: false },
     '/user/**': { appMiddleware: 'authenticated', ssr: false },
-    '/api/**': { cors: true },
   },
   runtimeConfig: {
     public: {
