@@ -1,5 +1,6 @@
 import { WebAuthnCredential } from '#auth-utils'
 import {
+  pgSchema,
   pgTable,
   text,
   integer,
@@ -10,8 +11,10 @@ import {
   pgEnum,
 } from 'drizzle-orm/pg-core'
 
+export const authSchema = pgSchema('auth')
+
 export const appRoleEnum = pgEnum('app_role', ['admin', 'user'])
-export const auth = pgTable('auth', {
+export const auth = authSchema.table('users', {
   id: uuid().primaryKey().defaultRandom(),
   email: text().notNull().unique(),
   password: text(),
@@ -20,7 +23,7 @@ export const auth = pgTable('auth', {
   role: appRoleEnum().notNull().default('user'),
 })
 
-export const credentials = pgTable(
+export const credentials = authSchema.table(
   'credentials',
   {
     userId: uuid()
