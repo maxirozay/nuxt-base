@@ -1,5 +1,4 @@
 import { auth } from '#server/database/schema'
-import { setSession } from '#server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()

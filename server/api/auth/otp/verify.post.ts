@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { OTP } from './get.post'
-import { createAuthUser, setAuthUser } from '#server/utils/auth'
 
 const bodySchema = z.object({
   email: z.email(),

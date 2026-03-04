@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { getAuth } from '#server/utils/auth'
 
 const bodySchema = z.object({
   email: z.email(),
