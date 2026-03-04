@@ -16,3 +16,7 @@ Run `./scripts/deploy.sh` to deploy the website.
 Setup nginx.
 
 push your migration with `./scripts/db/push.sh`.
+
+## Nuxt layer
+
+Add `extends: ['github:maxirozay/nuxt-base#noDB']` in your nuxt config to use it as a layer.
