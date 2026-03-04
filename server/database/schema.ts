@@ -39,6 +39,18 @@ export const credentials = authSchema.table(
   (table) => [primaryKey({ columns: [table.userId, table.id] })],
 )
 
+export const logs = authSchema.table('logs', {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid().references(() => auth.id, { onDelete: 'cascade' }),
+  type: text().notNull().default('info'),
+  path: text().notNull(),
+  method: text().notNull(),
+  timestamp: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  ipAddress: text(),
+  userAgent: text(),
+  info: text(),
+})
+
 export const organizations = pgTable('organizations', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),

@@ -14,4 +14,10 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.auth.id,
     }),
   },
+  logs: {
+    auth: r.one.auth({
+      from: r.logs.userId,
+      to: r.auth.id,
+    }),
+  },
 }))

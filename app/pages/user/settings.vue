@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import QRCode from 'qrcode'
 
+definePageMeta({
+  middleware: ['authenticated'],
+})
+
 const appStore = useAppStore()
 const { user } = useUserSession()
 const auth = ref()

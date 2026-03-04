@@ -7,10 +7,23 @@ definePageMeta({
 })
 const { user } = useUserSession()
 const path = ref('u/' + user.value!.id)
+const appStore = useAppStore()
+
+async function sendLog() {
+  await $fetch('/api/log', {
+    method: 'POST',
+    body: {
+      info: 'Test log',
+      type: 'error',
+    },
+  })
+  appStore.notify('Test log sent to server')
+}
 </script>
 
 <template>
   <div class="portrait">
+    <button @click="sendLog">Send test log</button>
     <h2>File Management</h2>
     <label for="path">Path</label>
     <div class="flex-row group">

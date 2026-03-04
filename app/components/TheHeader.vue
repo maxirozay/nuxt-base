@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { loggedIn, clear: clearSession } = useUserSession()
+const { loggedIn, user, clear: clearSession } = useUserSession()
 
 const config = useRuntimeConfig()
 
@@ -29,6 +29,12 @@ watch(
     <div class="content ml">
       <template v-if="loggedIn">
         <I18nLink :to="{ name: 'user-settings' }">{{ $t('settings') }}</I18nLink>
+        <I18nLink
+          v-if="user?.role === 'admin'"
+          :to="{ name: 'admin-logs' }"
+        >
+          Logs
+        </I18nLink>
         <button @click="signout">
           {{ $t('signout') }}
         </button>
