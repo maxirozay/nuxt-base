@@ -6,6 +6,10 @@ useSeoMeta({
   description: $t('authCheck.signin') as string,
   ogDescription: $t('authCheck.signin') as string,
 })
+
+definePageMeta({
+  layout: 'simple',
+})
 </script>
 
 <template>
