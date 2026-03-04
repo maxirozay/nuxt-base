@@ -1,6 +1,4 @@
 <script setup>
-import { useI18n } from '#imports'
-
 const { $getLocales, $switchLocale, getLocale } = useI18n()
 </script>
 

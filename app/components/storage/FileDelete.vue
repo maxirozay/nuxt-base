@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useAppStore } from '~/stores/app'
-
 const appStore = useAppStore()
 const emits = defineEmits(['deleted'])
 const props = defineProps({
