@@ -4,6 +4,7 @@ export async function sendEmail(
   to: string,
   subject: string,
   html: string,
+  locale: string = 'en',
   attachments?: any[],
   bcc?: string,
 ) {
@@ -19,6 +20,7 @@ export async function sendEmail(
     },
   })
   const appName = useRuntimeConfig().public.name
+  const base = (await useStorage('assets:server').getItem(`emails/${locale}/base.html`)) as string
   const mail = await transporter.sendMail({
     from: config.smtp.from,
     to,
@@ -54,19 +56,8 @@ export async function sendEmailTemplate(
     to,
     subject.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
     html.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
+    locale,
     attachments,
     bcc,
   )
 }
-
-const base = `<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  </head>
-  <body>
-    {{content}}
-  </body>
-</html>
-`
