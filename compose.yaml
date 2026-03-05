@@ -22,7 +22,7 @@ services:
       NUXT_AUTO_SIGNUP: ${NUXT_AUTO_SIGNUP}
       NUXT_STORAGE_FOLDER: ${NUXT_STORAGE_FOLDER}
     ports:
-      - 3000:3000
+      - ${SERVER_PORT:-3000}:3000
     networks:
       - shared-network
 
