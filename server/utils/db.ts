@@ -1,4 +1,3 @@
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { relations } from '../database/relations'
+import { db } from '~~/server/database/db'
 
-export const db = drizzle(useRuntimeConfig().db, { relations, casing: 'snake_case' })
+export { db }
