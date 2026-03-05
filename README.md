@@ -19,4 +19,49 @@ push your migration with `./scripts/db/push.sh`.
 
 ## Nuxt layer
 
-Add `extends: ['github:maxirozay/nuxt-base#noDB']` in your nuxt config to use it as a layer.
+Add `extends: ['github:maxirozay/nuxt-base']` in your nuxt config to use it as a layer.
+
+### Customise DB
+
+In your project's `server/database` folder you can edit the 3 follwing files to change the DB.
+
+`schema.ts`
+
+```
+import { pgTable, text, bigint, timestamp, uuid, boolean, date } from 'drizzle-orm/pg-core'
+
+import { auth, credentials, logs, organizations } from '#layers/nuxt-base/server/database/schema'
+
+export { auth, credentials, logs, organizations }
+```
+
+`relations.ts`
+
+```
+import * as schema from './schema'
+import { defineRelationsPart } from 'drizzle-orm'
+
+import { relations as authRelations } from '#layers/nuxt-base/server/database/relations'
+
+export const relations = {
+  ...authRelations,
+  ...defineRelationsPart(schema, (r) => ({
+    add more relations
+  })),
+}
+```
+
+`db.ts`
+
+```
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { relations } from './relations'
+import type { TablesRelationalConfig } from 'drizzle-orm'
+
+const config = useRuntimeConfig().db
+
+export const db = drizzle(config, {
+  relations: relations as TablesRelationalConfig,
+  casing: 'snake_case',
+})
+```
