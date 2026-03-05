@@ -3,6 +3,7 @@ import crypto from 'crypto'
 
 const bodySchema = z.object({
   email: z.email(),
+  locale: z.string().optional(),
 })
 
 export interface OTP {
@@ -13,7 +14,7 @@ export interface OTP {
 }
 
 export default defineEventHandler(async (event) => {
-  const { email } = await readValidatedBody(event, bodySchema.parse)
+  const { email, locale = 'en' } = await readValidatedBody(event, bodySchema.parse)
   if (!email || typeof email !== 'string') {
     throw createError({
       status: 400,
@@ -38,7 +39,7 @@ export default defineEventHandler(async (event) => {
 
   return sendEmailTemplate(
     'otp',
-    'en',
+    locale,
     {
       otp,
       magicLink: `${useRuntimeConfig().public.url}/signin?email=${encodeURIComponent(email)}&token=${token}`,
