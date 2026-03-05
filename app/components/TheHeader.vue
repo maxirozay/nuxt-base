@@ -28,7 +28,7 @@ watch(
     />
     <div class="content ml">
       <template v-if="loggedIn">
-        <I18nLink :to="{ name: 'user-settings' }">{{ $t('settings') }}</I18nLink>
+        <I18nLink :to="{ name: 'user-auth' }">{{ $t('settings') }}</I18nLink>
         <I18nLink
           v-if="user?.role === 'admin'"
           :to="{ name: 'admin-logs' }"
