@@ -15,7 +15,7 @@ Use the addDB script to create a new DB (`./addDB.sh {db-name} {username} {passw
 
 Create a folder for your project where you will deploy the website and add your env file with the production values.
 
-Setup nginx serve your app.
+Setup nginx serve your app. If use use your server to store files you should setup nginx to serve the public folder.
 
 ### On your local machine
 

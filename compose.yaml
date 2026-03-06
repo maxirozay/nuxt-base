@@ -20,10 +20,11 @@ services:
       NUXT_PUBLIC_NAME: ${NUXT_PUBLIC_NAME}
       NUXT_PUBLIC_URL: ${NUXT_PUBLIC_URL}
       NUXT_AUTO_SIGNUP: ${NUXT_AUTO_SIGNUP}
-      NUXT_FILES_FOLDER: ${NUXT_FILES_FOLDER}
+      NUXT_FILES_PUBLIC_FOLDER: ${NUXT_FILES_PUBLIC_FOLDER}
+      NUXT_FILES_PRIVATE_FOLDER: ${NUXT_FILES_PRIVATE_FOLDER}
     volumes:
-      # Persist uploaded files in dedicated storage directory
-      - ./volumes/files:/app/${NUXT_FILES_FOLDER:-files}
+      - ./volumes/files/public:/app/${NUXT_FILES_PUBLIC_FOLDER:-files}
+      - ./volumes/files/private:/app/${NUXT_FILES_PRIVATE_FOLDER:-files}
     ports:
       - ${SERVER_PORT:-3000}:3000
     networks:
