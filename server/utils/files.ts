@@ -45,7 +45,8 @@ export function getFileURL(path: string, isPrivate = true) {
   return path
 }
 
-export async function getFileStream(event: any, path: string) {
+export async function getFile(event: any, path: string) {
+  if (useS3()) return getS3SignedUrl(getS3Key(path))
   const config = useRuntimeConfig()
   const isPrivate = path.startsWith(config.filesPrivateFolder)
   await checkFileAccess(
@@ -118,7 +119,6 @@ export function getSecurePath(path: string, isPrivate = true) {
   const config = useRuntimeConfig()
   const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
   let normalizedPath = path.replace(/^\//g, '')
-  console.log(normalizedPath, root)
 
   if (normalizedPath.startsWith(root)) {
     normalizedPath = join('/', path)
