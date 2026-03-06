@@ -6,6 +6,7 @@ import {
   DeleteObjectCommand,
   ListObjectsCommand,
 } from '@aws-sdk/client-s3'
+import { checkStorageAccess } from '~~/server/database/access'
 
 export async function uploadFile(event: any, file: any, path = 'files') {
   await checkStorageAccess(event, path)
@@ -89,29 +90,6 @@ export function getSecurePath(path: string) {
     throw createError({ statusCode: 400, message: 'Invalid path' })
   }
   return normalizedPath
-}
-
-async function checkStorageAccess(event: any, path: string) {
-  const user = event.context.user
-  if (!user) throw createError({ statusCode: 401, message: 'Unauthorized' })
-
-  const root = `u/${user.id}`
-  if (path.startsWith(root) && (root[root.length] === '/' || path.length === root.length)) {
-    return true
-  }
-
-  if (path.startsWith('o/')) {
-    const orgId = path.substring(2).replace(/\/.*/, '')
-    const membership = await db.query.organizationMembers.findFirst({
-      where: {
-        userId: user.id,
-        organizationId: orgId,
-      },
-    })
-    if (membership?.role === 'admin') return true
-  } else if (user.role === 'admin') return true
-
-  throw createError({ statusCode: 403, message: 'Insufficient permissions' })
 }
 
 // S3
