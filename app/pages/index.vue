@@ -16,6 +16,16 @@ async function sendLog() {
   })
   appStore.notify('Test log sent to server')
 }
+
+const files = ref([] as any[])
+async function listFiles() {
+  files.value = await $fetch('/api/files', {
+    query: {
+      path: path.value,
+      isPrivate: true,
+    },
+  })
+}
 </script>
 
 <template>
@@ -28,22 +38,42 @@ async function sendLog() {
         type="text"
         id="path"
         v-model="path"
+        class="flex-4"
       />
       <label
         for="upload"
-        class="label__file primary flex-row g2"
+        class="flex-1 label__file primary flex-row g2 flex-center"
       >
         {{ $t('upload') }}<Icon name="uil:upload" />
         <FilesUpload
           id="upload"
           :path="path"
+          :isPrivate="true"
           @uploaded="(response) => console.log('File uploaded', response)"
         />
       </label>
       <FilesDelete
+        class="flex-1 bg flex-center"
         :path="path"
-        class="bg"
+        :isPrivate="true"
       />
+      <button
+        class="flex-1"
+        @click="listFiles"
+      >
+        List files
+      </button>
+    </div>
+    <div
+      v-for="file in files"
+      :key="file.name"
+    >
+      <a
+        :href="file.url"
+        target="_blank"
+      >
+        {{ file.name }}
+      </a>
     </div>
   </div>
 </template>

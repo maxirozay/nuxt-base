@@ -2,7 +2,7 @@ export async function checkFileAccess(event: any, path: string) {
   const { user } = await getUserSession(event)
   if (!user) throw createError({ statusCode: 401, message: 'Unauthorized' })
   const root = `u/${user.id}`
-  if (path.startsWith(root) && (root[root.length] === '/' || path.length === root.length)) {
+  if (path.startsWith(root) && (path[root.length] === '/' || path.length === root.length)) {
     return true
   }
 

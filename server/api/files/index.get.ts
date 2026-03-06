@@ -5,10 +5,11 @@ const querySchema = z.object({
     .string()
     .min(1)
     .refine((p) => !p.includes('.')),
+  isPrivate: z.string().transform((val) => val === 'true'),
 })
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const { path } = querySchema.parse(query)
-  return listFolder(event, path)
+  const { path, isPrivate } = querySchema.parse(query)
+  return listFolder(event, path, isPrivate)
 })

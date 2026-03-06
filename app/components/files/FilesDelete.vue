@@ -3,6 +3,10 @@ const appStore = useAppStore()
 const emits = defineEmits(['deleted'])
 const props = defineProps({
   path: String,
+  isPrivate: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 async function deleteFile() {
@@ -11,7 +15,7 @@ async function deleteFile() {
   try {
     await $fetch('/api/files', {
       method: 'DELETE',
-      body: { path: props.path },
+      body: { path: props.path, isPrivate: props.isPrivate },
     })
     appStore.notify('deleted', 'success')
     emits('deleted')

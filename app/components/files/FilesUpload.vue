@@ -3,6 +3,10 @@ const appStore = useAppStore()
 const emits = defineEmits(['uploaded'])
 const props = defineProps({
   path: String,
+  isPrivate: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 async function uploadFile(event: Event) {
@@ -13,6 +17,7 @@ async function uploadFile(event: Event) {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('path', props.path)
+  formData.append('isPrivate', String(props.isPrivate))
 
   try {
     const response = await $fetch('/api/files', {
