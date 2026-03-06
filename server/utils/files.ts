@@ -191,6 +191,32 @@ async function uploadToS3(
   return getS3URL(key)
 }
 
+export async function getUploadPresignedUrl(
+  event: any,
+  path: string,
+  filename: string,
+  contentType: string,
+  isPrivate = true,
+) {
+  await checkFileAccess(event, path)
+
+  const client = useS3()
+  if (!client) {
+    throw createError({ statusCode: 500, message: 'S3 not configured' })
+  }
+
+  const config = useRuntimeConfig()
+  const key = join(getSecurePath(path, isPrivate), filename)
+
+  const command = new PutObjectCommand({
+    Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
+    Key: key,
+    ContentType: contentType,
+  })
+
+  return getSignedUrl(client, command, { expiresIn: 3600 })
+}
+
 async function deleteFromS3(path: string, isPrivate = true) {
   const client = useS3()
   if (!client) return
