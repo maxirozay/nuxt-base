@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import FileDelete from '~/components/storage/FileDelete.vue'
-import FileUpload from '~/components/storage/FileUpload.vue'
-
 definePageMeta({
   middleware: ['authenticated'],
 })
@@ -37,13 +34,13 @@ async function sendLog() {
         class="label__file primary flex-row g2"
       >
         {{ $t('upload') }}<Icon name="uil:upload" />
-        <FileUpload
+        <FilesUpload
           id="upload"
           :path="path"
           @uploaded="(response) => console.log('File uploaded', response)"
         />
       </label>
-      <FileDelete
+      <FilesDelete
         :path="path"
         class="bg"
       />
