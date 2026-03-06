@@ -6,8 +6,7 @@ export $(grep -v '^#' .env | xargs)
 NAME=$PROJECT_NAME
 SERVER_URL=$SERVER_URL
 SSH_KEY="~/.ssh/$SSH_KEY_NAME"
-REMOTE_PATH="~/$NAME"
-
+REMOTE_PATH=$REMOTE_PATH
 IMAGE_NAME="$NAME:$TAG"
 
 docker build --platform linux/amd64 -t $IMAGE_NAME .
