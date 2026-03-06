@@ -19,7 +19,7 @@ Setup nginx serve your app and your public files folder or s3 public url.
 
 ### On your local machine
 
-Run `./scripts/deploy.sh` to deploy the website.
+Run `./scripts/deploy.sh` to deploy the website. To deploy other env file just do `./scripts/deploy.sh {name}` and it will deploy .env.{name}.
 
 Push your migration with `./scripts/db/push.sh`.
 
