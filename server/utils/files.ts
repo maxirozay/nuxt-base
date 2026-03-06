@@ -9,11 +9,12 @@ import {
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { checkFileAccess } from '~~/server/database/access'
+import { createReadStream } from 'fs'
 
 export async function uploadFile(event: any, file: any, path = 'files', isPrivate = true) {
   await checkFileAccess(event, path)
   const filename = file.filename
-  path = getSecurePath(path)
+  path = getSecurePath(path, isPrivate)
 
   let url
   if (useS3()) {
@@ -32,37 +33,66 @@ export async function uploadFile(event: any, file: any, path = 'files', isPrivat
     const savedPath = join(uploadFolder, filename)
     await writeFile(savedPath, file.data)
 
-    url = join('/', path, filename)
+    url = getFileURL(join('/', path, filename), isPrivate)
   }
   return url
 }
 
+export function getFileURL(path: string, isPrivate = true) {
+  if (isPrivate) {
+    return join('/', 'api/files', path)
+  }
+  return path
+}
+
+export async function getFileStream(event: any, path: string) {
+  const config = useRuntimeConfig()
+  const isPrivate = path.startsWith(config.filesPrivateFolder)
+  await checkFileAccess(
+    event,
+    path.substring(
+      (isPrivate ? config.filesPrivateFolder.length : config.filesPublicFolder.length) + 1,
+    ),
+  )
+  const filePath = getSecurePath(path, isPrivate)
+
+  const fullPath = join(process.cwd(), filePath)
+
+  const stats = await stat(fullPath)
+  if (!stats.isFile()) {
+    throw createError({ statusCode: 404, message: 'File not found' })
+  }
+
+  return createReadStream(fullPath)
+}
+
 export async function deleteFile(event: any, path: string, isPrivate = true) {
   await checkFileAccess(event, path)
-  path = getSecurePath(path)
+  path = getSecurePath(path, isPrivate)
   if (useS3()) await deleteFromS3(path, isPrivate)
   else {
     const localPath = join(process.cwd(), path)
     await unlink(localPath)
-    await deleteEmptyFolder(dirname(localPath))
+    const config = useRuntimeConfig()
+    const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
+    await deleteEmptyFolder(dirname(localPath), root)
   }
 }
 
-async function deleteEmptyFolder(directory: string) {
+async function deleteEmptyFolder(directory: string, root: string) {
   try {
-    const config = useRuntimeConfig()
-    if (directory === join(process.cwd(), config.filesFolder)) return
+    if (directory === join(process.cwd(), root)) return
     const files = await readdir(directory)
     if (files.length > 0) return
 
     await rmdir(directory)
-    await deleteEmptyFolder(dirname(directory))
+    await deleteEmptyFolder(dirname(directory), root)
   } catch {}
 }
 
 export async function listFolder(event: any, path: string, isPrivate = true) {
   await checkFileAccess(event, path)
-  path = getSecurePath(path)
+  path = getSecurePath(path, isPrivate)
   if (useS3()) return listFromS3(path, isPrivate)
   else {
     const localPath = join(process.cwd(), path)
@@ -76,7 +106,7 @@ export async function listFolder(event: any, path: string, isPrivate = true) {
           isFolder: stats.isDirectory(),
           size: stats.size,
           updatedAt: stats.mtime,
-          url: join('/', path, name),
+          url: getFileURL(join('/', path, name), isPrivate),
         }
       }),
     )
@@ -84,13 +114,16 @@ export async function listFolder(event: any, path: string, isPrivate = true) {
   }
 }
 
-export function getSecurePath(path: string) {
+export function getSecurePath(path: string, isPrivate = true) {
   const config = useRuntimeConfig()
+  const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
   let normalizedPath = path.replace(/^\//g, '')
-  if (normalizedPath.startsWith(config.filesFolder)) {
+  console.log(normalizedPath, root)
+
+  if (normalizedPath.startsWith(root)) {
     normalizedPath = join('/', path)
   } else {
-    normalizedPath = join('/', config.filesFolder, path)
+    normalizedPath = join('/', root, path)
   }
   if (normalizedPath.includes('..')) {
     throw createError({ statusCode: 400, message: 'Invalid path' })
