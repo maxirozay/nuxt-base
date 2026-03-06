@@ -6,10 +6,10 @@ import {
   DeleteObjectCommand,
   ListObjectsCommand,
 } from '@aws-sdk/client-s3'
-import { checkStorageAccess } from '~~/server/database/access'
+import { checkFileAccess } from '~~/server/database/access'
 
 export async function uploadFile(event: any, file: any, path = 'files') {
-  await checkStorageAccess(event, path)
+  await checkFileAccess(event, path)
   const filename = file.filename
   path = getSecurePath(path)
 
@@ -30,7 +30,7 @@ export async function uploadFile(event: any, file: any, path = 'files') {
 }
 
 export async function deleteFile(event: any, path: string) {
-  await checkStorageAccess(event, path)
+  await checkFileAccess(event, path)
   path = getSecurePath(path)
   if (useS3()) await deleteFromS3(path)
   else {
@@ -44,7 +44,7 @@ export async function deleteFile(event: any, path: string) {
 async function deleteEmptyFolder(directory: string) {
   try {
     const config = useRuntimeConfig()
-    if (directory === join(process.cwd(), 'public', config.storageFolder)) return
+    if (directory === join(process.cwd(), 'public', config.filesFolder)) return
     const files = await readdir(directory)
     if (files.length > 0) return
 
@@ -54,7 +54,7 @@ async function deleteEmptyFolder(directory: string) {
 }
 
 export async function listFolder(event: any, path: string) {
-  await checkStorageAccess(event, path)
+  await checkFileAccess(event, path)
   path = getSecurePath(path)
   if (useS3()) return listFromS3(path)
   else {
@@ -81,10 +81,10 @@ export async function listFolder(event: any, path: string) {
 export function getSecurePath(path: string) {
   const config = useRuntimeConfig()
   let normalizedPath = path.replace(/^\//g, '')
-  if (normalizedPath.startsWith(config.storageFolder)) {
+  if (normalizedPath.startsWith(config.filesFolder)) {
     normalizedPath = join('/', path)
   } else {
-    normalizedPath = join('/', config.storageFolder, path)
+    normalizedPath = join('/', config.filesFolder, path)
   }
   if (normalizedPath.includes('..')) {
     throw createError({ statusCode: 400, message: 'Invalid path' })

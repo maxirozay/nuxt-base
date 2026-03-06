@@ -1,4 +1,4 @@
-export async function checkStorageAccess(event: any, path: string) {
+export async function checkFileAccess(event: any, path: string) {
   const { user } = await getUserSession(event)
   if (!user) throw createError({ statusCode: 401, message: 'Unauthorized' })
   const root = `u/${user.id}`

@@ -20,9 +20,9 @@ services:
       NUXT_PUBLIC_NAME: ${NUXT_PUBLIC_NAME}
       NUXT_PUBLIC_URL: ${NUXT_PUBLIC_URL}
       NUXT_AUTO_SIGNUP: ${NUXT_AUTO_SIGNUP}
-      NUXT_STORAGE_FOLDER: ${NUXT_STORAGE_FOLDER}
+      NUXT_FILES_FOLDER: ${NUXT_FILES_FOLDER}
     volumes:
-      - ./volumes/files:/app/.output/public/${NUXT_STORAGE_FOLDER:-files}
+      - ./volumes/files:/app/.output/public/${NUXT_FILES_FOLDER:-files}
     ports:
       - ${SERVER_PORT:-3000}:3000
     networks:
