@@ -20,7 +20,7 @@ export default defineNuxtConfig({
       pass: '',
       from: '',
     },
-    filesFolder: 'files',
+    filesFolder: 'public/files',
     s3: {
       endpoint: '',
       region: 'us-east-1',

@@ -22,7 +22,8 @@ services:
       NUXT_AUTO_SIGNUP: ${NUXT_AUTO_SIGNUP}
       NUXT_FILES_FOLDER: ${NUXT_FILES_FOLDER}
     volumes:
-      - ./volumes/files:/app/.output/public/${NUXT_FILES_FOLDER:-files}
+      # Persist uploaded files in dedicated storage directory
+      - ./volumes/files:/app/${NUXT_FILES_FOLDER:-files}
     ports:
       - ${SERVER_PORT:-3000}:3000
     networks:

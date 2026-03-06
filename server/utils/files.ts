@@ -18,7 +18,7 @@ export async function uploadFile(event: any, file: any, path = 'files') {
     const s3Key = getS3Key(join(path, filename))
     url = await uploadToS3(s3Key, file.data, file.type || 'application/octet-stream')
   } else {
-    const uploadFolder = join(process.cwd(), 'public', path)
+    const uploadFolder = join(process.cwd(), path)
     await mkdir(uploadFolder, { recursive: true })
 
     const savedPath = join(uploadFolder, filename)
@@ -35,7 +35,7 @@ export async function deleteFile(event: any, path: string) {
   if (useS3()) await deleteFromS3(path)
   else {
     const relativePath = path.replace(/^\//, '')
-    const localPath = join(process.cwd(), 'public', relativePath)
+    const localPath = join(process.cwd(), relativePath)
     await unlink(localPath)
     await deleteEmptyFolder(dirname(localPath))
   }
@@ -44,7 +44,7 @@ export async function deleteFile(event: any, path: string) {
 async function deleteEmptyFolder(directory: string) {
   try {
     const config = useRuntimeConfig()
-    if (directory === join(process.cwd(), 'public', config.filesFolder)) return
+    if (directory === join(process.cwd(), config.filesFolder)) return
     const files = await readdir(directory)
     if (files.length > 0) return
 
@@ -59,7 +59,7 @@ export async function listFolder(event: any, path: string) {
   if (useS3()) return listFromS3(path)
   else {
     const relativePath = path.replace(/^\//, '')
-    const localPath = join(process.cwd(), 'public', relativePath)
+    const localPath = join(process.cwd(), relativePath)
     const files = await readdir(localPath).catch(() => [])
     const fileStats = await Promise.all(
       files.map(async (name) => {
