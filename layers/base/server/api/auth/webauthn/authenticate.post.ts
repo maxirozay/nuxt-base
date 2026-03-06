@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm'
-import { auth } from '#server/database/schema'
+import { auth } from '~~/server/database/schema'
 
 export default defineWebAuthnAuthenticateEventHandler({
   async storeChallenge(event, challenge, attemptId) {

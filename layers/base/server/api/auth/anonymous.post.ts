@@ -1,4 +1,4 @@
-import { auth } from '#server/database/schema'
+import { auth } from '~~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()

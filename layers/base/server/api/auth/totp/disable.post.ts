@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { verify } from 'otplib'
 import { eq } from 'drizzle-orm/sql/expressions/conditions'
-import { auth } from '#server/database/schema'
+import { auth } from '~~/server/database/schema'
 
 const bodySchema = z.object({
   token: z.string().length(6),
