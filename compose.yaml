@@ -22,7 +22,7 @@ services:
       NUXT_AUTO_SIGNUP: ${NUXT_AUTO_SIGNUP}
       NUXT_STORAGE_FOLDER: ${NUXT_STORAGE_FOLDER}
     volumes:
-      - ./files:/app/.output/public/${NUXT_STORAGE_FOLDER:-files}
+      - ./volumes/files:/app/.output/public/${NUXT_STORAGE_FOLDER:-files}
     ports:
       - ${SERVER_PORT:-3000}:3000
     networks:
