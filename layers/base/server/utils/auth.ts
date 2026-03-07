@@ -1,4 +1,4 @@
-import { auth } from '#server/database/schema'
+import { auth } from '~~/server/database/schema'
 import { eq } from 'drizzle-orm'
 
 export async function createAuthUser(user: any) {

@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm/sql/expressions/conditions'
 import { z } from 'zod'
-import { auth } from '#server/database/schema'
+import { auth } from '~~/server/database/schema'
 
 const bodySchema = z.object({
   password: z.string().min(12),
