@@ -25,6 +25,4 @@ Push your migration with `./scripts/db/push.sh`.
 
 ## Nuxt layer
 
-Add `extends: ['github:maxirozay/nuxt-base']` to your nuxt config to use this project as a layer.
-
-Copy `server/database` and `server/assets` folders to your project.
+Clone this repo and delete the `layers` folder or copy folders in `app` and `server` into your project. Then add `extends: ['github:maxirozay/nuxt-base']` to your nuxt config to use this project as a layer.
