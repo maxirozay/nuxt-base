@@ -43,7 +43,7 @@ echo "3. Dumping auth schema data from Supabase..."
 npx supabase db dump --db-url "$SUPABASE_URL" -f auth_data.dump --use-copy --data-only --schema auth
 
 echo "4. Transforming auth data for auth.users..."
-node scripts/transform_auth.js auth_data.dump auth_import.sql
+node scripts/db/transform_auth.js auth_data.dump auth_import.sql
 
 echo "5. Applying transformed auth data to auth.users..."
 psql "$POSTGRES_URL" -f auth_import.sql
