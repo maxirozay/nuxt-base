@@ -1,4 +1,4 @@
-import { logs } from '../database/schema'
+import { logs } from '#server/database/schema'
 
 export async function logEvent(event: any, info?: string, type?: string) {
   const session = await getUserSession(event)

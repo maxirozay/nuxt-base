@@ -8,7 +8,7 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { checkFileAccess } from '~~/server/database/access'
+import { checkFileAccess } from '#server/database/access'
 import { createReadStream } from 'fs'
 
 export async function uploadFile(event: any, file: any, path = 'files', isPrivate = true) {

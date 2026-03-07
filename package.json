@@ -1,7 +1,6 @@
 {
   "name": "nuxt-base",
   "type": "module",
-  "private": true,
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
