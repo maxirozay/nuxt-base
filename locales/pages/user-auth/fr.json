@@ -1,1 +1,11 @@
-{}
+{
+  "2fa": "Authentification à deux facteurs",
+  "authenticatorApp": "Application d'authentification",
+  "code": "Code",
+  "codeInvalid": "Code invalide",
+  "deleteRefreshTokens": "Se déconnecter de tous les appareils",
+  "password": "Mot de passe",
+  "passwordPolicy": "au moins 12 caractères",
+  "settings": "Paramètres",
+  "totpSecret": "Scannez ce code QR avec votre application d'authentification ou copiez le code manuellement."
+}
