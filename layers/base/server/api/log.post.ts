@@ -7,5 +7,5 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { info, type } = await readValidatedBody(event, bodySchema.parse)
-  await logEvent(event, info, type)
+  await log(event, info, type)
 })
