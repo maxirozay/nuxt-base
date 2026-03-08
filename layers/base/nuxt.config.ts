@@ -11,6 +11,10 @@ export default defineNuxtConfig({
       name: '',
       anonymousSignup: false,
     },
+    session: {
+      maxAge: 3600, // 1 hour
+      password: '',
+    },
     autoSignup: false,
     db: '',
     smtp: {
