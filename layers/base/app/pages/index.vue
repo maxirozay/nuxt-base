@@ -19,12 +19,11 @@ async function sendLog() {
 
 const files = ref([] as any[])
 async function listFiles() {
-  files.value = await $fetch('/api/files', {
-    query: {
-      path: path.value,
-      isPrivate: true,
-    },
-  })
+  const params = new URLSearchParams({
+    path: path.value,
+    isPrivate: 'true',
+  }).toString()
+  files.value = await $fetch(`/api/files?${params}`)
 }
 </script>
 
