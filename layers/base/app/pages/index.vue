@@ -23,7 +23,7 @@ async function listFiles() {
     path: path.value,
     isPrivate: 'true',
   }).toString()
-  files.value = await $fetch(`/api/files?${params}`)
+  files.value = await $fetch<any[]>(`/api/files?${params}`)
 }
 </script>
 
