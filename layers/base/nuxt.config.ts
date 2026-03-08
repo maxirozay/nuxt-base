@@ -1,10 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  routeRules: {
-    '/signin': { ssr: false },
-    '/user/**': { appMiddleware: 'authenticated', ssr: false },
-    '/admin/**': { appMiddleware: 'admin', ssr: false },
-  },
   runtimeConfig: {
     public: {
       url: 'http://localhost:3000',
