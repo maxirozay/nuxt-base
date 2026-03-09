@@ -7,6 +7,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.auth.id,
       to: r.credentials.userId,
     }),
+    refreshTokens: r.many.refreshTokens({
+      from: r.auth.id,
+      to: r.refreshTokens.userId,
+    }),
   },
   credentials: {
     auth: r.one.auth({
@@ -17,6 +21,12 @@ export const relations = defineRelations(schema, (r) => ({
   logs: {
     auth: r.one.auth({
       from: r.logs.userId,
+      to: r.auth.id,
+    }),
+  },
+  refreshTokens: {
+    auth: r.one.auth({
+      from: r.refreshTokens.userId,
       to: r.auth.id,
     }),
   },

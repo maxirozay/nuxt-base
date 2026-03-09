@@ -5,6 +5,10 @@ declare module '#auth-utils' {
     role: 'admin' | 'user'
     isAnonymous?: boolean
   }
+
+  interface UserSession {
+    expiresAt: number
+  }
 }
 
 export {}
