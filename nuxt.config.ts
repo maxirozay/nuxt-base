@@ -5,6 +5,13 @@ export default defineNuxtConfig({
     '/user/**': { appMiddleware: 'authenticated', ssr: false },
     '/admin/**': { appMiddleware: 'admin', ssr: false },
   },
+  runtimeConfig: {
+    public: {
+      url: 'http://localhost:3000',
+      name: 'Nuxt base',
+      logo: 'https://placehold.co/200x100?text=logo',
+    },
+  },
   i18n: {
     locales: [{ code: 'en' }, { code: 'fr' }],
     defaultLocale: 'en',

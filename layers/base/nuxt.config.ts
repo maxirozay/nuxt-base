@@ -2,8 +2,6 @@
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
-      url: 'http://localhost:3000',
-      name: '',
       anonymousSignup: false,
       refreshToken: {
         rotateAfter: 60 * 60 * 24, // 1 day

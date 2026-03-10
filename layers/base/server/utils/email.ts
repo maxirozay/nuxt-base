@@ -20,13 +20,20 @@ export async function sendEmail(
     },
   })
   const appName = useRuntimeConfig().public.name
-  const base = (await useStorage('assets:server').getItem(`emails/${locale}/base.html`)) as string
+  const base = (await useStorage('assets:server').getItem(`emails/base.html`)) as string
+  const localeBase = (await useStorage('assets:server').getItem(
+    `emails/${locale}/base.html`,
+  )) as string
   const mail = await transporter.sendMail({
     from: config.smtp.from,
     to,
     bcc,
     subject: subject.replaceAll('{{appName}}', appName),
-    html: base.replace('{{content}}', html).replaceAll('{{appName}}', appName),
+    html: base
+      .replace('{{content}}', localeBase.replace('{{content}}', html))
+      .replaceAll('{{appName}}', appName)
+      .replaceAll('{{url}}', config.public.url)
+      .replaceAll('{{logo}}', config.public.logo),
     attachments,
   })
   return mail
