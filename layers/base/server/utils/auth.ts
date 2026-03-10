@@ -84,14 +84,9 @@ export function generateRefreshToken(): string {
 export async function createRefreshToken(userId: string, event: any) {
   const token = generateRefreshToken()
 
-  const userAgent = getHeader(event, 'user-agent')
-  const ipAddress = getRequestIP(event)
-
   await db.insert(refreshTokens).values({
     userId,
     token,
-    userAgent,
-    ipAddress,
   })
 
   const config = useRuntimeConfig()

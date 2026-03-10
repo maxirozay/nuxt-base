@@ -39,6 +39,14 @@ export const credentials = authSchema.table(
   (table) => [primaryKey({ columns: [table.userId, table.id] })],
 )
 
+export const refreshTokens = authSchema.table('refresh_tokens', {
+  token: text().primaryKey(),
+  userId: uuid()
+    .notNull()
+    .references(() => auth.id, { onDelete: 'cascade' }),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+})
+
 export const logs = authSchema.table('logs', {
   id: uuid().primaryKey().defaultRandom(),
   userId: uuid().references(() => auth.id, { onDelete: 'cascade' }),
@@ -49,16 +57,6 @@ export const logs = authSchema.table('logs', {
   ipAddress: text(),
   userAgent: text(),
   info: text(),
-})
-
-export const refreshTokens = authSchema.table('refresh_tokens', {
-  token: text().primaryKey(),
-  userId: uuid()
-    .notNull()
-    .references(() => auth.id, { onDelete: 'cascade' }),
-  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-  userAgent: text(),
-  ipAddress: text(),
 })
 
 export const organizations = pgTable('organizations', {
