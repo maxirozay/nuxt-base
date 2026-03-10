@@ -39,7 +39,7 @@ export async function buildEmail(html: string, locale: string = 'en') {
     `emails/${locale}/base.html`,
   )) as string
   return base
-    .replace('{{content}}', localeBase.replace('{{content}}', html))
+    .replace('{{content}}', localeBase?.replace('{{content}}', html) || html)
     .replaceAll('{{appName}}', appName)
     .replaceAll('{{url}}', config.public.url)
     .replaceAll('{{logo}}', config.public.logo)
