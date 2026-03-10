@@ -51,6 +51,16 @@ export const logs = authSchema.table('logs', {
   info: text(),
 })
 
+export const refreshTokens = authSchema.table('refresh_tokens', {
+  token: text().primaryKey(),
+  userId: uuid()
+    .notNull()
+    .references(() => auth.id, { onDelete: 'cascade' }),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  userAgent: text(),
+  ipAddress: text(),
+})
+
 export const organizations = pgTable('organizations', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),

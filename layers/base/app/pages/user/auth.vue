@@ -18,6 +18,7 @@ const showPassword2 = ref(false)
 const showTOTP = ref(false)
 const showAuthConfirmation = ref(false)
 const authConfirmed = ref(false)
+const { clear: clearSession } = useUserSession()
 
 function checkAuthConfirmation() {
   if (authConfirmed.value) {
@@ -137,6 +138,21 @@ async function disableTOTP() {
     showTOTP.value = false
   } catch (e: any) {
     appStore.notify(e.data?.message, 'error')
+  }
+}
+
+async function deleteRefreshTokens() {
+  appStore.setLoading(true)
+  try {
+    await $fetch('/api/auth/refresh', {
+      method: 'DELETE',
+    })
+    await clearSession()
+    navigateTo('/')
+  } catch (e: any) {
+    appStore.notify(e.data?.message, 'error')
+  } finally {
+    appStore.setLoading(false)
   }
 }
 
@@ -310,6 +326,14 @@ onMounted(getAuth)
         />
       </div>
     </div>
+  </div>
+  <div>
+    <button
+      class="bg my3 float-right"
+      @click="deleteRefreshTokens"
+    >
+      {{ $t('deleteRefreshTokens') }}
+    </button>
   </div>
   <LazyAuthCheck
     v-if="showAuthConfirmation && !authConfirmed"

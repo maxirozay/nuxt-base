@@ -5,10 +5,16 @@ export default defineNuxtConfig({
       url: 'http://localhost:3000',
       name: '',
       anonymousSignup: false,
+      refreshToken: {
+        rotateAfter: 60 * 60 * 24, // 1 day
+      },
     },
     session: {
       maxAge: 3600, // 1 hour
       password: '',
+    },
+    refreshToken: {
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     },
     autoSignup: false,
     db: '',

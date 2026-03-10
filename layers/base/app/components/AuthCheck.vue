@@ -208,7 +208,7 @@ onMounted(() => {
             @change="signInWithTOTP"
           />
         </div>
-        <div class="flex-row g2 mt1">
+        <div class="flex-row g2">
           <button
             type="submit"
             :disabled="loading"
