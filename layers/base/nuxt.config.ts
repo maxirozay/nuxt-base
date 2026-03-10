@@ -8,10 +8,20 @@ export default defineNuxtConfig({
       refreshToken: {
         rotateAfter: 60 * 60 * 24, // 1 day
       },
+      oauth: {
+        microsoft: false,
+      },
     },
     session: {
       maxAge: 3600, // 1 hour
       password: '',
+    },
+    oauth: {
+      microsoft: {
+        clientId: '',
+        clientSecret: '',
+        tenant: 'common',
+      },
     },
     refreshToken: {
       maxAge: 60 * 60 * 24 * 30, // 30 days

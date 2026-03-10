@@ -10,11 +10,29 @@ useSeoMeta({
 definePageMeta({
   layout: 'simple',
 })
+
+const config = useRuntimeConfig()
 </script>
 
 <template>
   <AuthCheck @authenticated="navigateTo('/', { replace: true })">
-    <h1 class="text-center">{{ $t('authCheck.signin') }}</h1>
+    <template #header>
+      <h1 class="text-center">{{ $t('authCheck.signin') }}</h1>
+    </template>
+    <template #footer>
+      <div
+        v-if="config.public.oauth.microsoft"
+        class="flex-column mt1"
+      >
+        <a
+          href="/auth/microsoft"
+          class="flex-center g2 p-input text-center bg"
+        >
+          <Icon name="uil:microsoft" />
+          <b>Continue with Microsoft</b>
+        </a>
+      </div>
+    </template>
   </AuthCheck>
   <LocaleSwitcher
     class="absolute top right m1"

@@ -171,7 +171,7 @@ onMounted(() => {
     @click.self="emits('cancel')"
   >
     <div class="signin p3 mx">
-      <slot></slot>
+      <slot name="header"></slot>
       <form
         v-if="optionsFetched"
         @submit.prevent="signIn"
@@ -243,6 +243,7 @@ onMounted(() => {
         />
         <button class="w">{{ $t('next') }}</button>
       </form>
+      <slot name="footer"></slot>
       <button
         v-if="!loggedIn && config.public.anonymousSignup"
         type="button"
