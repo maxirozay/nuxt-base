@@ -3,13 +3,19 @@ import { defineRelations } from 'drizzle-orm'
 
 export const relations = defineRelations(schema, (r) => ({
   auth: {
+    refreshTokens: r.many.refreshTokens({
+      from: r.auth.id,
+      to: r.refreshTokens.userId,
+    }),
     credentials: r.many.credentials({
       from: r.auth.id,
       to: r.credentials.userId,
     }),
-    refreshTokens: r.many.refreshTokens({
-      from: r.auth.id,
-      to: r.refreshTokens.userId,
+  },
+  refreshTokens: {
+    auth: r.one.auth({
+      from: r.refreshTokens.userId,
+      to: r.auth.id,
     }),
   },
   credentials: {
@@ -21,12 +27,6 @@ export const relations = defineRelations(schema, (r) => ({
   logs: {
     auth: r.one.auth({
       from: r.logs.userId,
-      to: r.auth.id,
-    }),
-  },
-  refreshTokens: {
-    auth: r.one.auth({
-      from: r.refreshTokens.userId,
       to: r.auth.id,
     }),
   },

@@ -23,6 +23,14 @@ export const auth = authSchema.table('users', {
   role: appRoleEnum().notNull().default('user'),
 })
 
+export const refreshTokens = authSchema.table('refresh_tokens', {
+  token: text().primaryKey(),
+  userId: uuid()
+    .notNull()
+    .references(() => auth.id, { onDelete: 'cascade' }),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+})
+
 export const credentials = authSchema.table(
   'credentials',
   {
@@ -38,14 +46,6 @@ export const credentials = authSchema.table(
   },
   (table) => [primaryKey({ columns: [table.userId, table.id] })],
 )
-
-export const refreshTokens = authSchema.table('refresh_tokens', {
-  token: text().primaryKey(),
-  userId: uuid()
-    .notNull()
-    .references(() => auth.id, { onDelete: 'cascade' }),
-  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-})
 
 export const logs = authSchema.table('logs', {
   id: uuid().primaryKey().defaultRandom(),
