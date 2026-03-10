@@ -22,15 +22,15 @@ export default defineEventHandler(async (event) => {
       id: session.user.id,
       email,
     }
-    setAuthUser(user)
+    setAuth(user)
     return await setSession(event, user)
   }
 
-  const user = await getAuth(event, email).catch(async (error) => {
+  const user = await getAuth(event, email).catch((error) => {
     const config = useRuntimeConfig()
 
     if (error.statusCode === 404 && config.autoSignup) {
-      return createAuthUser({ email })
+      return createAuth({ email })
     }
     throw error
   })

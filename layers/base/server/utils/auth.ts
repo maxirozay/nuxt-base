@@ -3,7 +3,7 @@ import { eq, lte } from 'drizzle-orm'
 import { randomBytes } from 'crypto'
 import { refreshTokens } from '#server/database/schema'
 
-export async function createAuthUser(user: any) {
+export async function createAuth(user: any) {
   const insertedUsers = await db
     .insert(auth)
     .values({
@@ -19,7 +19,7 @@ export async function createAuthUser(user: any) {
   return insertedUsers[0]
 }
 
-export async function setAuthUser(user: any) {
+export async function setAuth(user: any) {
   const insertedUsers = await db
     .update(auth)
     .set({
