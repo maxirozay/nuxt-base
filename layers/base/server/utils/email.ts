@@ -9,7 +9,6 @@ export async function sendEmail(
   bcc?: string,
 ) {
   const config = useRuntimeConfig()
-
   const transporter = nodemailer.createTransport({
     host: config.smtp.host,
     port: config.smtp.port,
@@ -20,32 +19,48 @@ export async function sendEmail(
     },
   })
   const appName = useRuntimeConfig().public.name
-  const base = (await useStorage('assets:server').getItem(`emails/base.html`)) as string
-  const localeBase = (await useStorage('assets:server').getItem(
-    `emails/${locale}/base.html`,
-  )) as string
+  const base = await buildEmail(html, locale)
   const mail = await transporter.sendMail({
     from: config.smtp.from,
     to,
     bcc,
     subject: subject.replaceAll('{{appName}}', appName),
-    html: base
-      .replace('{{content}}', localeBase.replace('{{content}}', html))
-      .replaceAll('{{appName}}', appName)
-      .replaceAll('{{url}}', config.public.url)
-      .replaceAll('{{logo}}', config.public.logo),
+    html: base,
     attachments,
   })
   return mail
 }
 
+export async function buildEmail(html: string, locale: string = 'en') {
+  const config = useRuntimeConfig()
+  const appName = useRuntimeConfig().public.name
+  const base = (await useStorage('assets:server').getItem(`emails/base.html`)) as string
+  const localeBase = (await useStorage('assets:server').getItem(
+    `emails/${locale}/base.html`,
+  )) as string
+  return base
+    .replace('{{content}}', localeBase.replace('{{content}}', html))
+    .replaceAll('{{appName}}', appName)
+    .replaceAll('{{url}}', config.public.url)
+    .replaceAll('{{logo}}', config.public.logo)
+}
+
 export async function sendEmailTemplate(
   templateId: string,
   locale: string = 'en',
-  params: any = {},
+  params: Record<string, any> = {},
   to: string,
   attachments?: any[],
   bcc?: string,
+) {
+  const { subject, html } = await buildEmailTemplate(templateId, locale, params)
+  sendEmail(to, subject, html, locale, attachments, bcc)
+}
+
+export async function buildEmailTemplate(
+  templateId: string,
+  locale: string = 'en',
+  params: Record<string, any>,
 ) {
   let template = (await useStorage('assets:server').getItem(
     `emails/${locale}/${templateId}.html`,
@@ -59,12 +74,8 @@ export async function sendEmailTemplate(
   const match = template.match(/<title>(.*?)<\/title>/i)
   const subject = match ? (match[1] as string) : '{{appName}}'
   const html = template
-  sendEmail(
-    to,
-    subject.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
-    html.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
-    locale,
-    attachments,
-    bcc,
-  )
+  return {
+    subject: subject.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
+    html: html.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
+  }
 }
