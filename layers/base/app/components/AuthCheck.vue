@@ -243,9 +243,12 @@ onMounted(() => {
         />
         <button class="w">{{ $t('next') }}</button>
       </form>
-      <slot name="footer"></slot>
+      <slot
+        v-if="!optionsFetched"
+        name="footer"
+      ></slot>
       <button
-        v-if="!loggedIn && config.public.anonymousSignup"
+        v-if="!loggedIn && config.public.anonymousSignup && !optionsFetched"
         type="button"
         class="mt2 w bg bg-border"
         :disabled="loading"
