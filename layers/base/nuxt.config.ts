@@ -38,8 +38,8 @@ export default defineNuxtConfig({
     s3: {
       endpoint: '',
       region: 'us-east-1',
-      publicBucket: 'files/public',
-      privateBucket: 'files/private',
+      publicBucket: '',
+      privateBucket: '',
       accessKeyId: '',
       secretAccessKey: '',
       publicUrl: '',
