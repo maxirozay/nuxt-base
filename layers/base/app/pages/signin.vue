@@ -10,12 +10,12 @@ useSeoMeta({
 definePageMeta({
   layout: 'simple',
 })
-
 const config = useRuntimeConfig()
+const route = useRoute()
 </script>
 
 <template>
-  <AuthCheck @authenticated="navigateTo('/', { replace: true })">
+  <AuthCheck @authenticated="navigateTo((route.query.goto as string) || '/', { replace: true })">
     <template #header>
       <h1 class="text-center">{{ $t('authCheck.signin') }}</h1>
     </template>

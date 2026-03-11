@@ -1,7 +1,7 @@
-export default defineNuxtRouteMiddleware(() => {
+export default defineNuxtRouteMiddleware((to) => {
   const { user } = useUserSession()
 
   if (user.value?.role !== 'admin') {
-    return navigateTo('/')
+    return navigateTo('/signin?goto=' + to.fullPath, { replace: true })
   }
 })
