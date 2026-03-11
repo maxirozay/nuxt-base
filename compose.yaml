@@ -2,26 +2,8 @@ services:
   nuxt-app:
     image: ${PROJECT_NAME}:${TAG:-latest}
     restart: unless-stopped
-    environment:
-      PORT: 3000
-      HOST: 0.0.0.0
-      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
-      NUXT_DB: ${NUXT_DB}
-      NUXT_S3_ENDPOINT: ${NUXT_S3_ENDPOINT}
-      NUXT_S3_BUCKET: ${NUXT_S3_BUCKET}
-      NUXT_S3_ACCESS_KEY_ID: ${NUXT_S3_ACCESS_KEY_ID}
-      NUXT_S3_SECRET_ACCESS_KEY: ${NUXT_S3_SECRET_ACCESS_KEY}
-      NUXT_S3_PUBLIC_URL: ${NUXT_S3_PUBLIC_URL}
-      NUXT_SMTP_HOST: ${NUXT_SMTP_HOST}
-      NUXT_SMTP_PORT: ${NUXT_SMTP_PORT}
-      NUXT_SMTP_USER: ${NUXT_SMTP_USER}
-      NUXT_SMTP_FROM: ${NUXT_SMTP_FROM}
-      NUXT_SMTP_PASS: ${NUXT_SMTP_PASS}
-      NUXT_PUBLIC_NAME: ${NUXT_PUBLIC_NAME}
-      NUXT_PUBLIC_URL: ${NUXT_PUBLIC_URL}
-      NUXT_AUTO_SIGNUP: ${NUXT_AUTO_SIGNUP}
-      NUXT_FILES_PUBLIC_FOLDER: ${NUXT_FILES_PUBLIC_FOLDER}
-      NUXT_FILES_PRIVATE_FOLDER: ${NUXT_FILES_PRIVATE_FOLDER}
+    env_file:
+      - .env
     volumes:
       - ./volumes/files/public:/app/${NUXT_FILES_PUBLIC_FOLDER:-files}
       - ./volumes/files/private:/app/${NUXT_FILES_PRIVATE_FOLDER:-files}
