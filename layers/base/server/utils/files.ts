@@ -197,7 +197,7 @@ async function deleteFromS3(path: string, isPrivate = true) {
 
   const config = useRuntimeConfig()
 
-  let key = getS3Key(path).replace(config.s3.publicUrl, '').replace(/^\//, '')
+  let key = getS3Key(path).replace(config.public.filesUrl, '').replace(/^\//, '')
 
   await client.send(
     new DeleteObjectCommand({
@@ -237,7 +237,7 @@ export function getS3Key(path: string) {
 
 function getS3URL(path: string) {
   const config = useRuntimeConfig()
-  return `${config.s3.publicUrl}/${getS3Key(path)}`
+  return `${config.public.filesUrl}/${getS3Key(path)}`
 }
 
 async function getS3SignedUrl(key: string, expiresIn = 3600): Promise<string> {

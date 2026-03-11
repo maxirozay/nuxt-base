@@ -9,6 +9,7 @@ export default defineNuxtConfig({
       oauth: {
         microsoft: false,
       },
+      filesUrl: '/files',
     },
     session: {
       maxAge: 3600, // 1 hour
@@ -42,7 +43,6 @@ export default defineNuxtConfig({
       privateBucket: '',
       accessKeyId: '',
       secretAccessKey: '',
-      publicUrl: '',
     },
   },
   nitro: {
