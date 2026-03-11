@@ -9,6 +9,7 @@ import {
   boolean,
   primaryKey,
   pgEnum,
+  jsonb,
 } from 'drizzle-orm/pg-core'
 
 export const authSchema = pgSchema('auth')
@@ -51,12 +52,12 @@ export const logs = authSchema.table('logs', {
   id: uuid().primaryKey().defaultRandom(),
   userId: uuid().references(() => auth.id, { onDelete: 'cascade' }),
   type: text().notNull().default('info'),
-  path: text().notNull(),
-  method: text().notNull(),
-  timestamp: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  origin: text(),
+  summary: text(),
+  data: jsonb(),
+  time: timestamp({ withTimezone: true }).notNull().defaultNow(),
   ipAddress: text(),
   userAgent: text(),
-  info: text(),
 })
 
 export const organizations = pgTable('organizations', {

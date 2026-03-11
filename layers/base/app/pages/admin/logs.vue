@@ -5,10 +5,10 @@ definePageMeta({
 
 const logs = ref([] as any[])
 const day = 24 * 60 * 60 * 1000
-const offset = new Date().getTimezoneOffset() * 60 * 1000
+const offset = new Date().getTimezoneOffset() * 60 * 1000 - 60000
 const from = ref(new Date(Date.now() - 7 * day - offset).toISOString().substring(0, 16))
 const to = ref(new Date(Date.now() - offset).toISOString().substring(0, 16))
-const type = ref('all')
+const search = ref('')
 
 function toUTC(datetimeLocal: string) {
   return new Date(datetimeLocal).toISOString()
@@ -16,7 +16,6 @@ function toUTC(datetimeLocal: string) {
 
 function formatDateTime(utcTimestamp: string) {
   return new Date(utcTimestamp).toLocaleString(undefined, {
-    year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -29,7 +28,7 @@ async function getLogs() {
     query: {
       from: toUTC(from.value),
       to: toUTC(to.value),
-      type: type.value,
+      search: search.value,
     },
   })
 }
@@ -46,20 +45,15 @@ onMounted(() => {
   >
     <label
       for="type"
-      class="p-input"
+      class="flex-center p-input"
     >
-      Type
+      <Icon name="uil:search" />
     </label>
-    <select
-      id="type"
-      v-model="type"
-      class="flex-1 m0"
-      @change="getLogs"
-    >
-      <option value="all">All</option>
-      <option value="info">Info</option>
-      <option value="error">Error</option>
-    </select>
+    <input
+      type="text"
+      class="m0 flex-1"
+      v-model="search"
+    />
     <label
       for="from"
       class="p-input"
@@ -96,18 +90,25 @@ onMounted(() => {
     :key="log.id"
     class="accordion fg p2 mb1"
   >
-    <label :for="log.id">
-      <div class="float-right">{{ formatDateTime(log.timestamp) }}</div>
-      {{ log.type }} {{ log.method }} {{ log.path }}
+    <label
+      :for="log.id"
+      class="flex-row"
+    >
+      <div class="flex-1">{{ log.type }}</div>
+      <div class="flex-4">{{ log.summary }}</div>
+      <div class="flex-4">{{ log.origin }}</div>
+      <div class="flex-1">{{ formatDateTime(log.time) }}</div>
     </label>
     <input
       :id="log.id"
       type="checkbox"
     />
     <div>
-      <div>User: {{ log.auth?.email }}, ID: {{ log.userId }}, IP: {{ log.ipAddress }}</div>
+      <h4>Data</h4>
+      <DataExplorer :data="undefined" />
+      <h4>User</h4>
+      <div>{{ log.auth?.email }}, ID: {{ log.userId }}, IP: {{ log.ipAddress }}</div>
       <small>User Agent: {{ log.userAgent }}</small>
-      <div>Info: {{ log.info }}</div>
     </div>
   </div>
 </template>
