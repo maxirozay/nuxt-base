@@ -34,9 +34,11 @@ export default defineTask({
     }
 
     return {
-      success: true,
-      backupName,
-      timestamp,
+      result: {
+        success: true,
+        backupName,
+        timestamp,
+      },
     }
   },
 })
