@@ -44,6 +44,10 @@ export default defineNuxtConfig({
       accessKeyId: '',
       secretAccessKey: '',
     },
+    backup: {
+      dumpArgs: '--data-only -F c',
+      retentionDays: 30,
+    },
   },
   nitro: {
     storage: {

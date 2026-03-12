@@ -152,7 +152,7 @@ export const useS3 = () => {
   return s3Client
 }
 
-async function uploadToS3(
+export async function uploadToS3(
   key: string,
   body: Buffer,
   contentType: string,
@@ -191,7 +191,7 @@ async function uploadToS3(
   return getS3URL(key)
 }
 
-async function deleteFromS3(path: string, isPrivate = true) {
+export async function deleteFromS3(path: string, isPrivate = true) {
   const client = useS3()
   if (!client) return
 
@@ -207,9 +207,9 @@ async function deleteFromS3(path: string, isPrivate = true) {
   )
 }
 
-async function listFromS3(path: string, isPrivate = true) {
+export async function listFromS3(path: string, isPrivate = true) {
   const client = useS3()
-  if (!client) return
+  if (!client) return []
 
   const config = useRuntimeConfig()
 
@@ -221,7 +221,7 @@ async function listFromS3(path: string, isPrivate = true) {
   )
   return await Promise.all(
     (response.Contents || []).map(async (item) => ({
-      name: item.Key?.substring(path.length) || '',
+      name: item.Key?.split('/').pop() || '',
       isFolder: item.Key?.endsWith('/') || false,
       url: isPrivate ? await getS3SignedUrl(item.Key || '') : getS3URL(item.Key || ''),
       updatedAt: item.LastModified,

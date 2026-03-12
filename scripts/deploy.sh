@@ -6,7 +6,9 @@ if [ -n "$1" ]; then
   ENV_FILE=".env.$1"
 fi
 
-export $(grep -v '^#' $ENV_FILE | xargs)
+set -a
+. "$ENV_FILE"
+set +a
 
 NAME=$PROJECT_NAME
 SERVER_URL=$SERVER_URL

@@ -7,6 +7,7 @@ services:
     volumes:
       - ./volumes/files/public:/app/${NUXT_FILES_PUBLIC_FOLDER:-files}
       - ./volumes/files/private:/app/${NUXT_FILES_PRIVATE_FOLDER:-files}
+      - ./volumes/backups:/app/backups
     ports:
       - ${SERVER_PORT:-3000}:3000
     networks:
