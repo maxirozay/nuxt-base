@@ -11,7 +11,8 @@
     "db:seed": "npx jiti ./server/database/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:migrate": "npx jiti ./server/database/migrate.ts",
+    "db:migrate": "npx jiti scripts/db/migrate.ts",
+    "db:schema": "npx jiti scripts/db/createSchema.ts",
     "db:studio": "drizzle-kit studio",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -44,6 +45,8 @@
     "@types/nodemailer": "^7.0.10",
     "@types/pg": "^8.16.0",
     "drizzle-kit": "1.0.0-beta.15-859cf75",
+    "firebase-admin": "^13.7.0",
+    "jiti": "^2.6.1",
     "nuxt": "^4.3.1",
     "oxfmt": "^0.34.0",
     "oxlint": "^1.49.0"
