@@ -17,6 +17,33 @@ Create a folder for your project where you will deploy the website and add your 
 
 Setup nginx serve your app and your public files folder or s3 public url.
 
+#### Serve s3 folder
+
+```
+location /files/ {
+    rewrite ^/files/(.*) /object/v1/AUTH_123/bucket/$1 break;
+
+    # 2. Proxy the S3 endpoint
+    proxy_pass https://s3.pub2.infomaniak.cloud;
+
+    # 3. Essential headers for SSL S3 connection
+    proxy_set_header Host s3.pub2.infomaniak.cloud;
+    proxy_ssl_server_name on;
+
+    # Optional: Hide S3 headers for security
+    proxy_hide_header x-amz-request-id;
+    proxy_hide_header x-amz-id-2;
+}
+```
+
+#### Server server folder
+
+```
+location /files/ {
+    alias /home/debian/project/volumes/files/public/;
+}
+```
+
 ### On your local machine
 
 Run `./scripts/deploy.sh` to deploy the website. To deploy other env file just do `./scripts/deploy.sh {name}` and it will deploy .env.{name}.
