@@ -39,25 +39,43 @@ export async function uploadFile(event: any, file: any, path = 'files', isPrivat
 }
 
 export function getFileURL(path: string, isPrivate = true) {
+  let url = getPathWithoutRoot(path, isPrivate)
+
   if (isPrivate) {
-    return join('/', 'api/files', path)
+    url = join('/', 'api/files', url) + '?isPrivate=true'
+    return useRuntimeConfig().public.url + url
   }
-  return path
+  return useRuntimeConfig().public.filesUrl + url
 }
 
-export async function getFile(event: any, path: string) {
-  if (useS3()) return getS3SignedUrl(getS3Key(path))
+function getPathWithoutRoot(path: string, isPrivate = true) {
   const config = useRuntimeConfig()
-  const isPrivate = path.startsWith(config.filesPrivateFolder)
-  await checkFileAccess(
-    event,
-    path.substring(
-      (isPrivate ? config.filesPrivateFolder.length : config.filesPublicFolder.length) + 1,
-    ),
-  )
-  const filePath = getSecurePath(path, isPrivate)
+  const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
+  return path.substring(root.length + 1)
+}
 
-  const fullPath = join(process.cwd(), filePath)
+export async function getFile(event: any, path: string, isPrivate = false, maxAge?: number) {
+  await checkFileAccess(event, path)
+  const config = useRuntimeConfig()
+  path = getSecurePath(path, isPrivate)
+
+  if (useS3()) {
+    let url
+    if (isPrivate) {
+      url = await getS3SignedUrl(getS3Key(path), maxAge)
+    } else {
+      url = config.public.filesUrl + '/' + path
+    }
+
+    const response = await fetch(url)
+    if (!response.ok) throw createError({ statusCode: 502, message: 'Failed to fetch image' })
+
+    const contentType = response.headers.get('content-type') ?? 'image/webp'
+    setHeader(event, 'Content-Type', contentType)
+    return response.body
+  }
+
+  const fullPath = join(process.cwd(), path)
 
   const stats = await stat(fullPath)
   if (!stats.isFile()) {
