@@ -13,9 +13,13 @@ set -a
 . "$ENV_FILE"
 set +a
 
+VERSION=$(node -p "require('$ROOT_DIR/package.json').version")
+
 NAME=$PROJECT_NAME
 SSH_KEY="~/.ssh/$SSH_KEY_NAME"
-IMAGE_NAME="$NAME:$TAG"
+IMAGE_NAME="$NAME:$VERSION"
+
+echo $VERSION
 
 docker build --platform linux/amd64 -t $IMAGE_NAME .
 docker save $IMAGE_NAME > $NAME.tar
@@ -25,7 +29,7 @@ scp -i $SSH_KEY compose.yaml $SERVER_URL:$REMOTE_PATH
 ssh -i $SSH_KEY $SERVER_URL "
   cd $REMOTE_PATH && \
   sudo docker load < $NAME.tar && \
-  IMAGE_NAME=$NAME IMAGE_TAG=$TAG sudo -E docker compose up -d --force-recreate && \
+  IMAGE_NAME=$NAME IMAGE_TAG=$VERSION sudo -E docker compose up -d --force-recreate && \
   rm -f $NAME.tar && \
 
   # Keep only the last 3 versions of this specific image name
