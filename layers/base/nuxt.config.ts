@@ -60,6 +60,7 @@ export default defineNuxtConfig({
     locales: [{ code: 'en' }, { code: 'fr' }],
     defaultLocale: 'en',
     translationDir: 'locales',
+    localeCookie: 'user-locale',
   },
   auth: {
     webAuthn: true,
