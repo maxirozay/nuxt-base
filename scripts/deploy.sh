@@ -1,9 +1,12 @@
 #!/bin/sh
 set -e
 
-ENV_FILE=".env"
+SCRIPT_DIR=$(dirname "$0")
+ROOT_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
+
+ENV_FILE="$ROOT_DIR/.env"
 if [ -n "$1" ]; then
-  ENV_FILE=".env.$1"
+  ENV_FILE="$ROOT_DIR/.env.$1"
 fi
 
 set -a
@@ -11,9 +14,7 @@ set -a
 set +a
 
 NAME=$PROJECT_NAME
-SERVER_URL=$SERVER_URL
 SSH_KEY="~/.ssh/$SSH_KEY_NAME"
-REMOTE_PATH=$REMOTE_PATH
 IMAGE_NAME="$NAME:$TAG"
 
 docker build --platform linux/amd64 -t $IMAGE_NAME .
