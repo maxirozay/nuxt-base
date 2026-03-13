@@ -5,6 +5,16 @@ export default defineNuxtConfig({
     '/user/**': { appMiddleware: 'authenticated', ssr: false },
     '/admin/**': { appMiddleware: 'admin', ssr: false },
   },
+  app: {
+    head: {
+      htmlAttrs: {
+        lang: 'en',
+      },
+      title: process.env.NUXT_PUBLIC_NAME,
+      link: [],
+      meta: [{ name: 'theme-color', content: '#000000' }],
+    },
+  },
   runtimeConfig: {
     public: {
       url: 'http://localhost:3000',
