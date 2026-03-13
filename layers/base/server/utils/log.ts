@@ -16,7 +16,7 @@ export async function log(
     userId: session?.user?.id,
     type,
     origin: origin || event?.path + ' ' + event?.node?.req?.method,
-    summary: summary,
+    summary,
     data,
     ipAddress,
     userAgent,
