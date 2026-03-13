@@ -20,6 +20,7 @@ const options = ref({
 async function refreshSession() {
   await fetchUserSession()
   emits('authenticated')
+  email.value = ''
 }
 
 async function requestOtp() {
@@ -46,6 +47,7 @@ async function signInWithOtp() {
       body: { email: email.value, otp: password.value },
     })
     await refreshSession()
+    otpRequested.value = false
   } catch (e: any) {
     handleError(e)
   } finally {
@@ -70,6 +72,7 @@ async function signInWithTOTP() {
       body,
     })
     await refreshSession()
+    totp.value = ''
   } catch (e: any) {
     handleError(e)
   } finally {
@@ -86,6 +89,7 @@ async function signInWithPassword() {
       body: { email: email.value, password: password.value },
     })
     await refreshSession()
+    password.value = ''
   } catch (e: any) {
     handleError(e)
   } finally {
