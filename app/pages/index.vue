@@ -32,7 +32,7 @@ async function listFiles() {
 <template>
   <div class="portrait">
     <button @click="sendLog">Send test log</button>
-    <h2>File Management</h2>
+    <h1>File Management</h1>
     <label for="path">Path</label>
     <div class="flex-row group">
       <input

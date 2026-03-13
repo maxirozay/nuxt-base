@@ -25,6 +25,7 @@ watch(
     <input
       id="nav-toggle"
       type="checkbox"
+      aria-label="Toggle menu"
     />
     <div class="content ml">
       <template v-if="loggedIn">
@@ -43,10 +44,11 @@ watch(
     <label
       class="toggle ml"
       for="nav-toggle"
+      aria-label="menu"
     >
-      <div></div>
-      <div></div>
-      <div></div>
+      <span />
+      <span />
+      <span />
     </label>
   </nav>
 </template>
