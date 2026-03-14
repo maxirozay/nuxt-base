@@ -10,7 +10,9 @@ if [ -n "$1" ]; then
 fi
 
 set -a
-. "$ENV_FILE"
+if [ -f "$ENV_FILE" ]; then
+  . "$ENV_FILE"
+fi
 set +a
 
 VERSION=$(node -p "require('$ROOT_DIR/package.json').version")
