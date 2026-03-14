@@ -38,11 +38,13 @@ export async function buildEmail(html: string, locale: string = 'en') {
   const localeBase = (await useStorage('assets:server').getItem(
     `emails/${locale}/base.html`,
   )) as string
-  return base
-    .replace('{{content}}', localeBase?.replace('{{content}}', html) || html)
-    .replaceAll('{{appName}}', appName)
-    .replaceAll('{{url}}', config.public.url)
-    .replaceAll('{{logo}}', config.public.logo)
+  return inlineStyles(
+    base
+      .replace('{{content}}', localeBase?.replace('{{content}}', html) || html)
+      .replaceAll('{{appName}}', appName)
+      .replaceAll('{{url}}', config.public.url)
+      .replaceAll('{{logo}}', config.public.logo),
+  )
 }
 
 export async function sendEmailTemplate(
@@ -78,4 +80,30 @@ export async function buildEmailTemplate(
     subject: subject.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
     html: html.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
   }
+}
+
+function getClasses(html: string) {
+  const classes: Record<string, string> = {}
+  const style = html
+    .replaceAll(/\n/g, '')
+    .replaceAll(/\s{2,}/g, ' ')
+    .replace(/.*<style>/, '')
+    .replace(/<\/style>.*/, '')
+  style.split('}').forEach((rule) => {
+    const [selectors, declarations] = rule.split('{')
+    if (!selectors || !declarations) return
+    classes[selectors.trim().replace(/^\./, '')] = declarations.trim()
+  })
+  return classes
+}
+
+function inlineStyles(html: string): string {
+  const classes = getClasses(html)
+  return html.replace(/class="(.*?)"/g, (_, className) => {
+    const styles = className
+      .split(' ')
+      .map((name: string) => classes[name] || '')
+      .join('; ')
+    return `style="${styles}"`
+  })
 }
