@@ -25,7 +25,8 @@ docker build --platform linux/amd64 -t $IMAGE_NAME .
 docker save $IMAGE_NAME > $NAME.tar
 
 scp -i $SSH_KEY $NAME.tar $SERVER_URL:$REMOTE_PATH
-scp -i $SSH_KEY compose.yaml $SERVER_URL:$REMOTE_PATH
+sed "s/\${PROJECT_NAME}:\${TAG:-latest}/\${PROJECT_NAME}:\${TAG:-$VERSION}/g" compose.yaml | \
+ssh -i $SSH_KEY $SERVER_URL "cat > $REMOTE_PATH/compose.yaml"
 ssh -i $SSH_KEY $SERVER_URL "
   cd $REMOTE_PATH && \
   sudo docker load < $NAME.tar && \
