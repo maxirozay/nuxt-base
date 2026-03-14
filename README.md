@@ -4,6 +4,10 @@
 
 Setup your env file by editing the `.env.example` file and rename it to `.env`.
 
+### Email customisation
+
+Use the route `http://localhost:3000/dev/email/[templateId]` to see the email while you edit. You can put the locale or any parameter in the query.
+
 ## Deployment
 
 ### On your server
