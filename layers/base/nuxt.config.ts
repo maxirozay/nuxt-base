@@ -48,8 +48,14 @@ export default defineNuxtConfig({
       dumpArgs: '--data-only -F c',
       retentionDays: 30,
     },
+    logs: {
+      retentionDays: 90,
+    },
   },
   nitro: {
+    scheduledTasks: {
+      '0 2 1 * *': ['clean'],
+    },
     storage: {
       auth: {
         driver: 'memory',

@@ -21,18 +21,6 @@ export default defineTask({
       )
     }
 
-    await cleanOldBackups()
-    if (config.s3.privateBucket) {
-      const backups = await listFromS3('backups', true)
-      await Promise.all(
-        backups.map((b) => {
-          if (b.updatedAt && b.updatedAt < new Date(Date.now() - getBackupRetentionMS())) {
-            return deleteFromS3(`backups/${b.name}`, true)
-          }
-        }),
-      )
-    }
-
     return {
       result: {
         success: true,

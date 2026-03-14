@@ -44,7 +44,8 @@ export async function cleanOldBackups() {
   const backupDir = path.resolve(process.cwd(), 'backups')
   const files = await fs.readdir(backupDir)
   const now = Date.now()
-  const retentionMs = getBackupRetentionMS()
+  const config = useRuntimeConfig()
+  const retentionMs = daysToMilliseconds(config.backup.retentionDays)
 
   await Promise.all(
     files.map(async (file) => {
@@ -55,10 +56,4 @@ export async function cleanOldBackups() {
       }
     }),
   )
-}
-
-export function getBackupRetentionMS() {
-  const dayMs = 24 * 60 * 60 * 1000
-  const config = useRuntimeConfig()
-  return config.backup.retentionDays * dayMs
 }

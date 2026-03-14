@@ -1,4 +1,5 @@
 import { logs } from '#server/database/schema'
+import { lt } from 'drizzle-orm/sql/expressions/conditions'
 
 export async function log(
   summary: string,
@@ -21,4 +22,12 @@ export async function log(
     ipAddress,
     userAgent,
   })
+}
+
+export async function cleanLogs() {
+  const config = useRuntimeConfig()
+  const retentionMS = daysToMilliseconds(config.logs.retentionDays)
+  const cutoffDate = new Date(Date.now() - retentionMS)
+
+  await db.delete(logs).where(lt(logs.time, cutoffDate))
 }
