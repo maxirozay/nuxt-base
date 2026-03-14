@@ -20,5 +20,6 @@ LICENSE
 README.md
 
 .env*
-docker/
-scripts/
+remote-db
+scripts
+workflows
