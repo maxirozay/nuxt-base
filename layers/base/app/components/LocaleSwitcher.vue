@@ -6,7 +6,8 @@ const { $getLocales, $switchLocale, getLocale } = useI18n()
   <select
     v-if="$getLocales().length > 1"
     class="locales bg bg-border"
-    :aria-label="$t('language')"
+    :aria-label="$tc('language', 2)"
+    :id="$tc('language', 2)"
     @change="$switchLocale($event.target.value)"
   >
     <option
