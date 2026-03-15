@@ -35,7 +35,7 @@ const route = useRoute()
     </template>
   </AuthCheck>
   <LocaleSwitcher
-    class="absolute top right m1"
+    class="absolute top right m1 bg bg-border"
     style="z-index: 99999"
   />
 </template>
