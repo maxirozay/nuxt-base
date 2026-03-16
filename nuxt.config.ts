@@ -31,12 +31,4 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   extends: ['./layers/base'],
-  nitro: {
-    experimental: {
-      tasks: true,
-    },
-    scheduledTasks: {
-      '0 3 * * *': ['backup'],
-    },
-  },
 })

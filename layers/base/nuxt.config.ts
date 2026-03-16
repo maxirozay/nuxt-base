@@ -53,7 +53,11 @@ export default defineNuxtConfig({
     },
   },
   nitro: {
+    experimental: {
+      tasks: true,
+    },
     scheduledTasks: {
+      '0 3 * * *': ['backup'],
       '0 2 1 * *': ['clean'],
     },
     storage: {
