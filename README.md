@@ -52,7 +52,7 @@ location /files/ {
 
 Run `./scripts/deploy.sh` to deploy the website. To deploy other env file just do `./scripts/deploy.sh {name}` and it will deploy .env.{name}.
 
-Push your migration with `./scripts/db/push.sh`.
+Push your migration with `pnpm db:push-remote` or `./scripts/db/push.sh` to push trough SSH.
 
 ## Nuxt layer
 

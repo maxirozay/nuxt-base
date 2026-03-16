@@ -12,6 +12,7 @@
     "db:seed": "npx jiti ./server/database/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
+    "db:push-remote": "REMOTE_PUSH=true drizzle-kit push",
     "db:migrate": "npx jiti ./server/database/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "lint": "oxlint",
