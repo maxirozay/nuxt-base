@@ -25,3 +25,7 @@ logs
 .env
 .env.*
 !.env.example
+
+# Firebase service account credentials
+scripts/db/firebase.json
+scripts/db/generated-schema.ts
