@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# load .env
+#POSTGRES_USER=username
+#POSTGRES_PASSWORD=password
+#POSTGRES_DB=name
+
 if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
 else
@@ -16,20 +21,30 @@ fi
 
 DB_NAME=$1
 
-# Use provided username or default to POSTGRES_USER from .env
+# Create provided user or use the one from .env
 if [ -z "$2" ]; then
   DB_USER="$POSTGRES_USER"
+  DB_PASSWORD="$POSTGRES_PASSWORD"
   echo "Using default user from .env: $DB_USER"
 else
   DB_USER=$2
-fi
 
-# Generate password if not provided
-if [ -z "$3" ]; then
-  DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
-  echo "Generated password: $DB_PASSWORD"
-else
-  DB_PASSWORD=$3
+  # Generate password if not provided
+  if [ -z "$3" ]; then
+    DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+    echo "Generated password: $DB_PASSWORD"
+  else
+    DB_PASSWORD=$3
+  fi
+
+  # Create dedicated user
+  docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" postgres \
+    psql -U "$POSTGRES_USER" -d postgres -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
+
+  if [ $? -ne 0 ]; then
+    echo "Failed to create user. User may already exist."
+    exit 1
+  fi
 fi
 
 # Create database
@@ -40,10 +55,6 @@ if [ $? -ne 0 ]; then
   echo "Failed to create database."
   exit 1
 fi
-
-# Create dedicated user
-docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" postgres \
-  psql -U "$POSTGRES_USER" -d postgres -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
 
 # Grant privileges
 docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" postgres \
