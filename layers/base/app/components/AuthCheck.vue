@@ -229,7 +229,12 @@ onMounted(() => {
             Passkey
           </button>
         </div>
-        <p v-if="otpRequested">{{ $t('authCheck.otpSent', { email }) }}</p>
+        <p
+          v-if="otpRequested"
+          class="text-center"
+        >
+          {{ $t('authCheck.otpSent', { email }) }}
+        </p>
       </form>
       <form
         v-else
