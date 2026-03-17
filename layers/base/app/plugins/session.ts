@@ -1,14 +1,13 @@
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin(async () => {
   if (import.meta.server) return
   const { session } = useUserSession()
-  const lastRefreshed = parseInt(localStorage.getItem('rotate-token-at') || '0')
-  const refreshAfter = lastRefreshed + useRuntimeConfig().public.refreshToken.rotateAfter * 1000
+  if (!session.value?.user) return
 
-  if (session.value && session.value.expiresAt > Date.now() && refreshAfter < Date.now()) {
-    $fetch('/api/auth/refresh', { method: 'POST' })
-      .then(() => {
-        localStorage.setItem('rotate-token-at', Date.now().toString())
-      })
-      .catch()
+  const lastRefreshed = parseInt(localStorage.getItem('rotate-token-at') || '0')
+  if (lastRefreshed) {
+    const refreshAfter = lastRefreshed + useRuntimeConfig().public.refreshToken.rotateAfter * 1000
+    if (session.value.expiresAt < Date.now() || refreshAfter > Date.now()) return
+    await $fetch('/api/auth/refresh', { method: 'POST' })
   }
+  localStorage.setItem('rotate-token-at', Date.now().toString())
 })
