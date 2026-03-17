@@ -4,7 +4,7 @@ const appStore = useAppStore()
 const { loggedIn, user, fetch: fetchUserSession } = useUserSession()
 const config = useRuntimeConfig()
 const route = useRoute()
-const email = ref((route.query.email as string) || '')
+const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const otpRequested = ref(false)
@@ -158,13 +158,12 @@ async function getSignInOptions(email: string) {
 }
 
 onMounted(() => {
-  if (user.value?.email) {
-    email.value = user.value.email
-    getSignInOptions(email.value)
-  } else if (route.query.email && route.query.token) {
-    email.value = route.query.email as string
+  email.value = user.value?.email || (route.query.email as string) || ''
+  if (route.query.token) {
     password.value = route.query.token as string
     signInWithOtp()
+  } else if (email.value) {
+    getSignInOptions(email.value)
   }
 })
 </script>
