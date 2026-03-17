@@ -1,6 +1,7 @@
 {
   "add": "Ajouter",
   "confirm": "Confirmer",
+  "continue": "Continuer",
   "delete": "Supprimer",
   "deleted": "Supprimé",
   "description": "Site web",
@@ -8,7 +9,6 @@
   "email": "Email",
   "enable": "Activer",
   "language": "Language | Languages",
-  "next": "Continuer",
   "rename": "Renommer",
   "save": "Enregistrer",
   "saved": "Enregistré",

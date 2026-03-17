@@ -1,6 +1,7 @@
 {
   "add": "Add",
   "confirm": "Confirm",
+  "continue": "Continue",
   "delete": "Delete",
   "deleted": "Deleted",
   "description": "Website",
@@ -8,7 +9,6 @@
   "email": "Email",
   "enable": "Enable",
   "language": "Language | Languages",
-  "next": "Continue",
   "rename": "Rename",
   "save": "Save",
   "saved": "Saved",

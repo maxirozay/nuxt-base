@@ -244,7 +244,7 @@ onMounted(() => {
           :disabled="loading"
           autocomplete="username"
         />
-        <button class="w">{{ $t('next') }}</button>
+        <button class="w">{{ $t('continue') }}</button>
       </form>
       <slot
         v-if="!optionsFetched"
