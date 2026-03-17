@@ -18,11 +18,14 @@ export default defineEventHandler(async (event) => {
 
   const session = await getUserSession(event)
   if (session?.user?.isAnonymous) {
-    const user = {
-      id: session.user.id,
-      email,
+    let user: any = await getAuth(event, email).catch(() => null)
+    if (!user) {
+      user = {
+        id: session.user.id,
+        email,
+      }
+      setAuth(user)
     }
-    setAuth(user)
     return await setSession(event, user)
   }
 
