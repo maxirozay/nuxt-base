@@ -31,7 +31,7 @@ async function requestOtp() {
       method: 'POST',
       body: {
         email: email.value,
-        locale: useI18n().getLocale(),
+        locale: useI18n().$getLocale(),
         goto: route.query.goto,
         path: route.path,
       },

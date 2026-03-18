@@ -1,5 +1,5 @@
 <script setup>
-const { $getLocales, $switchLocale, getLocale } = useI18n()
+const { $getLocales, $switchLocale, $getLocale } = useI18n()
 </script>
 
 <template>
@@ -14,7 +14,7 @@ const { $getLocales, $switchLocale, getLocale } = useI18n()
       v-for="locale in $getLocales()"
       :key="locale.code"
       :value="locale.code"
-      :selected="locale.code === getLocale()"
+      :selected="locale.code === $getLocale()"
     >
       {{ locale.code.toUpperCase() }}
     </option>
