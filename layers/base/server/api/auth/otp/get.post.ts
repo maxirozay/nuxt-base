@@ -5,6 +5,7 @@ const bodySchema = z.object({
   email: z.email(),
   locale: z.string().optional(),
   goto: z.string().optional(),
+  path: z.string().optional(),
 })
 
 export interface OTP {
@@ -15,7 +16,12 @@ export interface OTP {
 }
 
 export default defineEventHandler(async (event) => {
-  const { email, locale = 'en', goto } = await readValidatedBody(event, bodySchema.parse)
+  const {
+    email,
+    locale = 'en',
+    goto,
+    path = 'signin',
+  } = await readValidatedBody(event, bodySchema.parse)
   if (!email || typeof email !== 'string') {
     throw createError({
       status: 400,
@@ -43,7 +49,7 @@ export default defineEventHandler(async (event) => {
     locale,
     {
       otp,
-      magicLink: `${useRuntimeConfig().public.url}/signin?email=${encodeURIComponent(email)}&token=${token}${goto ? `&goto=${encodeURIComponent(goto)}` : ''}`,
+      magicLink: `${useRuntimeConfig().public.url + path}?email=${encodeURIComponent(email)}&token=${token}${goto ? `&goto=${encodeURIComponent(goto)}` : ''}`,
     },
     email,
   )

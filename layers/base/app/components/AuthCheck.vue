@@ -29,7 +29,12 @@ async function requestOtp() {
   try {
     await $fetch('/api/auth/otp/get', {
       method: 'POST',
-      body: { email: email.value, locale: useI18n().getLocale(), goto: route.query.goto },
+      body: {
+        email: email.value,
+        locale: useI18n().getLocale(),
+        goto: route.query.goto,
+        path: route.path,
+      },
     })
     otpRequested.value = true
   } catch (e: any) {
