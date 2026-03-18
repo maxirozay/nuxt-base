@@ -254,7 +254,12 @@ onMounted(() => {
           :disabled="loading"
           autocomplete="username"
         />
-        <button class="w">{{ $t('continue') }}</button>
+        <button
+          class="w"
+          :disabled="!email.includes('@')"
+        >
+          {{ $t('continue') }}
+        </button>
       </form>
       <slot
         v-if="!optionsFetched"
@@ -263,7 +268,8 @@ onMounted(() => {
       <button
         v-if="!loggedIn && config.public.anonymousSignup && !optionsFetched"
         type="button"
-        class="mt2 w bg bg-border"
+        class="mt2 w"
+        style="background: none; border: none; color: var(--color-text)"
         :disabled="loading"
         @click="signInAnonymously"
       >
