@@ -7,7 +7,7 @@ export default defineTask({
   },
   async run() {
     const timestamp = new Date().toISOString()
-    const backupName = `backups/backup-${timestamp}.sql`
+    const backupName = `backups/backup-${timestamp}.dump`
     const config = useRuntimeConfig()
 
     await createDatabaseBackup(backupName, config.db, config.backup.dumpArgs)

@@ -7,30 +7,12 @@ export async function createDatabaseBackup(
   dbUrl: string,
   dumpArgs: string = '--data-only -F c',
 ) {
-  const match = dbUrl?.match(/^postgres:\/\/(.*?):(.*?)@(.*?):(\d+)\/(.*)$/)
-  if (!match) throw new Error('Invalid DB URL format')
-  const [_, user, password, host, port, database] = match
-
-  const env = { ...process.env, PGPASSWORD: password }
-  const args = [
-    '-h',
-    host,
-    '-p',
-    port,
-    '-U',
-    user,
-    '-d',
-    database,
-    ...dumpArgs.split(' '),
-    '-f',
-    backupName,
-  ]
+  const args = [...dumpArgs.split(' '), dbUrl, '-f', backupName]
 
   await new Promise((resolve, reject) => {
     const dump: any = spawn(
       'pg_dump',
       args.filter((a) => a !== undefined),
-      { env },
     )
     dump.on('close', (code: number) => {
       if (code === 0) resolve(true)
