@@ -30,4 +30,10 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.auth.id,
     }),
   },
+  organizations: {
+    members: r.many.organizationMembers({
+      from: r.organizations.id,
+      to: r.organizationMembers.organizationId,
+    }),
+  },
 }))
