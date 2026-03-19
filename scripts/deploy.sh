@@ -1,19 +1,7 @@
 #!/bin/sh
 set -e
 
-SCRIPT_DIR=$(dirname "$0")
-ROOT_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
-
-ENV_FILE="$ROOT_DIR/.env"
-if [ -n "$1" ]; then
-  ENV_FILE="$ROOT_DIR/.env.$1"
-fi
-
-set -a
-if [ -f "$ENV_FILE" ]; then
-  . "$ENV_FILE"
-fi
-set +a
+source ./scripts/env.sh
 
 VERSION=$(node -p "require('$ROOT_DIR/package.json').version")
 

@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/bin/sh
+set -e
 
-export $(grep -v '^#' .env | xargs)
+source ./scripts/env.sh
 
 LOCAL_PORT=5433
 REMOTE_PORT=5432
