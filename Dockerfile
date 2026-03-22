@@ -15,6 +15,8 @@ RUN pnpm build
 FROM node:24-alpine
 WORKDIR /app
 
+RUN apk add --no-cache postgresql-client
+
 COPY --from=build /app/.output/ ./
 
 CMD ["node", "./server/index.mjs"]
