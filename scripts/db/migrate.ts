@@ -131,6 +131,11 @@ const firestore = admin.firestore()
 
 console.log('\n[1/3] Fetching Firebase Auth users...')
 
+function getNewId(id: string): string {
+  // return randomUUID()
+  return id
+}
+
 const idToUuid: Record<string, string> = {}
 const usersToInsert: { uuid: string; email: string | null; createdAt: Date }[] = []
 
@@ -138,7 +143,7 @@ let pageToken: string | undefined
 do {
   const result = await firebaseAuth.listUsers(1000, pageToken)
   for (const user of result.users) {
-    const newUuid = randomUUID()
+    const newUuid = getNewId(user.uid)
     idToUuid[user.uid] = newUuid
     if (user.email) {
       idToUuid[user.email] = newUuid
@@ -156,7 +161,7 @@ async function getDocumentsIDs(collections) {
   for (const col of collections) {
     const snapshot = await col.get()
     snapshot.docs.map((doc) => {
-      idToUuid[doc.id] = randomUUID()
+      idToUuid[doc.id] = getNewId(doc.id)
     })
 
     for (const doc of snapshot.docs) {
