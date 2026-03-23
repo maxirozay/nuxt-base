@@ -207,7 +207,8 @@ async function migrateCollections(collections, parents) {
       console.log(`   No handler for "${colName}" — inserting raw data...`)
       let rawInserted = 0
       for (const doc of snapshot.docs) {
-        const data = replaceUids(doc.data())
+        let data = replaceField(doc.data(), formatId, 'string')
+        data = replaceField(data, formatTimestamp, 'number')
         const columns = [
           'id',
           ...Object.keys(data).map(toSnakeCase),
@@ -234,7 +235,7 @@ async function migrateCollections(collections, parents) {
       return {
         id: doc.id,
         mappedId: idToUuid[doc.id],
-        data: replaceUids(doc.data(), idToUuid),
+        data: replaceField(doc.data(), formatId, 'string'),
       }
     })
 
@@ -270,13 +271,22 @@ function toSnakeCase(str: string): string {
   return str.replace(/([a-z0-9])([A-Z0-9])/g, '$1_$2').toLowerCase()
 }
 
-function replaceUids(obj: any): any {
-  if (typeof obj === 'string') return idToUuid[obj] ?? obj
-  if (Array.isArray(obj)) return obj.map((v) => replaceUids(v))
+function replaceField(obj: any, func: (value: any) => any, type: string): any {
+  if (typeof obj === type) return func(obj)
+  if (Array.isArray(obj)) return obj.map((v) => replaceField(v, func, type))
   if (obj && typeof obj === 'object') {
     const out: Record<string, any> = {}
-    for (const [k, v] of Object.entries(obj)) out[k] = replaceUids(v)
+    for (const [k, v] of Object.entries(obj)) out[k] = replaceField(v, func, type)
     return out
   }
   return obj
+}
+
+function formatId(id: any) {
+  return idToUuid[id] ?? id
+}
+
+function formatTimestamp(ts: any) {
+  if (typeof ts === 'number' && ts > 1500000000000) return new Date(ts)
+  return ts
 }
