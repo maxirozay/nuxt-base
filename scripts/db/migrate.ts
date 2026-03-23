@@ -90,6 +90,7 @@ const collectionHandlers: Record<string, (docs: FirestoreDoc[], db: Db, parents)
     //     }).onConflictDoNothing()
     //   }
     // },
+    /*
     accounts: async (docs, db, parents) => {
       collectionNames.accounts = 'organizations'
       for (const doc of docs) {
@@ -116,7 +117,7 @@ const collectionHandlers: Record<string, (docs: FirestoreDoc[], db: Db, parents)
             .onConflictDoNothing()
         }
       }
-    },
+    }, */
   }
 
 // ── Firebase init ─────────────────────────────────────────────────────────────
