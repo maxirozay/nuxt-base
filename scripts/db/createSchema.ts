@@ -167,12 +167,15 @@ function generateTable(
   const tableName = toSnakeCase(collectionName)
   const pascalName = toPascalCase(collectionName)
 
+  // if you want to use UUIDs, change the id line to:
+  // `  ... uuid().notNull()...`
   const fkLine = parent
-    ? `  ${parent.fkField}: uuid().notNull().references(() => ${parent.exportName}.id, { onDelete: 'cascade' }),`
+    ? `  ${parent.fkField}: text().notNull().references(() => ${parent.exportName}.id, { onDelete: 'cascade' }),`
     : null
 
   const columns = [
-    `  id: uuid().primaryKey().defaultRandom(),`,
+    // `  id: uuid().primaryKey().defaultRandom(),`,
+    `  id: text().primaryKey().$defaultFn(() => generateRandomString()),`,
     ...(fkLine ? [fkLine] : []),
     ...[...fields.entries()].map(([name, { type, nullable }]) =>
       drizzleColumn(name, type, nullable),
@@ -338,6 +341,16 @@ const output = [
     .map((t) => `  ${t},`)
     .join('\n'),
   `} from 'drizzle-orm/pg-core'`,
+  ``,
+  `function generateRandomString(length: number = 20): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters.charAt(randomIndex);
+  }
+  return result;
+}`,
   ``,
   tableBlocks.join('\n\n'),
   relationsBlock,
