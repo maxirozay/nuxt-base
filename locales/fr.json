@@ -1,5 +1,7 @@
 {
   "add": "Ajouter",
+  "areYouSure": "Êtes-vous sûr ?",
+  "cancel": "Annuler",
   "confirm": "Confirmer",
   "continue": "Continuer",
   "delete": "Supprimer",
@@ -8,8 +10,9 @@
   "disable": "Désactiver",
   "email": "Email",
   "enable": "Activer",
-  "language": "Language | Languages",
+  "language": "Langue | Langues",
   "rename": "Renommer",
+  "retry": "Réessayer",
   "save": "Enregistrer",
   "saved": "Enregistré",
   "settings": "Paramètres",

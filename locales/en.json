@@ -1,5 +1,7 @@
 {
   "add": "Add",
+  "areYouSure": "Are you sure?",
+  "cancel": "Cancel",
   "confirm": "Confirm",
   "continue": "Continue",
   "delete": "Delete",
@@ -10,6 +12,7 @@
   "enable": "Enable",
   "language": "Language | Languages",
   "rename": "Rename",
+  "retry": "Retry",
   "save": "Save",
   "saved": "Saved",
   "settings": "Settings",

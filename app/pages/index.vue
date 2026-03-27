@@ -27,6 +27,22 @@ async function listFiles() {
   }).toString()
   files.value = await $fetch<any[]>(`/api/files?${params}`)
 }
+
+function testConfirmation() {
+  appStore.confirmation = {
+    message: 'Are you sure?',
+    action: () =>
+      new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (Math.random() > 0.5) {
+            resolve(true)
+          } else {
+            reject(new Error('Random failure'))
+          }
+        }, 1000)
+      }),
+  }
+}
 </script>
 
 <template>
@@ -75,6 +91,15 @@ async function listFiles() {
       >
         {{ file.name }}
       </a>
+    </div>
+    <div>
+      <h2>Confirmation Test</h2>
+      <button
+        class="primary"
+        @click="testConfirmation"
+      >
+        Show Confirmation
+      </button>
     </div>
   </div>
 </template>

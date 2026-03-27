@@ -13,6 +13,7 @@ useSeoMeta({
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <LazyTheConfirmation />
   <LazyTheLoading />
   <LazyTheNotifications />
 </template>

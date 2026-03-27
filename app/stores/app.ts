@@ -3,6 +3,10 @@ export const useAppStore = defineStore('app', () => {
   const notifications = ref(
     [] as { id: number; message: string; type: 'error' | 'success'; isSticky: boolean }[],
   )
+  const confirmation = ref<{
+    message: string
+    action: () => void
+  } | null>(null)
 
   function setLoading(state: boolean) {
     isLoading.value = state
@@ -38,6 +42,7 @@ export const useAppStore = defineStore('app', () => {
   return {
     isLoading,
     notifications,
+    confirmation,
     setLoading,
     notify,
     removeNotification,
