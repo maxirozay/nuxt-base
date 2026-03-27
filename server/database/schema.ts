@@ -62,9 +62,9 @@ export const logs = authSchema.table('logs', {
 })
 
 export const organizations = pgTable('organizations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull(),
-  slug: text('slug').unique().notNull(),
+  id: uuid().primaryKey().defaultRandom(),
+  name: text().notNull(),
+  slug: text().unique().notNull(),
 })
 
 export const memberRoleEnum = pgEnum('member_role', ['admin', 'member'])
