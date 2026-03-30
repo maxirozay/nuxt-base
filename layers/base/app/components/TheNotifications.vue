@@ -7,7 +7,7 @@ const appStore = useAppStore()
     <div
       v-for="notification in appStore.notifications"
       :key="notification.id"
-      :class="['px2 py1 flex-row flex-center', notification.type]"
+      :class="['px2 py1 flex-row flex-center shadow', notification.type || 'fg']"
     >
       {{ $t(notification.message) }}
       <button
