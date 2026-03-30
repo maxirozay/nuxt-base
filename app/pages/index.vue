@@ -47,7 +47,15 @@ function testConfirmation() {
 
 <template>
   <div class="portrait">
-    <button @click="sendLog">Send test log</button>
+    <div class="flex g2">
+      <button @click="sendLog">Send test log</button>
+      <button
+        class="primary"
+        @click="testConfirmation"
+      >
+        Show Confirmation
+      </button>
+    </div>
     <h1>File Management</h1>
     <label for="path">Path</label>
     <div class="flex-row group">
@@ -56,6 +64,11 @@ function testConfirmation() {
         id="path"
         v-model="path"
         class="flex-4"
+      />
+      <FilesDelete
+        class="flex-1 bg flex-center"
+        :path="path"
+        :isPrivate="true"
       />
       <label
         for="upload"
@@ -69,11 +82,6 @@ function testConfirmation() {
           @uploaded="(response) => console.log('File uploaded', response)"
         />
       </label>
-      <FilesDelete
-        class="flex-1 bg flex-center"
-        :path="path"
-        :isPrivate="true"
-      />
       <button
         class="flex-1"
         @click="listFiles"
@@ -91,15 +99,6 @@ function testConfirmation() {
       >
         {{ file.name }}
       </a>
-    </div>
-    <div>
-      <h2>Confirmation Test</h2>
-      <button
-        class="primary"
-        @click="testConfirmation"
-      >
-        Show Confirmation
-      </button>
     </div>
   </div>
 </template>
