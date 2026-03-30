@@ -29,19 +29,14 @@ async function listFiles() {
 }
 
 function testConfirmation() {
-  appStore.confirmation = {
-    message: 'Are you sure?',
-    action: () =>
-      new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (Math.random() > 0.5) {
-            resolve(true)
-          } else {
-            reject(new Error('Random failure'))
-          }
-        }, 1000)
-      }),
-  }
+  appStore
+    .confirm('Are you sure?')
+    .then(() => {
+      appStore.notify('Confirmed', 'success')
+    })
+    .catch(() => {
+      appStore.notify('Cancelled', 'error')
+    })
 }
 </script>
 

@@ -4,12 +4,25 @@ export const useAppStore = defineStore('app', () => {
     [] as { id: number; message: string; type: 'error' | 'success'; isSticky: boolean }[],
   )
   const confirmation = ref<{
-    message: string
-    action: () => void
+    message?: string
+    resolve: (value?: any) => any
+    reject: (value?: any) => any
   } | null>(null)
 
   const authVerifiedAt = ref(0)
   const authPromise = ref()
+
+  function confirm(message?: string) {
+    return new Promise((resolve, reject) => {
+      confirmation.value = {
+        message,
+        resolve,
+        reject,
+      }
+    }).finally(() => {
+      confirmation.value = null
+    })
+  }
 
   function checkAuth(reverifyAfter = 5 * 60 * 1000) {
     if (Date.now() - authVerifiedAt.value < reverifyAfter) {
@@ -66,6 +79,7 @@ export const useAppStore = defineStore('app', () => {
     isLoading,
     notifications,
     confirmation,
+    confirm,
     setLoading,
     notify,
     removeNotification,

@@ -10,9 +10,8 @@ const props = defineProps({
 })
 
 async function deleteFile() {
-  if (!confirm('Are you sure you want to delete this file?')) return
-
   try {
+    await appStore.confirm()
     await $fetch('/api/files', {
       method: 'DELETE',
       body: { path: props.path, isPrivate: props.isPrivate },

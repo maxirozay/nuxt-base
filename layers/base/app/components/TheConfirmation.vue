@@ -4,25 +4,16 @@ import { ref } from 'vue'
 
 const app = useAppStore()
 const isWorking = ref()
-const error = ref()
 
 async function confirm() {
   if (isWorking.value) return
-  error.value = null
   isWorking.value = true
-  try {
-    await app.confirmation!.action()
-    app.confirmation = null
-    error.value = null
-  } catch (err: any) {
-    error.value = err.message
-  }
+  app.confirmation!.resolve()
   isWorking.value = false
 }
 
 function cancel() {
-  app.confirmation = null
-  error.value = null
+  app.confirmation!.reject()
 }
 </script>
 
@@ -37,17 +28,12 @@ function cancel() {
         style="max-width: 600px"
       >
         {{ app.confirmation.message || $t('areYouSure') }}
-        <p
-          v-if="error"
-          class="error-text"
-          v-text="error"
-        />
         <div class="flex-row g2 mt1">
           <button
             :class="['flex-1', isWorking ? 'spin' : '']"
             @click="confirm"
           >
-            {{ error ? $t('retry') : $t('confirm') }}
+            {{ $t('confirm') }}
           </button>
           <button
             class="flex-1"
