@@ -7,6 +7,8 @@ useSeoMeta({
   description: $t('description') as string,
   ogDescription: $t('description') as string,
 })
+
+const appStore = useAppStore()
 </script>
 
 <template>
@@ -16,4 +18,5 @@ useSeoMeta({
   <LazyTheConfirmation />
   <LazyTheLoading />
   <LazyTheNotifications />
+  <LazyAuthCheck v-if="appStore.authPromise" />
 </template>

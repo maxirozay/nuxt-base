@@ -8,11 +8,34 @@ export const useAppStore = defineStore('app', () => {
     action: () => void
   } | null>(null)
 
+  const authVerifiedAt = ref(0)
+  const authPromise = ref()
+
+  function checkAuth(reverifyAfter = 5 * 60 * 1000) {
+    if (Date.now() - authVerifiedAt.value < reverifyAfter) {
+      return true
+    }
+    return new Promise((resolve, reject) => {
+      authPromise.value = {
+        resolve,
+        reject,
+      }
+    })
+      .then(() => {
+        authVerifiedAt.value = Date.now()
+        return true
+      })
+      .finally(() => {
+        authPromise.value = null
+      })
+  }
+
   function setLoading(state: boolean) {
     isLoading.value = state
   }
 
   function notify(message: string, type: 'success' | 'error' = 'success', isSticky = false) {
+    if (!message) return
     const id = Date.now()
     notifications.value.push({ id, message: handleZodError(message), type, isSticky })
 
@@ -46,5 +69,7 @@ export const useAppStore = defineStore('app', () => {
     setLoading,
     notify,
     removeNotification,
+    authPromise,
+    checkAuth,
   }
 })

@@ -16,17 +16,7 @@ const showPasswordChange = ref(false)
 const showPassword1 = ref(false)
 const showPassword2 = ref(false)
 const showTOTP = ref(false)
-const showAuthConfirmation = ref(false)
-const authConfirmed = ref(false)
 const { clear: clearSession } = useUserSession()
-
-function checkAuthConfirmation() {
-  if (authConfirmed.value) {
-    return true
-  }
-  showAuthConfirmation.value = true
-  return false
-}
 
 async function getAuth() {
   auth.value = await $fetch('/api/auth')
@@ -38,7 +28,7 @@ const { register } = useWebAuthn({
 
 async function registerPasskey() {
   try {
-    if (!checkAuthConfirmation()) return
+    if (!(await appStore.checkAuth())) return
     await register({ userName: user.value!.email! })
     getAuth()
     appStore.notify('saved', 'success')
@@ -49,6 +39,7 @@ async function registerPasskey() {
 
 async function setPasskeyName(name: string, credentialId: string) {
   try {
+    if (!(await appStore.checkAuth())) return
     await $fetch('/api/auth/webauthn', {
       method: 'POST',
       body: { name, credentialId },
@@ -61,6 +52,7 @@ async function setPasskeyName(name: string, credentialId: string) {
 
 async function deletePasskey(credentialId: string) {
   try {
+    if (!(await appStore.checkAuth())) return
     await $fetch('/api/auth/webauthn', {
       method: 'DELETE',
       body: { credentialId },
@@ -74,7 +66,7 @@ async function deletePasskey(credentialId: string) {
 
 async function setPassword() {
   try {
-    if (!checkAuthConfirmation()) return
+    if (!(await appStore.checkAuth())) return
     await $fetch('/api/auth', {
       method: 'POST',
       body: { password: password1.value },
@@ -95,7 +87,7 @@ function toggleTOTP() {
 
 async function showTOTPSecret() {
   try {
-    if (!checkAuthConfirmation()) return
+    if (!(await appStore.checkAuth())) return
     const response = await $fetch<{ secret: string }>('/api/auth/totp/generate')
     TOTPSecret.value = response.secret
     await nextTick()
@@ -335,9 +327,4 @@ onMounted(getAuth)
       {{ $t('deleteRefreshTokens') }}
     </button>
   </div>
-  <LazyAuthCheck
-    v-if="showAuthConfirmation && !authConfirmed"
-    @authenticated="authConfirmed = true"
-    @cancel="((showAuthConfirmation = false), (showTOTP = false), (showPasswordChange = false))"
-  />
 </template>

@@ -19,7 +19,10 @@ const options = ref({
 
 async function refreshSession() {
   await fetchUserSession()
-  emits('authenticated')
+  if (loggedIn.value) {
+    appStore.authPromise?.resolve()
+    emits('authenticated')
+  }
   email.value = ''
 }
 
@@ -70,8 +73,9 @@ async function signInWithTOTP() {
       otp?: string
       password?: string
     } = { email: email.value, token: totp.value }
-    if (password.value.length === 6) body.otp = password.value
-    else body.password = password.value
+    if (password.value.length === 6 || password.value === route.query.token) {
+      body.otp = password.value
+    } else body.password = password.value
     await $fetch('/api/auth/totp/verify', {
       method: 'POST',
       body,
@@ -108,6 +112,7 @@ function handleError(error: any) {
 
 function signIn() {
   if (!email.value) return
+  if (options.value.hasTOTP && !totp.value) return
   setTimeout(() => {
     if (totp.value) signInWithTOTP()
     else if (!password.value) requestOtp()
@@ -126,7 +131,9 @@ async function signInWithPasskey() {
     await authenticate(email.value)
     await refreshSession()
   } catch (e: any) {
-    handleError(e)
+    if (!e.message.startsWith('The operation either timed out')) {
+      handleError(e)
+    }
   }
 }
 
@@ -152,7 +159,12 @@ async function getSignInOptions(email: string) {
       body: { email },
     })
     optionsFetched.value = true
-    if (!options.value.hasPassword && !options.value.hasPasskey) {
+    if (route.query.token) {
+      password.value = route.query.token as string
+      if (!options.value.hasTOTP) await signInWithOtp()
+    } else if (options.value.hasPasskey) {
+      signInWithPasskey()
+    } else if (!options.value.hasPassword) {
       requestOtp()
     }
   } catch (e: any) {
@@ -162,13 +174,10 @@ async function getSignInOptions(email: string) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   email.value = user.value?.email || (route.query.email as string) || ''
-  if (route.query.token) {
-    password.value = route.query.token as string
-    signInWithOtp()
-  } else if (email.value) {
-    getSignInOptions(email.value)
+  if (email.value) {
+    await getSignInOptions(email.value)
   }
 })
 </script>
@@ -210,30 +219,28 @@ onMounted(() => {
             id="totp"
             v-model.trim="totp"
             type="text"
-            :disabled="loading"
+            :disabled="loading || !password"
             autocomplete="one-time-code"
             @paste="signInWithTOTP"
             @change="signInWithTOTP"
           />
         </div>
-        <div class="flex-row g2">
-          <button
-            type="submit"
-            :disabled="loading"
-            class="flex-1"
-          >
-            {{ password ? $t('authCheck.signin') : $t('authCheck.getCode') }}
-          </button>
-          <button
-            v-if="options.hasPasskey"
-            type="button"
-            class="flex-1"
-            :disabled="loading"
-            @click="signInWithPasskey"
-          >
-            Passkey
-          </button>
-        </div>
+        <button
+          type="submit"
+          :disabled="loading || (!password && !otpRequested) || (options.hasTOTP && !totp)"
+          class="w mt1"
+        >
+          {{ $t('authCheck.signin') }}
+        </button>
+        <button
+          v-if="options.hasPassword && !otpRequested"
+          type="button"
+          :disabled="loading"
+          class="flex-1 w mt1 bg bg-border"
+          @click="requestOtp"
+        >
+          {{ $t('authCheck.getCode') }}
+        </button>
         <p
           v-if="otpRequested"
           class="text-center"
@@ -274,6 +281,16 @@ onMounted(() => {
         @click="signInAnonymously"
       >
         {{ $t('authCheck.continueAsGuest') }}
+      </button>
+      <button
+        v-if="appStore.authPromise"
+        type="button"
+        class="mt2 w"
+        style="background: none; border: none; color: var(--color-text)"
+        :disabled="loading"
+        @click="(appStore.authPromise.reject(), emits('cancel'))"
+      >
+        {{ $t('cancel') }}
       </button>
     </div>
   </div>
