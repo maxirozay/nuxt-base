@@ -1,5 +1,5 @@
 import { join, dirname } from 'path'
-import { mkdir, readdir, unlink, writeFile, stat, rmdir } from 'fs/promises'
+import { mkdir, readdir, writeFile, stat, rm } from 'fs/promises'
 import {
   S3Client,
   PutObjectCommand,
@@ -85,13 +85,13 @@ export async function getFile(event: any, path: string, isPrivate = false, maxAg
   return createReadStream(fullPath)
 }
 
-export async function deleteFile(event: any, path: string, isPrivate = true) {
+export async function deletePath(event: any, path: string, isPrivate = true) {
   await checkFileAccess(event, path)
   path = getSecurePath(path, isPrivate)
   if (useS3()) await deleteFromS3(path, isPrivate)
   else {
     const localPath = join(process.cwd(), path)
-    await unlink(localPath)
+    await rm(localPath, { recursive: true, force: true })
     const config = useRuntimeConfig()
     const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
     await deleteEmptyFolder(dirname(localPath), root)
@@ -104,7 +104,7 @@ async function deleteEmptyFolder(directory: string, root: string) {
     const files = await readdir(directory)
     if (files.length > 0) return
 
-    await rmdir(directory)
+    await rm(directory, { recursive: true })
     await deleteEmptyFolder(dirname(directory), root)
   } catch {}
 }
