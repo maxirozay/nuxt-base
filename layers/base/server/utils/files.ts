@@ -215,13 +215,21 @@ export async function deleteFromS3(path: string, isPrivate = true) {
 
   const config = useRuntimeConfig()
 
-  let key = getS3Key(path).replace(config.public.filesUrl, '').replace(/^\//, '')
-
-  await client.send(
-    new DeleteObjectCommand({
+  const response = await client.send(
+    new ListObjectsCommand({
       Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
-      Key: key,
+      Prefix: path,
     }),
+  )
+  return await Promise.all(
+    (response.Contents || []).map(async (item) =>
+      client.send(
+        new DeleteObjectCommand({
+          Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
+          Key: item.Key,
+        }),
+      ),
+    ),
   )
 }
 
