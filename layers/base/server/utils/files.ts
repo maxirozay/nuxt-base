@@ -13,12 +13,14 @@ import { createReadStream } from 'fs'
 
 export async function uploadFile(event: any, file: any, path = 'files', isPrivate = true) {
   await checkFileAccess(event, path)
-  const filename = file.filename
   path = getSecurePath(path, isPrivate)
+  if (file.filename && !/[^/]\.[^.]+$/.test(path)) {
+    path = join(path, file.filename)
+  }
 
   let url
   if (useS3()) {
-    const s3Key = getS3Key(join(path, filename))
+    const s3Key = getS3Key(path)
     url = await uploadToS3(
       s3Key,
       file.data,
@@ -27,13 +29,12 @@ export async function uploadFile(event: any, file: any, path = 'files', isPrivat
       isPrivate,
     )
   } else {
-    const uploadFolder = join(process.cwd(), path)
-    await mkdir(uploadFolder, { recursive: true })
+    const filePath = join(process.cwd(), path)
+    const folderPath = filePath.replace(/\/[^/]*$/, '')
+    await mkdir(folderPath, { recursive: true })
+    await writeFile(filePath, file.data)
 
-    const savedPath = join(uploadFolder, filename)
-    await writeFile(savedPath, file.data)
-
-    url = getFileURL(join('/', path, filename), isPrivate)
+    url = getFileURL(path, isPrivate)
   }
   return url
 }
