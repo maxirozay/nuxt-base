@@ -29,5 +29,5 @@ const isOpen = ref(false)
       />
     </div>
   </div>
-  <span>{{ data || '-' }}</span>
+  <span v-else>{{ data }}</span>
 </template>

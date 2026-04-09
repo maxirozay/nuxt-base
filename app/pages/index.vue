@@ -10,10 +10,10 @@ async function sendLog() {
   await $fetch('/api/log', {
     method: 'POST',
     body: {
-      summary: 'Test log',
-      data: { test: 1 },
+      summary: 'Test log ' + new Date().toISOString().substring(0, 16),
+      data: { test: 1, nested: { value: 'abc' } },
       origin: useRoute().fullPath,
-      type: 'Test',
+      type: Math.random() > 0.5 ? 'Info' : 'Error',
     },
   })
   appStore.notify('Test log sent to server')
