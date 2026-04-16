@@ -1,10 +1,8 @@
 <template>
   <div class="page flex-column">
     <TheHeader />
-    <div>
-      <div class="portrait px2 mt3">
-        <slot />
-      </div>
+    <div class="flex-auto portrait px2 my3 w">
+      <slot />
     </div>
     <TheFooter />
   </div>
