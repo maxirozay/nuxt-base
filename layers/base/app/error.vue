@@ -17,9 +17,10 @@ if (import.meta.client) {
 </script>
 
 <template>
-  <div class="text-center">
-    <h1>Error {{ error.status }}</h1>
-    <p>{{ error.message }}</p>
-    <NuxtLink to="/">Go back home</NuxtLink>
-  </div>
+  <NuxtLayout>
+    <div class="text-center flex-center flex-column h">
+      <h1 class="mt0">{{ error.message }}</h1>
+      <NuxtLink to="/">Go back home</NuxtLink>
+    </div>
+  </NuxtLayout>
 </template>
