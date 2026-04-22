@@ -31,3 +31,4 @@ ssh -i $SSH_KEY $SERVER_URL "
     xargs -I {} sudo docker rmi '$NAME:{}' || true
 "
 rm -f $NAME.tar
+docker rmi $IMAGE_NAME
