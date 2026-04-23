@@ -4,7 +4,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
-  ListObjectsCommand,
+  ListObjectsV2Command,
   GetObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
@@ -217,7 +217,7 @@ export async function deleteFromS3(path: string, isPrivate = true) {
   const config = useRuntimeConfig()
 
   const response = await client.send(
-    new ListObjectsCommand({
+    new ListObjectsV2Command({
       Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
       Prefix: path,
     }),
@@ -241,7 +241,7 @@ export async function listFromS3(path: string, isPrivate = true) {
   const config = useRuntimeConfig()
 
   const response = await client.send(
-    new ListObjectsCommand({
+    new ListObjectsV2Command({
       Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
       Prefix: path,
     }),
