@@ -28,6 +28,19 @@ async function listFiles() {
   files.value = await $fetch<any[]>(`/api/files?${params}`)
 }
 
+async function copyFiles(deleteSrc = false) {
+  await $fetch('/api/files/copy', {
+    method: 'POST',
+    body: {
+      src: path.value,
+      dest: path.value.replace(user.value!.id, user.value!.id + (deleteSrc ? '/move' : '/copy')),
+      isPrivate: true,
+      deleteSrc,
+    },
+  })
+  appStore.notify('Files copied')
+}
+
 function testConfirmation() {
   appStore
     .confirm('Are you sure?')
@@ -53,7 +66,7 @@ function testConfirmation() {
     </div>
     <h1>File Management</h1>
     <label for="path">Path</label>
-    <div class="flex-row group">
+    <div class="flex group">
       <input
         type="text"
         id="path"
@@ -61,15 +74,19 @@ function testConfirmation() {
         class="flex-4"
       />
       <FilesDelete
-        class="flex-1 bg flex-center"
+        class="bg flex-center"
         :path="path"
         :isPrivate="true"
       />
+      <button @click="copyFiles()">Copy</button>
+      <button @click="copyFiles(true)">Move</button>
+      <button @click="listFiles">List</button>
       <label
         for="upload"
-        class="flex-1 label__file primary flex-row g2 flex-center"
+        class="label__file primary flex-row g2 flex-center"
       >
-        {{ $t('upload') }}<Icon name="uil:upload" />
+        <b>{{ $t('upload') }}</b>
+        <Icon name="uil:upload" />
         <FilesUpload
           id="upload"
           :path="path"
@@ -77,22 +94,16 @@ function testConfirmation() {
           @uploaded="(response) => console.log('File uploaded', response)"
         />
       </label>
-      <button
-        class="flex-1"
-        @click="listFiles"
-      >
-        List files
-      </button>
     </div>
     <div
       v-for="file in files"
-      :key="file.name"
+      :key="file.path"
     >
       <a
         :href="file.url"
         target="_blank"
       >
-        {{ file.name }}
+        {{ file.path }}
       </a>
     </div>
   </div>

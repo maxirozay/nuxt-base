@@ -6,6 +6,7 @@ import {
   DeleteObjectCommand,
   ListObjectsV2Command,
   GetObjectCommand,
+  CopyObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { checkFileAccess } from '#server/database/access'
@@ -110,28 +111,82 @@ async function deleteEmptyFolder(directory: string, root: string) {
   } catch {}
 }
 
-export async function listFolder(event: any, path: string, isPrivate = true) {
+type ListedFile = {
+  name: string
+  size: number
+  updatedAt: Date
+  path: string
+  url: string
+}
+
+export async function listFolder(
+  event: any,
+  path: string,
+  isPrivate = true,
+): Promise<ListedFile[]> {
   await checkFileAccess(event, path)
   path = getSecurePath(path, isPrivate)
-  if (useS3()) return listFromS3(path, isPrivate)
-  else {
-    const localPath = join(process.cwd(), path)
-    const files = await readdir(localPath).catch(() => [])
-    const fileStats = await Promise.all(
-      files.map(async (name) => {
-        const filePath = join(localPath, name)
-        const stats = await stat(filePath)
-        return {
-          name,
-          isFolder: stats.isDirectory(),
-          size: stats.size,
-          updatedAt: stats.mtime,
-          url: getFileURL(join('/', path, name), isPrivate),
-        }
+
+  if (useS3()) return await listFromS3(path, isPrivate)
+  const localPath = join(process.cwd(), path)
+  const filesStats = await readdir(localPath).catch(() => [])
+  return (
+    await Promise.all(
+      filesStats.map(async (name) => {
+        const localeFilePath = join(localPath, name)
+        const stats = await stat(localeFilePath)
+        const filePath = removeRoot(join(path, name), isPrivate)
+        return stats.isDirectory()
+          ? await listFolder(event, filePath, isPrivate)
+          : {
+              name,
+              size: stats.size,
+              updatedAt: stats.mtime,
+              path: filePath,
+              url: getFileURL(filePath, isPrivate),
+            }
       }),
     )
-    return fileStats
+  ).flat()
+}
+
+export async function copyFile(
+  event: any,
+  src: string,
+  dest: string,
+  isPrivate = true,
+  deleteSrc = false,
+) {
+  await checkFileAccess(event, src)
+  await checkFileAccess(event, dest)
+  src = getSecurePath(src, isPrivate)
+  dest = getSecurePath(dest, isPrivate)
+
+  if (useS3()) return copyFromS3(src, dest, isPrivate, deleteSrc)
+
+  const srcPath = join(process.cwd(), src)
+  const destPath = join(process.cwd(), dest)
+  await mkdir(dirname(destPath), { recursive: true })
+  await writeFile(destPath, createReadStream(srcPath))
+
+  if (deleteSrc) {
+    await deletePath(event, removeRoot(src, isPrivate), isPrivate)
   }
+}
+
+export async function copyFiles(
+  event: any,
+  src: string,
+  dest: string,
+  isPrivate = true,
+  deleteSrc = false,
+) {
+  const files = await listFolder(event, src, isPrivate)
+  return Promise.all(
+    files.map(async (file) =>
+      copyFile(event, file.path, file.path.replace(src, dest), isPrivate, deleteSrc),
+    ),
+  )
 }
 
 export function getSecurePath(path: string, isPrivate = true) {
@@ -148,6 +203,12 @@ export function getSecurePath(path: string, isPrivate = true) {
     throw createError({ statusCode: 400, message: 'Invalid path' })
   }
   return normalizedPath.replace(/^\//, '')
+}
+
+export function removeRoot(path: string, isPrivate = true) {
+  const config = useRuntimeConfig()
+  const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
+  return path.replace(new RegExp(`^${root}/?`), '')
 }
 
 // S3
@@ -240,21 +301,54 @@ export async function listFromS3(path: string, isPrivate = true) {
 
   const config = useRuntimeConfig()
 
-  const response = await client.send(
-    new ListObjectsV2Command({
-      Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
-      Prefix: path,
+  let ContinuationToken
+  const files = []
+  do {
+    const response: any = await client.send(
+      new ListObjectsV2Command({
+        Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
+        Prefix: path,
+        ContinuationToken,
+      }),
+    )
+    ContinuationToken = response.NextContinuationToken
+    files.push(
+      ...(await Promise.all(
+        (response.Contents || []).map(async (item: any) => ({
+          path: removeRoot(item.Key || '', isPrivate),
+          name: item.Key?.split('/').pop() || '',
+          url: isPrivate ? await getS3SignedUrl(item.Key || '') : getS3URL(item.Key || ''),
+          updatedAt: item.LastModified,
+          size: item.Size || 0,
+        })),
+      )),
+    )
+  } while (ContinuationToken)
+
+  return files
+}
+
+export async function copyFromS3(src: string, dest: string, isPrivate = true, deleteSrc = false) {
+  const client = useS3()
+  if (!client) return
+
+  const config = useRuntimeConfig()
+  const bucket = isPrivate ? config.s3.privateBucket : config.s3.publicBucket
+  await client.send(
+    new CopyObjectCommand({
+      Bucket: bucket,
+      Key: dest,
+      CopySource: `/${bucket}/${src}`,
     }),
   )
-  return await Promise.all(
-    (response.Contents || []).map(async (item) => ({
-      name: item.Key?.split('/').pop() || '',
-      isFolder: item.Key?.endsWith('/') || false,
-      url: isPrivate ? await getS3SignedUrl(item.Key || '') : getS3URL(item.Key || ''),
-      updatedAt: item.LastModified,
-      size: item.Size || 0,
-    })),
-  )
+  if (deleteSrc) {
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: src,
+      }),
+    )
+  }
 }
 
 export function getS3Key(path: string) {
