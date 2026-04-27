@@ -1,5 +1,13 @@
-import { join, dirname } from 'path'
-import { mkdir, readdir, writeFile, stat, rm } from 'fs/promises'
+import { join, dirname, basename } from 'path'
+import {
+  mkdir,
+  readdir,
+  writeFile,
+  stat,
+  rm,
+  appendFile,
+  readFile as fsReadFile,
+} from 'fs/promises'
 import {
   S3Client,
   PutObjectCommand,
@@ -7,6 +15,9 @@ import {
   ListObjectsV2Command,
   GetObjectCommand,
   CopyObjectCommand,
+  CreateMultipartUploadCommand,
+  UploadPartCommand,
+  CompleteMultipartUploadCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { checkFileAccess } from '#server/database/access'
@@ -40,6 +51,90 @@ export async function uploadFile(event: any, file: any, path = 'files', isPrivat
   return url
 }
 
+export async function uploadChunk(
+  event: any,
+  {
+    uploadId,
+    chunkIndex,
+    totalChunks,
+    filename,
+    type,
+    chunk,
+    path,
+    isPrivate,
+    parts,
+  }: {
+    uploadId?: string
+    chunkIndex: number
+    totalChunks: number
+    filename: string
+    type: string
+    chunk: Buffer
+    path: string
+    isPrivate: boolean
+    parts: any[]
+  },
+) {
+  if (chunkIndex < 0 || chunkIndex >= totalChunks || totalChunks < 1) {
+    throw createError({ statusCode: 400, message: 'Invalid chunk index' })
+  }
+
+  await checkFileAccess(event, path)
+  path = getSecurePath(path, isPrivate)
+  if (filename && !/[^/]\.[^.]+$/.test(path)) {
+    path = join(path, filename)
+  }
+
+  if (useS3()) {
+    if (!uploadId) {
+      uploadId = (await initMultipartUploadToS3(getS3Key(path), type, isPrivate))!
+      parts = []
+    }
+
+    if (parts.length < totalChunks) {
+      const part = await uploadPartToS3(getS3Key(path), chunk, uploadId, chunkIndex + 1, isPrivate)
+      parts.push(part)
+      if (parts.length < totalChunks) {
+        return { uploadId, parts }
+      }
+    }
+
+    return completeMultipartUploadToS3(getS3Key(path), uploadId, parts, isPrivate)
+  }
+
+  if (!uploadId) {
+    uploadId = crypto.randomUUID()
+    parts = []
+  }
+
+  const tmpDir = join(process.cwd(), 'files', 'temp', uploadId)
+  await mkdir(tmpDir, { recursive: true })
+  await writeFile(join(tmpDir, String(chunkIndex)), chunk)
+
+  const receivedChunks = await readdir(tmpDir)
+  if (receivedChunks.length < totalChunks) {
+    parts = receivedChunks.map((_file, index) => ({
+      PartNumber: index + 1,
+    }))
+    return { uploadId, parts }
+  }
+
+  const safeFilename = basename(filename)
+  const securePath = getSecurePath(path, isPrivate)
+  const filePath = join(securePath, safeFilename)
+
+  const fullPath = join(process.cwd(), filePath)
+  await mkdir(dirname(fullPath), { recursive: true })
+  for (let i = 0; i < totalChunks; i++) {
+    const data = await fsReadFile(join(tmpDir, String(i)))
+    if (i === 0) await writeFile(fullPath, data)
+    else await appendFile(fullPath, data)
+  }
+  await rm(tmpDir, { recursive: true, force: true })
+
+  return getFileURL(filePath, isPrivate)
+}
+
 export function getFileURL(path: string, isPrivate = true) {
   let url = getPathWithoutRoot(path, isPrivate)
 
@@ -66,7 +161,7 @@ export async function getFile(event: any, path: string, isPrivate = false, maxAg
     if (isPrivate) {
       url = await getS3SignedUrl(getS3Key(path), maxAge)
     } else {
-      url = config.public.filesUrl + '/' + path
+      url = config.public.files.url + '/' + path
     }
 
     const response = await fetch(url)
@@ -255,7 +350,7 @@ export async function uploadToS3(
       }),
     )
 
-    return await getS3SignedUrl(key)
+    return getS3SignedUrl(key)
   }
   await client.send(
     new PutObjectCommand({
@@ -269,6 +364,72 @@ export async function uploadToS3(
   )
 
   return getS3URL(key)
+}
+
+export async function initMultipartUploadToS3(key: string, contentType: string, isPrivate = true) {
+  const client = useS3()
+  if (!client) return null
+
+  const config = useRuntimeConfig()
+
+  const command = new CreateMultipartUploadCommand({
+    Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
+    Key: key,
+    ContentType: contentType,
+    ACL: isPrivate ? undefined : 'public-read',
+  })
+
+  const { UploadId } = await client.send(command)
+  return UploadId
+}
+
+export async function uploadPartToS3(
+  key: string,
+  body: Buffer,
+  uploadId: string,
+  partNumber: number,
+  isPrivate = true,
+) {
+  const client = useS3()
+  if (!client) return null
+
+  const config = useRuntimeConfig()
+
+  const response = await client.send(
+    new UploadPartCommand({
+      Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
+      Key: key,
+      Body: body,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+    }),
+  )
+
+  return { ETag: response.ETag, PartNumber: partNumber }
+}
+
+export async function completeMultipartUploadToS3(
+  key: string,
+  uploadId: string,
+  parts: any[],
+  isPrivate = true,
+) {
+  const client = useS3()
+  if (!client) return null
+
+  const config = useRuntimeConfig()
+
+  const command = new CompleteMultipartUploadCommand({
+    Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
+    Key: key,
+    UploadId: uploadId,
+    MultipartUpload: {
+      Parts: parts,
+    },
+  })
+
+  await client.send(command)
+  return isPrivate ? getS3SignedUrl(key) : getS3URL(key)
 }
 
 export async function deleteFromS3(path: string, isPrivate = true) {
@@ -358,7 +519,7 @@ export function getS3Key(path: string) {
 
 function getS3URL(path: string) {
   const config = useRuntimeConfig()
-  return `${config.public.filesUrl}/${getS3Key(path)}`
+  return `${config.public.files.url}/${getS3Key(path)}`
 }
 
 async function getS3SignedUrl(key: string, expiresIn = 3600): Promise<string> {

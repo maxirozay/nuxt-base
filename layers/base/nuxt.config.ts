@@ -9,7 +9,10 @@ export default defineNuxtConfig({
       oauth: {
         microsoft: false,
       },
-      filesUrl: '/files',
+      files: {
+        url: '/files',
+        chunkSize: 5, // in MB
+      },
     },
     session: {
       maxAge: 3600, // 1 hour
