@@ -7,7 +7,7 @@ export async function uploadFiles(
   let totalSize = files.reduce((sum, f) => sum + f.size, 0)
 
   onProgress?.(1)
-  let urls = []
+  let urls: string[] = []
   if (totalSize <= getChunkSize()) {
     const formData = new FormData()
     files.forEach((file) => formData.append('file', file))
