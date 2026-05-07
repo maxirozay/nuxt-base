@@ -3,18 +3,21 @@ import { z } from 'zod'
 const querySchema = z.object({
   isPrivate: z.coerce.boolean().optional(),
   maxAge: z.coerce.number().optional(),
+  serverCache: z.string().optional(),
+  expireIn: z.coerce.number().optional(),
 })
 
 export default defineEventHandler((event) => {
   const path = event.context.params?.path || ''
   const query = getQuery(event)
-  const { isPrivate = false, maxAge } = querySchema.parse(query)
+  const { isPrivate = false, maxAge, serverCache, expireIn } = querySchema.parse(query)
 
-  const stream = getFile(event, decodeURIComponent(path), isPrivate, maxAge)
-  if (isPrivate) {
-    setHeader(event, 'Cache-Control', `private, max-age=${maxAge || 3600}`)
-  } else {
-    setHeader(event, 'Cache-Control', `public, max-age=${maxAge || 31536000}`)
+  let cache = `public, max-age=${maxAge || 31536000}`
+  if (maxAge === 0) {
+    cache = 'no-store, no-cache'
+  } else if (isPrivate) {
+    cache = `private, max-age=${maxAge || 3600}`
   }
-  return stream
+  setHeader(event, 'Cache-Control', cache)
+  return getFile(event, decodeURIComponent(path), isPrivate, serverCache as RequestCache, expireIn)
 })

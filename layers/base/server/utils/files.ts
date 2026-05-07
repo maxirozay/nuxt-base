@@ -151,7 +151,13 @@ function getPathWithoutRoot(path: string, isPrivate = true) {
   return path.substring(root.length + 1)
 }
 
-export async function getFile(event: any, path: string, isPrivate = false, maxAge?: number) {
+export async function getFile(
+  event: any,
+  path: string,
+  isPrivate = false,
+  cache: RequestCache = 'no-cache',
+  expireIn?: number,
+) {
   await checkFileAccess(event, path)
   const config = useRuntimeConfig()
   path = getSecurePath(path, isPrivate)
@@ -159,12 +165,12 @@ export async function getFile(event: any, path: string, isPrivate = false, maxAg
   if (useS3()) {
     let url
     if (isPrivate) {
-      url = await getS3SignedUrl(getS3Key(path), maxAge)
+      url = await getS3SignedUrl(getS3Key(path), expireIn)
     } else {
       url = config.public.files.url + '/' + path
     }
 
-    const response = await fetch(url)
+    const response = await fetch(url, { cache })
     if (!response.ok) throw createError({ statusCode: 502, message: 'Failed to fetch image' })
 
     const contentType = response.headers.get('content-type') ?? 'image/webp'
