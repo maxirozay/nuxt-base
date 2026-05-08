@@ -56,4 +56,6 @@ Push your migration with `pnpm db:push-remote` or `./scripts/db/push.sh` to push
 
 ## Nuxt layer
 
-Clone this repo and delete the `layers` folder or copy folders in `app` and `server` into your project. Then add `extends: [['github:maxirozay/nuxt-base', { install: true }]]` to your nuxt config to use this project as a layer. Check the `.env.example` and `nuxt.config.ts` to change the config.
+Clone this repo and delete the `layers` folder or copy folders in `app` and `server` into your project. Then add `extends: [['github:maxirozay/nuxt-base']]` to your nuxt config to use this project as a layer. Check the `.env.example` and `nuxt.config.ts` to change the config.
+
+Install the same packages as this project or uses `extends: [['github:maxirozay/nuxt-base', { install: true }]]` but this config can cause some issues during builds.
