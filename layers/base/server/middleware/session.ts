@@ -5,8 +5,12 @@ export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
   if (session.user) return
 
-  const { user } = await verifyRefreshToken(event)
-  const sessionData = await setSession(event, user, false)
+  try {
+    const { user } = await verifyRefreshToken(event)
 
-  session.user = sessionData?.user // to update the session on SSR
+    if (event.method === 'GET') {
+      const sessionData = await setSession(event, user, false)
+      session.user = sessionData?.user // to update the session on SSR
+    }
+  } catch {}
 })
