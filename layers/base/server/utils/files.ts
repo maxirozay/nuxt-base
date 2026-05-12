@@ -159,16 +159,10 @@ export async function getFile(
   expireIn?: number,
 ) {
   await checkFileAccess(event, path)
-  const config = useRuntimeConfig()
   path = getSecurePath(path, isPrivate)
 
   if (useS3()) {
-    let url
-    if (isPrivate) {
-      url = await getS3SignedUrl(getS3Key(path), expireIn)
-    } else {
-      url = config.public.files.url + '/' + path
-    }
+    const url = await getS3SignedUrl(getS3Key(path), expireIn, isPrivate)
 
     const response = await fetch(url, { cache })
     if (!response.ok) throw createError({ statusCode: 502, message: 'Failed to fetch image' })
@@ -528,14 +522,14 @@ function getS3URL(path: string) {
   return `${config.public.files.url}/${getS3Key(path)}`
 }
 
-async function getS3SignedUrl(key: string, expiresIn = 3600): Promise<string> {
+async function getS3SignedUrl(key: string, expiresIn = 3600, isPrivate = true): Promise<string> {
   const client = useS3()
   if (!client) return ''
 
   const config = useRuntimeConfig()
 
   const command = new GetObjectCommand({
-    Bucket: config.s3.privateBucket,
+    Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
     Key: getS3Key(key),
   })
 
