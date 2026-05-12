@@ -165,10 +165,10 @@ export async function getFile(
     const url = await getS3SignedUrl(getS3Key(path), expireIn, isPrivate)
 
     const response = await fetch(url, { cache })
-    if (!response.ok) throw createError({ statusCode: 502, message: 'Failed to fetch image' })
+    if (!response.ok) throw createError({ statusCode: 502, message: 'Failed to fetch file' })
 
-    const contentType = response.headers.get('content-type') ?? 'image/webp'
-    setHeader(event, 'Content-Type', contentType)
+    const contentType = response.headers.get('content-type')
+    if (contentType) setHeader(event, 'Content-Type', contentType)
     return response.body
   }
 
