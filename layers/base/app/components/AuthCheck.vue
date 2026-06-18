@@ -55,10 +55,10 @@ async function signInWithOtp() {
       body: { email: email.value, otp: password.value },
     })
     await refreshSession()
-    otpRequested.value = false
   } catch (e: any) {
     handleError(e)
   } finally {
+    otpRequested.value = false
     appStore.setLoading(false)
   }
 }
@@ -233,7 +233,7 @@ onMounted(async () => {
           {{ $t('authCheck.signin') }}
         </button>
         <button
-          v-if="options.hasPassword && !otpRequested"
+          v-if="!otpRequested"
           type="button"
           :disabled="loading"
           class="flex-1 w mt1 bg bg-border"
