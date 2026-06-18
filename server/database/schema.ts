@@ -1,7 +1,6 @@
 import type { WebAuthnCredential } from '#auth-utils'
 import {
-  pgSchema,
-  pgTable,
+  snakeCase,
   text,
   integer,
   timestamp,
@@ -13,7 +12,7 @@ import {
   bigserial,
 } from 'drizzle-orm/pg-core'
 
-export const authSchema = pgSchema('auth')
+export const authSchema = snakeCase.schema('auth')
 
 export const appRoleEnum = pgEnum('app_role', ['admin', 'user'])
 export const auth = authSchema.table('users', {
@@ -61,14 +60,14 @@ export const logs = authSchema.table('logs', {
   userAgent: text(),
 })
 
-export const organizations = pgTable('organizations', {
+export const organizations = snakeCase.table('organizations', {
   id: uuid().primaryKey().defaultRandom(),
   name: text().notNull(),
   slug: text().unique().notNull(),
 })
 
 export const memberRoleEnum = pgEnum('member_role', ['admin', 'member'])
-export const organizationMembers = pgTable(
+export const organizationMembers = snakeCase.table(
   'organization_members',
   {
     userId: uuid()
