@@ -10,4 +10,4 @@ if [ -z "$BACKUP_PATH" ]; then
 fi
 
 echo $NUXT_DB
-pg_restore -d "$NUXT_DB" "$BACKUP_PATH"
+pg_restore --disable-triggers -d "$NUXT_DB" "$BACKUP_PATH"
