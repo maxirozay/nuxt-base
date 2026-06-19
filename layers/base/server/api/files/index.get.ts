@@ -5,7 +5,10 @@ const querySchema = z.object({
     .string()
     .min(1)
     .refine((p) => !p.includes('.')),
-  isPrivate: z.coerce.boolean().optional(),
+  isPrivate: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
 })
 
 export default defineEventHandler(async (event) => {

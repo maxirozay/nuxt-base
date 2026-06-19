@@ -1,7 +1,10 @@
 import { z } from 'zod'
 
 const querySchema = z.object({
-  isPrivate: z.coerce.boolean().optional(),
+  isPrivate: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
   maxAge: z.coerce.number().optional(),
   serverCache: z.string().optional(),
   expireIn: z.coerce.number().optional(),

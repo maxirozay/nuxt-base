@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
         id: session.user.id,
         email,
       }
-      setAuth(user)
+      await setAuth(user)
     }
     return await setSession(event, user)
   }

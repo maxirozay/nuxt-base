@@ -281,7 +281,13 @@ export async function copyFiles(
   const normalizedDest = dest.replace(/^\//, '').replace(/\/$/, '')
   return Promise.all(
     files.map(async (file) =>
-      copyFile(event, file.path, file.path.replace(normalizedSrc, normalizedDest), isPrivate, deleteSrc),
+      copyFile(
+        event,
+        file.path,
+        file.path.replace(normalizedSrc, normalizedDest),
+        isPrivate,
+        deleteSrc,
+      ),
     ),
   )
 }
@@ -447,14 +453,16 @@ export async function deleteFromS3(path: string, isPrivate = true) {
     }),
   )
   return await Promise.all(
-    (response.Contents || []).map(async (item) =>
-      client.send(
-        new DeleteObjectCommand({
-          Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
-          Key: item.Key,
-        }),
+    (response.Contents || [])
+      .filter((item) => item.Key === path || item.Key?.startsWith(`${path}/`))
+      .map(async (item) =>
+        client.send(
+          new DeleteObjectCommand({
+            Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
+            Key: item.Key,
+          }),
+        ),
       ),
-    ),
   )
 }
 
@@ -477,13 +485,15 @@ export async function listFromS3(path: string, isPrivate = true) {
     ContinuationToken = response.NextContinuationToken
     files.push(
       ...(await Promise.all(
-        (response.Contents || []).map(async (item: any) => ({
-          path: removeRoot(item.Key || '', isPrivate),
-          name: item.Key?.split('/').pop() || '',
-          url: isPrivate ? await getS3SignedUrl(item.Key || '') : getS3URL(item.Key || ''),
-          updatedAt: item.LastModified,
-          size: item.Size || 0,
-        })),
+        (response.Contents || [])
+          .filter((item: any) => item.Key === path || item.Key?.startsWith(`${path}/`))
+          .map(async (item: any) => ({
+            path: removeRoot(item.Key || '', isPrivate),
+            name: item.Key?.split('/').pop() || '',
+            url: isPrivate ? await getS3SignedUrl(item.Key || '') : getS3URL(item.Key || ''),
+            updatedAt: item.LastModified,
+            size: item.Size || 0,
+          })),
       )),
     )
   } while (ContinuationToken)
@@ -497,11 +507,12 @@ export async function copyFromS3(src: string, dest: string, isPrivate = true, de
 
   const config = useRuntimeConfig()
   const bucket = isPrivate ? config.s3.privateBucket : config.s3.publicBucket
+  const copySource = `/${bucket}/${src}`.split('/').map(encodeURIComponent).join('/')
   await client.send(
     new CopyObjectCommand({
       Bucket: bucket,
       Key: dest,
-      CopySource: `/${bucket}/${src}`,
+      CopySource: copySource,
     }),
   )
   if (deleteSrc) {
