@@ -295,7 +295,7 @@ export async function copyFiles(
 export function getSecurePath(path: string, isPrivate = true) {
   const config = useRuntimeConfig()
   const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
-  let normalizedPath = path.replace(/^\//g, '')
+  let normalizedPath = path.replace(/^\//, '')
 
   if (normalizedPath.startsWith(root)) {
     normalizedPath = join('/', path)
@@ -305,7 +305,7 @@ export function getSecurePath(path: string, isPrivate = true) {
   if (normalizedPath.includes('..')) {
     throw createError({ statusCode: 400, message: 'Invalid path' })
   }
-  return normalizedPath.replace(/^\//, '')
+  return normalizedPath.replace(/^\//, '').replace(/\/$/, '')
 }
 
 export function removeRoot(path: string, isPrivate = true) {
