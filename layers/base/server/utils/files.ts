@@ -277,9 +277,11 @@ export async function copyFiles(
   deleteSrc = false,
 ) {
   const files = await listFolder(event, src, isPrivate)
+  const normalizedSrc = src.replace(/^\//, '').replace(/\/$/, '')
+  const normalizedDest = dest.replace(/^\//, '').replace(/\/$/, '')
   return Promise.all(
     files.map(async (file) =>
-      copyFile(event, file.path, file.path.replace(src, dest), isPrivate, deleteSrc),
+      copyFile(event, file.path, file.path.replace(normalizedSrc, normalizedDest), isPrivate, deleteSrc),
     ),
   )
 }
