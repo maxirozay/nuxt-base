@@ -295,16 +295,18 @@ export async function copyFiles(
 export function getSecurePath(path: string, isPrivate = true) {
   const config = useRuntimeConfig()
   const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
-  let normalizedPath = path.replace(/^\//, '')
+  let normalizedPath = path.replace(/^\/+/, '')
+
+  if (normalizedPath.split('/').some((segment) => segment === '..' || segment === '.')) {
+    throw createError({ statusCode: 400, message: 'Invalid path' })
+  }
 
   if (normalizedPath.startsWith(root)) {
     normalizedPath = join('/', path)
   } else {
     normalizedPath = join('/', root, path)
   }
-  if (normalizedPath.includes('..')) {
-    throw createError({ statusCode: 400, message: 'Invalid path' })
-  }
+
   return normalizedPath.replace(/^\//, '').replace(/\/$/, '')
 }
 
