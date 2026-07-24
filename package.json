@@ -28,9 +28,7 @@
     "@pinia/nuxt": "1.0.1",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.2",
-    "@types/qrcode": "^1.5.6",
     "drizzle-orm": "1.0.0-rc.3",
-    "drizzle-seed": "^0.3.1",
     "goku-css": "^8.4.11",
     "nodemailer": "^9.0.3",
     "nuxt": "^4.5.0",
@@ -40,14 +38,14 @@
     "pg": "^8.22.0",
     "pinia": "^4.0.2",
     "qrcode": "^1.5.4",
-    "vue": "^3.5.40",
-    "vue-router": "^5.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
+    "@types/qrcode": "^1.5.6",
     "drizzle-kit": "1.0.0-rc.3",
+    "drizzle-seed": "^0.3.1",
     "oxfmt": "^0.60.0",
     "oxlint": "^1.75.0"
   }
