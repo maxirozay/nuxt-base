@@ -22,7 +22,7 @@ const route = useRoute()
     <template #footer>
       <div
         v-if="config.public.oauth.microsoft"
-        class="flex-column mt1"
+        class="flex-column mt2"
       >
         <a
           href="/auth/microsoft"
