@@ -54,6 +54,11 @@ export default defineNuxtConfig({
     logs: {
       retentionDays: 90,
     },
+    rateLimit: {
+      enabled: true,
+      banMultiplier: 5, // banned after limit × multiplier requests in one window
+      banSeconds: 3600,
+    },
   },
   nitro: {
     experimental: {

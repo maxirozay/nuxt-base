@@ -21,6 +21,18 @@ export default defineNuxtConfig({
       name: 'Nuxt base',
       logo: 'https://placehold.co/200x100?text=logo',
     },
+    rateLimit: {
+      routes: {
+        // limit: max requests per IP, window: in seconds
+        '/api/log': { limit: 30, window: 60 },
+        '/api/auth/password': { limit: 5, window: 60 },
+        '/api/auth/otp/get': { limit: 5, window: 900 },
+        '/api/auth/otp/verify': { limit: 10, window: 60 },
+        '/api/auth/totp/verify': { limit: 10, window: 60 },
+        '/api/auth/webauthn/authenticate': { limit: 10, window: 60 },
+        '/api/auth/anonymous': { limit: 5, window: 3600 },
+      },
+    },
   },
   i18n: {
     locales: [
