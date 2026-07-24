@@ -12,7 +12,7 @@ if (import.meta.client) {
       origin: useRoute().fullPath,
       type: 'error',
     },
-  })
+  }).catch(() => {})
 }
 </script>
 

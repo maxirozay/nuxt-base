@@ -1,10 +1,17 @@
 import z from 'zod'
 
+const MAX_DATA_LENGTH = 10000
+
 const bodySchema = z.object({
-  summary: z.string(),
-  data: z.any().optional(),
-  origin: z.string().optional(),
-  type: z.string().optional(),
+  summary: z.string().max(1000),
+  data: z
+    .unknown()
+    .optional()
+    .refine((v) => v === undefined || (JSON.stringify(v)?.length ?? 0) <= MAX_DATA_LENGTH, {
+      message: 'data too large',
+    }),
+  origin: z.string().max(500).optional(),
+  type: z.string().max(100).optional(),
 })
 
 export default defineEventHandler(async (event) => {

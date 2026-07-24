@@ -9,6 +9,6 @@ export default defineNuxtPlugin((nuxtApp) => {
         origin: useRoute().fullPath + ' ' + componentName,
         type: 'error',
       },
-    })
+    }).catch(() => {})
   }
 })
