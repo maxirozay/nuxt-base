@@ -20,10 +20,17 @@ import {
   CompleteMultipartUploadCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import type { CompletedPart } from '@aws-sdk/client-s3'
 import { checkFileAccess } from '#server/database/access'
 import { createReadStream } from 'fs'
+import type { H3Event, MultiPartData } from 'h3'
 
-export async function uploadFile(event: any, file: any, path = 'files', isPrivate = true) {
+export async function uploadFile(
+  event: H3Event,
+  file: MultiPartData,
+  path = 'files',
+  isPrivate = true,
+) {
   await checkFileAccess(event, path)
   path = getSecurePath(path, isPrivate)
   if (file.filename && !/[^/]\.[^.]+$/.test(path)) {
@@ -52,7 +59,7 @@ export async function uploadFile(event: any, file: any, path = 'files', isPrivat
 }
 
 export async function uploadChunk(
-  event: any,
+  event: H3Event,
   {
     uploadId,
     chunkIndex,
@@ -72,7 +79,7 @@ export async function uploadChunk(
     chunk: Buffer
     path: string
     isPrivate: boolean
-    parts: any[]
+    parts: CompletedPart[]
   },
 ) {
   if (chunkIndex < 0 || chunkIndex >= totalChunks || totalChunks < 1) {
@@ -92,14 +99,14 @@ export async function uploadChunk(
     }
 
     if (parts.length < totalChunks) {
-      const part = await uploadPartToS3(getS3Key(path), chunk, uploadId, chunkIndex + 1, isPrivate)
-      parts.push(part)
+      const part = await uploadPartToS3(getS3Key(path), chunk, uploadId!, chunkIndex + 1, isPrivate)
+      if (part) parts.push(part)
       if (parts.length < totalChunks) {
         return { uploadId, parts }
       }
     }
 
-    return completeMultipartUploadToS3(getS3Key(path), uploadId, parts, isPrivate)
+    return completeMultipartUploadToS3(getS3Key(path), uploadId!, parts, isPrivate)
   }
 
   if (!uploadId) {
@@ -152,7 +159,7 @@ function getPathWithoutRoot(path: string, isPrivate = true) {
 }
 
 export async function getFile(
-  event: any,
+  event: H3Event,
   path: string,
   isPrivate = false,
   cache: RequestCache = 'no-cache',
@@ -182,7 +189,7 @@ export async function getFile(
   return createReadStream(fullPath)
 }
 
-export async function deletePath(event: any, path: string, isPrivate = true) {
+export async function deletePath(event: H3Event, path: string, isPrivate = true) {
   await checkFileAccess(event, path)
   path = getSecurePath(path, isPrivate)
   if (useS3()) await deleteFromS3(path, isPrivate)
@@ -215,7 +222,7 @@ type ListedFile = {
 }
 
 export async function listFolder(
-  event: any,
+  event: H3Event,
   path: string,
   isPrivate = true,
 ): Promise<ListedFile[]> {
@@ -246,7 +253,7 @@ export async function listFolder(
 }
 
 export async function copyFile(
-  event: any,
+  event: H3Event,
   src: string,
   dest: string,
   isPrivate = true,
@@ -270,7 +277,7 @@ export async function copyFile(
 }
 
 export async function copyFiles(
-  event: any,
+  event: H3Event,
   src: string,
   dest: string,
   isPrivate = true,
@@ -421,7 +428,7 @@ export async function uploadPartToS3(
 export async function completeMultipartUploadToS3(
   key: string,
   uploadId: string,
-  parts: any[],
+  parts: CompletedPart[],
   isPrivate = true,
 ) {
   const client = useS3()
@@ -474,10 +481,10 @@ export async function listFromS3(path: string, isPrivate = true) {
 
   const config = useRuntimeConfig()
 
-  let ContinuationToken
+  let ContinuationToken: string | undefined
   const files = []
   do {
-    const response: any = await client.send(
+    const response = await client.send(
       new ListObjectsV2Command({
         Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
         Prefix: path,
@@ -488,12 +495,12 @@ export async function listFromS3(path: string, isPrivate = true) {
     files.push(
       ...(await Promise.all(
         (response.Contents || [])
-          .filter((item: any) => item.Key === path || item.Key?.startsWith(`${path}/`))
-          .map(async (item: any) => ({
+          .filter((item) => item.Key === path || item.Key?.startsWith(`${path}/`))
+          .map(async (item) => ({
             path: removeRoot(item.Key || '', isPrivate),
             name: item.Key?.split('/').pop() || '',
             url: isPrivate ? await getS3SignedUrl(item.Key || '') : getS3URL(item.Key || ''),
-            updatedAt: item.LastModified,
+            updatedAt: item.LastModified ?? new Date(0),
             size: item.Size || 0,
           })),
       )),

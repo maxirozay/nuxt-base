@@ -1,11 +1,13 @@
-export async function isAdmin(event: any) {
+import type { H3Event } from 'h3'
+
+export async function isAdmin(event: H3Event) {
   const { user } = await requireUserSession(event)
   if (user.role === 'admin') return true
 
   throw createError({ statusCode: 403, message: 'Insufficient permissions' })
 }
 
-export async function getOrganizationMember(event: any, organizationId: string) {
+export async function getOrganizationMember(event: H3Event, organizationId: string) {
   const { user } = await requireUserSession(event)
   const membership = await db.query.organizationMembers.findFirst({
     where: {
@@ -20,11 +22,11 @@ export async function getOrganizationMember(event: any, organizationId: string) 
   return membership
 }
 
-export async function isOrganizationMember(event: any, organizationId: string) {
+export async function isOrganizationMember(event: H3Event, organizationId: string) {
   if (await getOrganizationMember(event, organizationId)) return true
 }
 
-export async function isOrganizationAdmin(event: any, organizationId: string) {
+export async function isOrganizationAdmin(event: H3Event, organizationId: string) {
   const membership = await getOrganizationMember(event, organizationId)
   if (membership?.role === 'admin') return true
 

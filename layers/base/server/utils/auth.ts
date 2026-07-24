@@ -1,9 +1,12 @@
-import { auth } from '#server/database/schema'
+import { auth, refreshTokens } from '#server/database/schema'
 import { eq, lte } from 'drizzle-orm'
 import { randomBytes } from 'crypto'
-import { refreshTokens } from '#server/database/schema'
+import type { H3Event } from 'h3'
 
-export async function createAuth(user: any) {
+type AuthUser = typeof auth.$inferSelect
+type SessionUser = Pick<AuthUser, 'id'> & Partial<Pick<AuthUser, 'email' | 'role'>>
+
+export async function createAuth(user: Pick<AuthUser, 'email'>) {
   const insertedUsers = await db
     .insert(auth)
     .values({
@@ -19,7 +22,7 @@ export async function createAuth(user: any) {
   return insertedUsers[0]
 }
 
-export async function setAuth(user: any) {
+export async function setAuth(user: Pick<AuthUser, 'id' | 'email'>) {
   const insertedUsers = await db
     .update(auth)
     .set({
@@ -36,12 +39,8 @@ export async function setAuth(user: any) {
   return insertedUsers[0]
 }
 
-export async function getAuth(event: any, email?: string, credentials = false) {
-  let where: any = { email }
-  if (!email) {
-    const session = await getUserSession(event)
-    where = { id: session?.user?.id }
-  }
+export async function getAuth(event: H3Event, email?: string, credentials = false) {
+  const where = email ? { email } : { id: (await getUserSession(event)).user?.id }
   const user = await db.query.auth.findFirst({
     where,
     with: {
@@ -57,7 +56,7 @@ export async function getAuth(event: any, email?: string, credentials = false) {
   return user
 }
 
-export async function setSession(event: any, user: any, refresh = true) {
+export async function setSession(event: H3Event, user: SessionUser, refresh = true) {
   if (refresh) {
     const existingToken = getCookie(event, 'refresh_token')
     if (existingToken) {
@@ -69,7 +68,7 @@ export async function setSession(event: any, user: any, refresh = true) {
   return setUserSession(event, {
     user: {
       id: user.id,
-      email: user.email,
+      email: user.email ?? undefined,
       role: user.role || 'user',
       isAnonymous: !user.email,
     },
@@ -81,7 +80,7 @@ export function generateRefreshToken(): string {
   return randomBytes(32).toString('base64url')
 }
 
-export async function createRefreshToken(userId: string, event: any) {
+export async function createRefreshToken(userId: string, event: H3Event) {
   const token = generateRefreshToken()
 
   await db.insert(refreshTokens).values({
@@ -100,7 +99,7 @@ export async function createRefreshToken(userId: string, event: any) {
   return token
 }
 
-export async function verifyRefreshToken(event: any) {
+export async function verifyRefreshToken(event: H3Event) {
   const existingToken = getCookie(event, 'refresh_token')
   if (!existingToken) {
     throw createError({
