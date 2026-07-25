@@ -54,24 +54,12 @@ export async function enforceRateLimit(event: H3Event, route: string, rule: Rate
 
   if (entry.count === rule.limit * config.rateLimit.banMultiplier) {
     entry.bannedUntil = now + config.rateLimit.banSeconds * 1000
-    await log(
-      'Rate limit ban',
-      { id, route, count: entry.count },
-      undefined,
-      'security',
-      event,
-    ).catch(() => {})
+    await log('Rate limit ban', undefined, route, 'security', event).catch(() => {})
     throw tooManyRequests(event, entry.bannedUntil - now)
   }
 
   if (entry.count === rule.limit + 1) {
-    await log(
-      'Rate limit exceeded',
-      { id, route, limit: rule.limit },
-      undefined,
-      'security',
-      event,
-    ).catch(() => {})
+    await log('Rate limit exceeded', undefined, route, 'security', event).catch(() => {})
   }
 
   throw tooManyRequests(event, entry.resetAt - now)
