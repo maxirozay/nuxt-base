@@ -6,5 +6,4 @@ export default defineConfig({
   out: './server/database/migrations',
   dialect: 'postgresql',
   dbCredentials: { url },
-  casing: 'snake_case',
 })
