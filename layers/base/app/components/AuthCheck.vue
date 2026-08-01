@@ -298,6 +298,6 @@ onMounted(async () => {
 
 <style scoped>
 .signin {
-  max-width: 400px;
+  max-width: min(400px, 80vw);
 }
 </style>
