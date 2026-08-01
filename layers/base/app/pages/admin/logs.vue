@@ -72,7 +72,7 @@ onMounted(() => {
 <template>
   <form
     @submit.prevent="getLogs"
-    class="flex group mb1"
+    class="flex group my2"
   >
     <div class="flex-row group fg flex-1">
       <label

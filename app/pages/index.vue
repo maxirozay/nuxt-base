@@ -55,7 +55,7 @@ function testConfirmation() {
 
 <template>
   <div class="portrait">
-    <div class="flex g2">
+    <div class="flex g2 mt2">
       <button @click="sendLog">Send test log</button>
       <button
         class="primary"
