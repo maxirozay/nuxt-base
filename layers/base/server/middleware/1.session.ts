@@ -8,9 +8,7 @@ export default defineEventHandler(async (event) => {
   try {
     const { user } = await verifyRefreshToken(event)
 
-    if (event.method === 'GET') {
-      const sessionData = await setSession(event, user, false)
-      session.user = sessionData?.user // to update the session on SSR
-    }
+    const sessionData = await setSession(event, user, false)
+    session.user = sessionData?.user // to update the session on SSR
   } catch {}
 })
