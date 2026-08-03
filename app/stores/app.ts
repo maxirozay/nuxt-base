@@ -47,9 +47,11 @@ export const useAppStore = defineStore('app', () => {
     isLoading.value = state
   }
 
+  let lastNotificationId = 0
+
   function notify(message: string, type: 'success' | 'error' = 'success', isSticky = false) {
     if (!message) return
-    const id = Date.now()
+    const id = ++lastNotificationId
     notifications.value.push({ id, message: handleZodError(message), type, isSticky })
 
     if (!isSticky) {
