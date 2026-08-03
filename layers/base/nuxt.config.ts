@@ -58,6 +58,9 @@ export default defineNuxtConfig({
       enabled: true,
       banMultiplier: 5, // banned after limit × multiplier requests in one window
       banSeconds: 3600,
+      // Number of reverse proxies in front of the app. Set to 0 when directly exposed, else
+      // clients can spoof x-forwarded-for and bypass every limit below.
+      trustedProxies: 1,
     },
   },
   nitro: {
