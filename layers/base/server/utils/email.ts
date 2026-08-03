@@ -56,7 +56,7 @@ export async function sendEmailTemplate(
   bcc?: string,
 ) {
   const { subject, html } = await buildEmailTemplate(templateId, locale, params)
-  sendEmail(to, subject, html, locale, attachments, bcc)
+  return sendEmail(to, subject, html, locale, attachments, bcc)
 }
 
 export async function buildEmailTemplate(

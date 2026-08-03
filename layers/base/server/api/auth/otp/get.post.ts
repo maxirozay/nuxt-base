@@ -44,15 +44,24 @@ export default defineEventHandler(async (event) => {
     token: await hashPassword(token),
   })
 
-  return sendEmailTemplate(
-    'otp',
-    locale,
-    {
-      otp,
-      magicLink: `${useRuntimeConfig().public.url + path}?email=${encodeURIComponent(email)}&token=${token}${goto ? `&goto=${encodeURIComponent(goto)}` : ''}`,
-    },
-    email,
-  )
+  try {
+    return await sendEmailTemplate(
+      'otp',
+      locale,
+      {
+        otp,
+        magicLink: `${useRuntimeConfig().public.url + path}?email=${encodeURIComponent(email)}&token=${token}${goto ? `&goto=${encodeURIComponent(goto)}` : ''}`,
+      },
+      email,
+    )
+  } catch (error) {
+    await storage.removeItem(email)
+    throw createError({
+      status: 502,
+      message: 'Could not send the email. Please try again.',
+      cause: error,
+    })
+  }
 })
 
 function generateOTP(length = 6): string {

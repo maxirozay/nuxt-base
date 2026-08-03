@@ -18,7 +18,11 @@ export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
   const user = await getAuth(event, session.user.email)
 
-  if (await verify({ secret: user.totp!, token })) {
+  if (!user.totp) {
+    throw createError({ status: 400, message: 'TOTP is not enabled.' })
+  }
+
+  if (await verify({ secret: user.totp, token })) {
     await db.update(auth).set({ totp: null }).where(eq(auth.id, session.user.id))
   } else throw createError({ status: 400, message: 'Invalid TOTP.' })
 })

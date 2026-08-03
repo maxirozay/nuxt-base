@@ -21,11 +21,15 @@ export default defineEventHandler(async (event) => {
   const user = await getAuth(event, email)
 
   if (otp) await verifyOTP(email, otp)
-  else if (password && !(await verifyPassword(user.password!, password))) {
+  else if (!user.password || !(await verifyPassword(user.password, password!))) {
     throw createError({ status: 400, message: 'Invalid password.' })
   }
 
-  if (await verify({ secret: user.totp!, token })) {
+  if (!user.totp) {
+    throw createError({ status: 400, message: 'TOTP is not enabled.' })
+  }
+
+  if (await verify({ secret: user.totp, token })) {
     await setSession(event, user)
   } else throw createError({ status: 400, message: 'Invalid TOTP.' })
 })
