@@ -33,8 +33,8 @@ export async function uploadFile(
 ) {
   await checkFileAccess(event, path)
   path = getSecurePath(path, isPrivate)
-  if (file.filename && !/[^/]\.[^.]+$/.test(path)) {
-    path = join(path, file.filename)
+  if (file.filename && !/[^/]\.[^.]+$/.test(path) && basename(path) !== basename(file.filename)) {
+    path = join(path, basename(file.filename))
   }
 
   let url
@@ -56,6 +56,12 @@ export async function uploadFile(
     url = getFileURL(path, isPrivate)
   }
   return url
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+function isUUID(value: string) {
+  return UUID_REGEX.test(value)
 }
 
 export async function uploadChunk(
@@ -88,8 +94,8 @@ export async function uploadChunk(
 
   await checkFileAccess(event, path)
   path = getSecurePath(path, isPrivate)
-  if (filename && !/[^/]\.[^.]+$/.test(path)) {
-    path = join(path, filename)
+  if (filename && !/[^/]\.[^.]+$/.test(path) && basename(path) !== basename(filename)) {
+    path = join(path, basename(filename))
   }
 
   if (useS3()) {
@@ -112,6 +118,8 @@ export async function uploadChunk(
   if (!uploadId) {
     uploadId = crypto.randomUUID()
     parts = []
+  } else if (!isUUID(uploadId)) {
+    throw createError({ statusCode: 400, message: 'Invalid upload id' })
   }
 
   const tmpDir = join(process.cwd(), 'files', 'temp', uploadId)
@@ -126,11 +134,7 @@ export async function uploadChunk(
     return { uploadId, parts }
   }
 
-  const safeFilename = basename(filename)
-  const securePath = getSecurePath(path, isPrivate)
-  const filePath = join(securePath, safeFilename)
-
-  const fullPath = join(process.cwd(), filePath)
+  const fullPath = join(process.cwd(), path)
   await mkdir(dirname(fullPath), { recursive: true })
   for (let i = 0; i < totalChunks; i++) {
     const data = await fsReadFile(join(tmpDir, String(i)))
@@ -139,7 +143,7 @@ export async function uploadChunk(
   }
   await rm(tmpDir, { recursive: true, force: true })
 
-  return getFileURL(filePath, isPrivate)
+  return getFileURL(path, isPrivate)
 }
 
 export function getFileURL(path: string, isPrivate = true) {
