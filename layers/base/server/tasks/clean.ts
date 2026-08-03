@@ -5,7 +5,7 @@ export default defineTask({
   },
   async run() {
     const config = useRuntimeConfig()
-  
+
     let backup = 'success'
     try {
       await cleanOldBackups()
@@ -33,7 +33,7 @@ export default defineTask({
     return {
       result: {
         backup,
-        logs
+        logs,
       },
     }
   },
