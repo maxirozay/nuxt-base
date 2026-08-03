@@ -1,11 +1,16 @@
 <script setup lang="ts">
 const AsyncDataExplorer = defineAsyncComponent(() => import('./DataExplorer.vue'))
 
-const props = defineProps<{
+defineProps<{
   data: any
 }>()
 
-const isOpen = ref(false)
+const openKeys = ref(new Set<string | number>())
+
+function toggle(key: string | number) {
+  if (openKeys.value.has(key)) openKeys.value.delete(key)
+  else openKeys.value.add(key)
+}
 </script>
 
 <template>
@@ -17,13 +22,13 @@ const isOpen = ref(false)
       <div
         class="line"
         style="cursor: pointer"
-        @click="isOpen = !isOpen"
+        @click="toggle(key)"
       >
         {{ key }}:
-        <span v-if="!isOpen || typeof value !== 'object'">{{ value }}</span>
+        <span v-if="!openKeys.has(key) || typeof value !== 'object'">{{ value }}</span>
       </div>
       <AsyncDataExplorer
-        v-if="typeof value === 'object' && isOpen"
+        v-if="typeof value === 'object' && openKeys.has(key)"
         :data="value"
         class="bl pl1"
       />
