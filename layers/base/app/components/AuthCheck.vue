@@ -6,7 +6,6 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const email = ref('')
 const password = ref('')
-const loading = ref(false)
 const otpRequested = ref(false)
 const totp = ref('')
 const optionsFetched = ref(false)
@@ -208,7 +207,7 @@ onMounted(async () => {
           id="password"
           v-model.trim="password"
           type="password"
-          :disabled="loading"
+          :disabled="appStore.isLoading"
           autocomplete="current-password"
           pattern=".{12,}|[0-9]{6}"
           @paste="signIn"
@@ -219,7 +218,7 @@ onMounted(async () => {
             id="totp"
             v-model.trim="totp"
             type="text"
-            :disabled="loading || !password"
+            :disabled="appStore.isLoading || !password"
             autocomplete="one-time-code"
             @paste="signInWithTOTP"
             @change="signInWithTOTP"
@@ -227,7 +226,9 @@ onMounted(async () => {
         </div>
         <button
           type="submit"
-          :disabled="loading || (!password && !otpRequested) || (options.hasTOTP && !totp)"
+          :disabled="
+            appStore.isLoading || (!password && !otpRequested) || (options.hasTOTP && !totp)
+          "
           class="w mt1"
         >
           {{ $t('authCheck.signin') }}
@@ -235,7 +236,7 @@ onMounted(async () => {
         <button
           v-if="!otpRequested"
           type="button"
-          :disabled="loading"
+          :disabled="appStore.isLoading"
           class="flex-1 w mt1 bg bg-border"
           @click="requestOtp"
         >
@@ -258,7 +259,7 @@ onMounted(async () => {
           v-model.trim="email"
           type="email"
           required
-          :disabled="loading"
+          :disabled="appStore.isLoading"
           autocomplete="username"
         />
         <button
@@ -277,7 +278,7 @@ onMounted(async () => {
         type="button"
         class="mt2 w"
         style="background: none; border: none; color: var(--color-text)"
-        :disabled="loading"
+        :disabled="appStore.isLoading"
         @click="signInAnonymously"
       >
         {{ $t('authCheck.continueAsGuest') }}
@@ -287,7 +288,7 @@ onMounted(async () => {
         type="button"
         class="mt2 w"
         style="background: none; border: none; color: var(--color-text)"
-        :disabled="loading"
+        :disabled="appStore.isLoading"
         @click="(appStore.authPromise.reject(), emits('cancel'))"
       >
         {{ $t('cancel') }}
