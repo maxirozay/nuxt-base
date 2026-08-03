@@ -35,6 +35,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ status: 400, message: 'Wait a minute before requesting a new OTP.' })
   }
 
+  const baseUrl = useRuntimeConfig().public.url.replace(/\/+$/, '')
+  const magicLinkPath = path.startsWith('/') ? path : `/${path}`
+
   const otp = generateOTP()
   const token = crypto.randomBytes(32).toString('base64url')
   await storage.setItem(email, {
@@ -50,7 +53,7 @@ export default defineEventHandler(async (event) => {
       locale,
       {
         otp,
-        magicLink: `${useRuntimeConfig().public.url + path}?email=${encodeURIComponent(email)}&token=${token}${goto ? `&goto=${encodeURIComponent(goto)}` : ''}`,
+        magicLink: `${baseUrl}${magicLinkPath}?email=${encodeURIComponent(email)}&token=${token}${goto ? `&goto=${encodeURIComponent(goto)}` : ''}`,
       },
       email,
     )
