@@ -147,19 +147,13 @@ export async function uploadChunk(
 }
 
 export function getFileURL(path: string, isPrivate = true) {
-  let url = getPathWithoutRoot(path, isPrivate)
+  const config = useRuntimeConfig()
+  const url = removeRoot(path, isPrivate)
 
   if (isPrivate) {
-    url = join('/', 'api/files', url) + '?isPrivate=true'
-    return useRuntimeConfig().public.url + url
+    return config.public.url + join('/', 'api/files', url) + '?isPrivate=true'
   }
-  return useRuntimeConfig().public.filesUrl + url
-}
-
-function getPathWithoutRoot(path: string, isPrivate = true) {
-  const config = useRuntimeConfig()
-  const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
-  return path.substring(root.length + 1)
+  return config.public.files.url + join('/', url)
 }
 
 export async function getFile(
@@ -185,8 +179,8 @@ export async function getFile(
 
   const fullPath = join(process.cwd(), path)
 
-  const stats = await stat(fullPath)
-  if (!stats.isFile()) {
+  const stats = await stat(fullPath).catch(() => null)
+  if (!stats?.isFile()) {
     throw createError({ statusCode: 404, message: 'File not found' })
   }
 
@@ -241,7 +235,8 @@ export async function listFolder(
       filesStats.map(async (name) => {
         const localeFilePath = join(localPath, name)
         const stats = await stat(localeFilePath)
-        const filePath = removeRoot(join(path, name), isPrivate)
+        const rootedPath = join(path, name)
+        const filePath = removeRoot(rootedPath, isPrivate)
         return stats.isDirectory()
           ? await listFolder(event, filePath, isPrivate)
           : {
@@ -249,7 +244,7 @@ export async function listFolder(
               size: stats.size,
               updatedAt: stats.mtime,
               path: filePath,
-              url: getFileURL(filePath, isPrivate),
+              url: getFileURL(rootedPath, isPrivate),
             }
       }),
     )
@@ -288,14 +283,14 @@ export async function copyFiles(
   deleteSrc = false,
 ) {
   const files = await listFolder(event, src, isPrivate)
-  const normalizedSrc = src.replace(/^\//, '').replace(/\/$/, '')
-  const normalizedDest = dest.replace(/^\//, '').replace(/\/$/, '')
+  const normalizedSrc = removeRoot(getSecurePath(src, isPrivate), isPrivate)
+  const normalizedDest = removeRoot(getSecurePath(dest, isPrivate), isPrivate)
   return Promise.all(
-    files.map(async (file) =>
+    files.map((file) =>
       copyFile(
         event,
         file.path,
-        file.path.replace(normalizedSrc, normalizedDest),
+        join(normalizedDest, file.path.substring(normalizedSrc.length + 1)),
         isPrivate,
         deleteSrc,
       ),
@@ -312,11 +307,7 @@ export function getSecurePath(path: string, isPrivate = true) {
     throw createError({ statusCode: 400, message: 'Invalid path' })
   }
 
-  if (normalizedPath.startsWith(root)) {
-    normalizedPath = join('/', path)
-  } else {
-    normalizedPath = join('/', root, path)
-  }
+  normalizedPath = join('/', root, removeRoot(normalizedPath, isPrivate))
 
   return normalizedPath.replace(/^\//, '').replace(/\/$/, '')
 }
@@ -324,7 +315,7 @@ export function getSecurePath(path: string, isPrivate = true) {
 export function removeRoot(path: string, isPrivate = true) {
   const config = useRuntimeConfig()
   const root = isPrivate ? config.filesPrivateFolder : config.filesPublicFolder
-  return path.replace(new RegExp(`^${root}/?`), '')
+  return path.replace(new RegExp(`^${root}/`), '')
 }
 
 // S3
