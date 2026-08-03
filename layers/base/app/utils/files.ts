@@ -13,7 +13,7 @@ export async function uploadFiles(
     files.forEach((file) => formData.append('file', file))
     formData.append('path', path)
     formData.append('isPrivate', String(isPrivate))
-    urls = await $fetch('/api/files', { method: 'POST', body: formData })
+    urls = await postFiles(formData)
   } else {
     let uploadedSize = 0
     for (const file of files) {
@@ -22,7 +22,7 @@ export async function uploadFiles(
         formData.append('file', file)
         formData.append('path', path)
         formData.append('isPrivate', String(isPrivate))
-        urls.push(await $fetch('/api/files', { method: 'POST', body: formData }))
+        urls.push(...(await postFiles(formData)))
         uploadedSize += file.size
         const progress = (uploadedSize / totalSize) * 100
         onProgress?.(Math.round(progress))
@@ -39,6 +39,11 @@ export async function uploadFiles(
   }
   onProgress?.(100)
   return urls
+}
+
+async function postFiles(body: FormData): Promise<string[]> {
+  const urls = await $fetch('/api/files', { method: 'POST', body })
+  return urls.filter((url): url is string => !!url)
 }
 
 export async function uploadInChunks(
@@ -71,7 +76,7 @@ export async function uploadInChunks(
       uploadId = result.uploadId
       parts = result.parts
     }
-    onProgress?.(start + chunkSize)
+    onProgress?.(Math.min(chunkSize, file.size - start)) // bytes added by this chunk
   }
 
   return result
