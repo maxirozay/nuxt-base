@@ -16,15 +16,17 @@ export default defineWebAuthnRegisterEventHandler({
   },
   async validateUser(userBody, event) {
     const session = await requireUserSession(event)
-    if (!session.user?.email || session.user.email !== userBody.userName) {
+    const parsed = z
+      .object({
+        userName: emailSchema,
+      })
+      .safeParse(userBody)
+
+    if (!parsed.success || !session.user?.email || session.user.email !== parsed.data.userName) {
       throw createError({ status: 400, message: 'Email incorrect' })
     }
 
-    return z
-      .object({
-        userName: z.email(),
-      })
-      .parse(userBody)
+    return parsed.data
   },
   async onSuccess(event, { credential }) {
     const session = await requireUserSession(event)

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import crypto from 'crypto'
 
 const bodySchema = z.object({
-  email: z.email(),
+  email: emailSchema,
   locale: z.string().optional(),
   goto: z.string().optional(),
   path: z.string().optional(),

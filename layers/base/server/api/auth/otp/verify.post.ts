@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { OTP } from './get.post'
 
 const bodySchema = z.object({
-  email: z.email(),
+  email: emailSchema,
   otp: z.string().length(6).or(z.string().min(32)),
 })
 

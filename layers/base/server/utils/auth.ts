@@ -10,7 +10,7 @@ export async function createAuth(user: Pick<AuthUser, 'email'>) {
   const insertedUsers = await db
     .insert(auth)
     .values({
-      email: user.email,
+      email: user.email?.trim().toLowerCase(),
     })
     .returning()
   if (!insertedUsers[0]) {
@@ -26,7 +26,7 @@ export async function setAuth(user: Pick<AuthUser, 'id' | 'email'>) {
   const insertedUsers = await db
     .update(auth)
     .set({
-      email: user.email,
+      email: user.email?.trim().toLowerCase(),
     })
     .where(eq(auth.id, user.id))
     .returning()
@@ -40,7 +40,9 @@ export async function setAuth(user: Pick<AuthUser, 'id' | 'email'>) {
 }
 
 export async function getAuth(event: H3Event, email?: string, credentials = false) {
-  const where = email ? { email } : { id: (await getUserSession(event)).user?.id }
+  const where = email
+    ? { email: email.trim().toLowerCase() }
+    : { id: (await getUserSession(event)).user?.id }
   const user = await db.query.auth.findFirst({
     where,
     with: {
@@ -68,7 +70,7 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
   return setUserSession(event, {
     user: {
       id: user.id,
-      email: user.email ?? undefined,
+      email: user.email?.trim().toLowerCase() ?? undefined,
       role: user.role || 'user',
       isAnonymous: !user.email,
     },

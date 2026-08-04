@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 const bodySchema = z.object({
-  email: z.email(),
+  email: emailSchema,
 })
 
 export default defineEventHandler(async (event) => {

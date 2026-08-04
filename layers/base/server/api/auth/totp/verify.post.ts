@@ -3,7 +3,7 @@ import { verify } from 'otplib'
 import { verifyOTP } from '../otp/verify.post'
 
 const bodySchema = z.object({
-  email: z.email(),
+  email: emailSchema,
   password: z.string().min(12).optional(),
   otp: z.string().length(6).or(z.string().min(32)).optional(),
   token: z.string().length(6),
