@@ -40,9 +40,16 @@ export async function setAuth(user: Pick<AuthUser, 'id' | 'email'>) {
 }
 
 export async function getAuth(event: H3Event, email?: string, credentials = false) {
-  const where = email
-    ? { email: email.trim().toLowerCase() }
-    : { id: (await getUserSession(event)).user?.id }
+  const id = email ? undefined : (await getUserSession(event)).user?.id
+  // an undefined filter is dropped by drizzle, which would match an arbitrary user
+  if (!email && !id) {
+    throw createError({
+      status: 401,
+      message: 'Not authenticated',
+    })
+  }
+
+  const where = email ? { email: email.trim().toLowerCase() } : { id }
   const user = await db.query.auth.findFirst({
     where,
     with: {
