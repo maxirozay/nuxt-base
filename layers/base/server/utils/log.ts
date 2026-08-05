@@ -9,8 +9,6 @@ export async function log(
   event?: any,
 ) {
   const session = await getUserSession(event)
-  const ipAddress =
-    event?.node?.req?.headers['x-forwarded-for'] || event?.node?.req?.socket?.remoteAddress
   const userAgent = event?.node?.req?.headers['user-agent']
 
   await db.insert(logs).values({
@@ -19,7 +17,7 @@ export async function log(
     origin: origin || event?.path + ' ' + event?.node?.req?.method,
     summary,
     data,
-    ipAddress,
+    ipAddress: event ? getClientIP(event) : null,
     userAgent,
   })
 }
