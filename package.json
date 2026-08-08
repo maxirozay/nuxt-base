@@ -29,7 +29,7 @@
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.2",
     "drizzle-orm": "1.0.0-rc.3",
-    "goku-css": "^8.4.11",
+    "goku-css": "^9.0.2",
     "nodemailer": "^9.0.3",
     "nuxt": "^4.5.1",
     "nuxt-auth-utils": "0.5.29",

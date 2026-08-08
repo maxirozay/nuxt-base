@@ -21,7 +21,12 @@ watch(
 
 <template>
   <nav class="p2 g2 fg">
-    <I18nLink :to="{ name: 'index' }">{{ config.public.name }}</I18nLink>
+    <I18nLink
+      :to="{ name: 'index' }"
+      style="color: inherit"
+    >
+      {{ config.public.name }}
+    </I18nLink>
     <input
       id="nav-toggle"
       type="checkbox"

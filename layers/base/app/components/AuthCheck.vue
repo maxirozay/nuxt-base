@@ -253,15 +253,17 @@ onMounted(async () => {
         v-else
         @submit.prevent="getSignInOptions(email)"
       >
-        <label for="email">{{ $t('email') }}</label>
-        <input
-          id="email"
-          v-model.trim="email"
-          type="email"
-          required
-          :disabled="appStore.isLoading"
-          autocomplete="username"
-        />
+        <label for="email">
+          {{ $t('email') }}
+          <input
+            id="email"
+            v-model.trim="email"
+            type="email"
+            required
+            :disabled="appStore.isLoading"
+            autocomplete="username"
+          />
+        </label>
         <button
           class="w"
           :disabled="!email.includes('@')"
@@ -277,7 +279,7 @@ onMounted(async () => {
         v-if="!loggedIn && config.public.anonymousSignup && !optionsFetched"
         type="button"
         class="mt2 w"
-        style="background: none; border: none; color: var(--color-text)"
+        style="background: none; border: none; color: inherit"
         :disabled="appStore.isLoading"
         @click="signInAnonymously"
       >
@@ -287,7 +289,7 @@ onMounted(async () => {
         v-if="appStore.authPromise"
         type="button"
         class="mt2 w"
-        style="background: none; border: none; color: var(--color-text)"
+        style="background: none; border: none; color: inherit"
         :disabled="appStore.isLoading"
         @click="(appStore.authPromise.reject(), emits('cancel'))"
       >
@@ -300,5 +302,6 @@ onMounted(async () => {
 <style scoped>
 .signin {
   max-width: min(400px, 80vw);
+  min-width: 300px;
 }
 </style>
