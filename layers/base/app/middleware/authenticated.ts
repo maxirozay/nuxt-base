@@ -3,7 +3,8 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (!loggedIn.value) {
     if (String(to.name)?.endsWith('signin')) return
-    const redirectUrl = '/signin' + (to.fullPath !== '/' ? '?goto=' + to.fullPath : '')
+    const redirectUrl =
+      '/signin' + (to.fullPath !== '/' ? '?goto=' + encodeURIComponent(to.fullPath) : '')
     return navigateTo(redirectUrl, { replace: true })
   }
 })
