@@ -1,7 +1,12 @@
 export const useAppStore = defineStore('app', () => {
   const isLoading = ref(false)
   const notifications = ref(
-    [] as { id: number; message: string; type: 'error' | 'success'; isSticky: boolean }[],
+    [] as {
+      id: number
+      message: string
+      type: 'error' | 'danger' | 'success'
+      isSticky: boolean
+    }[],
   )
   const confirmation = ref<{
     message?: string
