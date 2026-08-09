@@ -9,6 +9,15 @@ useSeoMeta({
 
 definePageMeta({
   layout: 'simple',
+  middleware: [
+    (to) => {
+      const { user } = useUserSession()
+
+      if (user.value?.email) {
+        return navigateTo((to.query.goto as string) || '/', { replace: true })
+      }
+    },
+  ],
 })
 const config = useRuntimeConfig()
 const route = useRoute()
