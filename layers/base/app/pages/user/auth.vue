@@ -152,9 +152,9 @@ onMounted(getAuth)
 </script>
 
 <template>
-  <h1>{{ $t('settings') }}</h1>
+  <h1>{{ $t('authentication') }}</h1>
   <div class="flex-row flex-center g2">
-    <h3 class="m0">Password</h3>
+    <h3 class="m0">{{ $t('password') }}</h3>
     <button
       class="flex mr"
       @click="showPasswordChange = true"

@@ -1,5 +1,6 @@
 {
   "2fa": "Authentification à deux facteurs",
+  "authentication": "Authentification",
   "authenticatorApp": "Application d'authentification",
   "code": "Code",
   "codeInvalid": "Code invalide",
