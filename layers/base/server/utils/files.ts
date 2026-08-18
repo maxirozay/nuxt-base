@@ -6,6 +6,7 @@ import {
   stat,
   rm,
   appendFile,
+  rename,
   readFile as fsReadFile,
 } from 'fs/promises'
 import {
@@ -86,10 +87,13 @@ export async function uploadStream(
 
   const filePath = join(process.cwd(), path)
   await mkdir(dirname(filePath), { recursive: true })
+
+  const tmpPath = `${filePath}.${crypto.randomUUID()}.part`
   try {
-    await pipeline(file.stream, createWriteStream(filePath))
+    await pipeline(file.stream, createWriteStream(tmpPath))
+    await rename(tmpPath, filePath)
   } catch (error) {
-    await rm(filePath, { force: true })
+    await rm(tmpPath, { force: true })
     throw error
   }
 
