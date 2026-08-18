@@ -18,11 +18,14 @@ import {
   CreateMultipartUploadCommand,
   UploadPartCommand,
   CompleteMultipartUploadCommand,
+  AbortMultipartUploadCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import type { CompletedPart } from '@aws-sdk/client-s3'
 import { checkFileAccess } from '#server/database/access'
-import { createReadStream } from 'fs'
+import { createReadStream, createWriteStream } from 'fs'
+import { pipeline } from 'stream/promises'
+import type { Readable } from 'stream'
 import type { H3Event, MultiPartData } from 'h3'
 
 export async function uploadFile(
@@ -56,6 +59,41 @@ export async function uploadFile(
     url = getFileURL(path, isPrivate)
   }
   return url
+}
+
+// Same as uploadFile but for a file the server produces itself
+export async function uploadStream(
+  event: H3Event,
+  file: { stream: Readable; filename?: string; type?: string },
+  path = 'files',
+  isPrivate = true,
+) {
+  await checkFileAccess(event, path)
+  path = getSecurePath(path, isPrivate)
+  if (file.filename && !/[^/]\.[^.]+$/.test(path) && basename(path) !== basename(file.filename)) {
+    path = join(path, basename(file.filename))
+  }
+
+  if (useS3()) {
+    return uploadStreamToS3(
+      getS3Key(path),
+      file.stream,
+      file.type || 'application/octet-stream',
+      undefined,
+      isPrivate,
+    )
+  }
+
+  const filePath = join(process.cwd(), path)
+  await mkdir(dirname(filePath), { recursive: true })
+  try {
+    await pipeline(file.stream, createWriteStream(filePath))
+  } catch (error) {
+    await rm(filePath, { force: true })
+    throw error
+  }
+
+  return getFileURL(path, isPrivate)
 }
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -443,7 +481,75 @@ export async function uploadToS3(
   return getS3URL(key)
 }
 
-export async function initMultipartUploadToS3(key: string, contentType: string, isPrivate = true) {
+export async function uploadStreamToS3(
+  key: string,
+  body: Readable,
+  contentType: string,
+  cache = 'public, max-age=31536000',
+  isPrivate = true,
+) {
+  const client = useS3()
+  if (!client) return null
+
+  const config = useRuntimeConfig()
+  const partSize = 5 * 1024 * 1024 // S3 minimum, only the last part may be smaller
+
+  let uploadId: string | undefined
+  const parts: CompletedPart[] = []
+  let pending: Buffer[] = []
+  let pendingSize = 0
+
+  const sendPart = async (part: Buffer) => {
+    if (!uploadId) {
+      uploadId = (await initMultipartUploadToS3(key, contentType, isPrivate, cache))!
+    }
+    const uploaded = await uploadPartToS3(key, part, uploadId, parts.length + 1, isPrivate)
+    if (uploaded) parts.push(uploaded)
+  }
+
+  try {
+    for await (const chunk of body) {
+      pending.push(chunk)
+      pendingSize += chunk.length
+
+      while (pendingSize >= partSize) {
+        const merged = Buffer.concat(pending, pendingSize)
+        await sendPart(merged.subarray(0, partSize))
+        pending = [merged.subarray(partSize)]
+        pendingSize = merged.length - partSize
+      }
+    }
+
+    // Never reached a full part, so there is nothing to assemble.
+    if (!uploadId) {
+      return uploadToS3(key, Buffer.concat(pending, pendingSize), contentType, cache, isPrivate)
+    }
+
+    if (pendingSize) await sendPart(Buffer.concat(pending, pendingSize))
+
+    return completeMultipartUploadToS3(key, uploadId, parts, isPrivate)
+  } catch (error) {
+    if (uploadId) {
+      await client
+        .send(
+          new AbortMultipartUploadCommand({
+            Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
+            Key: key,
+            UploadId: uploadId,
+          }),
+        )
+        .catch(() => {})
+    }
+    throw error
+  }
+}
+
+export async function initMultipartUploadToS3(
+  key: string,
+  contentType: string,
+  isPrivate = true,
+  cache?: string,
+) {
   const client = useS3()
   if (!client) return null
 
@@ -453,6 +559,7 @@ export async function initMultipartUploadToS3(key: string, contentType: string, 
     Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
     Key: key,
     ContentType: contentType,
+    CacheControl: cache,
     ACL: isPrivate ? undefined : 'public-read',
   })
 
