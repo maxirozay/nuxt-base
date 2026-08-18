@@ -8,12 +8,16 @@ const querySchema = z.object({
   maxAge: z.coerce.number().optional(),
   serverCache: z.string().optional(),
   expireIn: z.coerce.number().optional(),
+  redirect: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
 })
 
 export default defineEventHandler((event) => {
   const path = event.context.params?.path || ''
   const query = getQuery(event)
-  const { isPrivate = false, maxAge, serverCache, expireIn } = querySchema.parse(query)
+  const { isPrivate = false, maxAge, serverCache, expireIn, redirect } = querySchema.parse(query)
 
   let cache = `public, max-age=${maxAge || 31536000}`
   if (maxAge === 0) {
@@ -22,5 +26,12 @@ export default defineEventHandler((event) => {
     cache = `private, max-age=${maxAge || 3600}`
   }
   setHeader(event, 'Cache-Control', cache)
-  return getFile(event, decodeURIComponent(path), isPrivate, serverCache as RequestCache, expireIn)
+  return getFile(
+    event,
+    decodeURIComponent(path),
+    isPrivate,
+    serverCache as RequestCache,
+    expireIn,
+    redirect,
+  )
 })

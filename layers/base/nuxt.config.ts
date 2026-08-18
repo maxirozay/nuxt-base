@@ -40,6 +40,7 @@ export default defineNuxtConfig({
     filesPublicFolder: 'files/public',
     filesPrivateFolder: 'files/private',
     s3: {
+      redirect: true,
       endpoint: '',
       region: 'us-east-1',
       publicBucket: '',

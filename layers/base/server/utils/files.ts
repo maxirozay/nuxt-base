@@ -187,6 +187,7 @@ export async function getFile(
   isPrivate = false,
   cache: RequestCache = 'no-cache',
   expireIn?: number,
+  redirect?: boolean,
 ) {
   await checkFileAccess(event, path)
   path = getSecurePath(path, isPrivate)
@@ -195,6 +196,11 @@ export async function getFile(
 
   if (useS3()) {
     const url = await getS3SignedUrl(getS3Key(path), expireIn, isPrivate)
+
+    if (redirect ?? useRuntimeConfig().s3.redirect) {
+      setHeader(event, 'Cache-Control', 'no-store')
+      return sendRedirect(event, url, 302)
+    }
 
     const response = await fetch(url, { cache, headers: range ? { range } : undefined })
 
