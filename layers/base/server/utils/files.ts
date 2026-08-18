@@ -156,6 +156,31 @@ export function getFileURL(path: string, isPrivate = true) {
   return config.public.files.url + join('/', url)
 }
 
+function parseRangeHeader(range: string | undefined, size: number) {
+  if (!range) return null
+
+  const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim())
+  if (!match) return null
+
+  const [, startRaw, endRaw] = match
+  let start: number
+  let end: number
+
+  if (startRaw) {
+    start = Number(startRaw)
+    end = endRaw ? Math.min(Number(endRaw), size - 1) : size - 1
+  } else {
+    // `bytes=-N` asks for the last N bytes
+    if (!endRaw || Number(endRaw) === 0) return 'unsatisfiable' as const
+    start = Math.max(size - Number(endRaw), 0)
+    end = size - 1
+  }
+
+  if (start > end || start >= size) return 'unsatisfiable' as const
+
+  return { start, end }
+}
+
 export async function getFile(
   event: H3Event,
   path: string,
@@ -166,14 +191,31 @@ export async function getFile(
   await checkFileAccess(event, path)
   path = getSecurePath(path, isPrivate)
 
+  const range = getRequestHeader(event, 'range')
+
   if (useS3()) {
     const url = await getS3SignedUrl(getS3Key(path), expireIn, isPrivate)
 
-    const response = await fetch(url, { cache })
+    const response = await fetch(url, { cache, headers: range ? { range } : undefined })
+
+    if (response.status === 416) {
+      const contentRange = response.headers.get('content-range')
+      if (contentRange) setHeader(event, 'Content-Range', contentRange)
+      throw createError({ statusCode: 416, message: 'Range not satisfiable' })
+    }
     if (!response.ok) throw createError({ statusCode: 502, message: 'Failed to fetch file' })
 
-    const contentType = response.headers.get('content-type')
-    if (contentType) setHeader(event, 'Content-Type', contentType)
+    const passthrough = {
+      'Content-Type': response.headers.get('content-type'),
+      'Content-Length': response.headers.get('content-length'),
+      'Content-Range': response.headers.get('content-range'),
+      'Accept-Ranges': response.headers.get('accept-ranges') || 'bytes',
+    }
+    for (const [name, value] of Object.entries(passthrough)) {
+      if (value) setHeader(event, name, value)
+    }
+    if (response.status === 206) setResponseStatus(event, 206)
+
     return response.body
   }
 
@@ -184,6 +226,23 @@ export async function getFile(
     throw createError({ statusCode: 404, message: 'File not found' })
   }
 
+  setHeader(event, 'Accept-Ranges', 'bytes')
+
+  const parsedRange = parseRangeHeader(range, stats.size)
+  if (parsedRange === 'unsatisfiable') {
+    setHeader(event, 'Content-Range', `bytes */${stats.size}`)
+    throw createError({ statusCode: 416, message: 'Range not satisfiable' })
+  }
+
+  if (parsedRange) {
+    const { start, end } = parsedRange
+    setResponseStatus(event, 206)
+    setHeader(event, 'Content-Range', `bytes ${start}-${end}/${stats.size}`)
+    setHeader(event, 'Content-Length', end - start + 1)
+    return createReadStream(fullPath, { start, end })
+  }
+
+  setHeader(event, 'Content-Length', stats.size)
   return createReadStream(fullPath)
 }
 
