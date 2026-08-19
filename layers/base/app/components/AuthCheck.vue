@@ -15,6 +15,7 @@ const options = ref({
   hasTOTP: false,
   hasPasskey: false,
 })
+let isLoading = ref()
 
 async function refreshSession() {
   await fetchUserSession()
@@ -27,7 +28,7 @@ async function refreshSession() {
 
 async function requestOtp() {
   if (!email.value) return
-  appStore.setLoading(true)
+  isLoading.value = true
   try {
     await $fetch('/api/auth/otp/get', {
       method: 'POST',
@@ -42,12 +43,12 @@ async function requestOtp() {
   } catch (e: any) {
     handleError(e)
   } finally {
-    appStore.setLoading(false)
+    isLoading.value = false
   }
 }
 
 async function signInWithOtp() {
-  appStore.setLoading(true)
+  isLoading.value = true
   try {
     await $fetch('/api/auth/otp/verify', {
       method: 'POST',
@@ -58,13 +59,13 @@ async function signInWithOtp() {
     handleError(e)
   } finally {
     otpRequested.value = false
-    appStore.setLoading(false)
+    isLoading.value = false
   }
 }
 
 async function signInWithTOTP() {
   if (!email.value || !totp.value || !password.value) return
-  appStore.setLoading(true)
+  isLoading.value = true
   try {
     const body: {
       email: string
@@ -84,13 +85,13 @@ async function signInWithTOTP() {
   } catch (e: any) {
     handleError(e)
   } finally {
-    appStore.setLoading(false)
+    isLoading.value = false
   }
 }
 
 async function signInWithPassword() {
   if (!email.value || !password.value) return
-  appStore.setLoading(true)
+  isLoading.value = true
   try {
     await $fetch('/api/auth/password', {
       method: 'POST',
@@ -101,7 +102,7 @@ async function signInWithPassword() {
   } catch (e: any) {
     handleError(e)
   } finally {
-    appStore.setLoading(false)
+    isLoading.value = false
   }
 }
 
@@ -137,7 +138,7 @@ async function signInWithPasskey() {
 }
 
 async function signInAnonymously() {
-  appStore.setLoading(true)
+  isLoading.value = true
   try {
     await $fetch('/api/auth/anonymous', {
       method: 'POST',
@@ -146,12 +147,12 @@ async function signInAnonymously() {
   } catch (e: any) {
     handleError(e)
   } finally {
-    appStore.setLoading(false)
+    isLoading.value = false
   }
 }
 
 async function getSignInOptions(email: string) {
-  appStore.setLoading(true)
+  isLoading.value = true
   try {
     options.value = await $fetch<typeof options.value>('/api/auth/options', {
       method: 'POST',
@@ -169,7 +170,7 @@ async function getSignInOptions(email: string) {
   } catch (e: any) {
     handleError(e)
   } finally {
-    appStore.setLoading(false)
+    isLoading.value = false
   }
 }
 
@@ -207,7 +208,7 @@ onMounted(async () => {
           id="password"
           v-model.trim="password"
           type="password"
-          :disabled="appStore.isLoading"
+          :disabled="isLoading"
           autocomplete="current-password"
           pattern=".{12,}|[0-9]{6}"
           @paste="signIn"
@@ -218,7 +219,7 @@ onMounted(async () => {
             id="totp"
             v-model.trim="totp"
             type="text"
-            :disabled="appStore.isLoading || !password"
+            :disabled="isLoading || !password"
             autocomplete="one-time-code"
             @paste="signInWithTOTP"
             @change="signInWithTOTP"
@@ -226,9 +227,7 @@ onMounted(async () => {
         </div>
         <button
           type="submit"
-          :disabled="
-            appStore.isLoading || (!password && !otpRequested) || (options.hasTOTP && !totp)
-          "
+          :disabled="isLoading || (!password && !otpRequested) || (options.hasTOTP && !totp)"
           class="w mt1"
         >
           {{ $t('authCheck.signin') }}
@@ -236,7 +235,7 @@ onMounted(async () => {
         <button
           v-if="!otpRequested"
           type="button"
-          :disabled="appStore.isLoading"
+          :disabled="isLoading"
           class="flex-1 w mt1 bg bg-border"
           @click="requestOtp"
         >
@@ -260,13 +259,13 @@ onMounted(async () => {
             v-model.trim="email"
             type="email"
             required
-            :disabled="appStore.isLoading"
+            :disabled="isLoading"
             autocomplete="username"
           />
         </label>
         <button
           class="w"
-          :disabled="!email.includes('@')"
+          :disabled="isLoading || !email.includes('@')"
         >
           {{ $t('continue') }}
         </button>
@@ -280,7 +279,7 @@ onMounted(async () => {
         type="button"
         class="mt2 w"
         style="background: none; border: none; color: inherit"
-        :disabled="appStore.isLoading"
+        :disabled="isLoading"
         @click="signInAnonymously"
       >
         {{ $t('authCheck.continueAsGuest') }}
@@ -290,7 +289,7 @@ onMounted(async () => {
         type="button"
         class="mt2 w"
         style="background: none; border: none; color: inherit"
-        :disabled="appStore.isLoading"
+        :disabled="isLoading"
         @click="(appStore.authPromise.reject(), emits('cancel'))"
       >
         {{ $t('cancel') }}
