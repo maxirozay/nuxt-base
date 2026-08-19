@@ -33,7 +33,7 @@ async function registerPasskey() {
     getAuth()
     appStore.notify('saved', 'success')
   } catch (e: any) {
-    appStore.notify(e.data?.message, 'error')
+    appStore.notify(e.message, 'error')
   }
 }
 
@@ -46,7 +46,7 @@ async function setPasskeyName(name: string, credentialId: string) {
     })
     appStore.notify('saved', 'success')
   } catch (e: any) {
-    appStore.notify(e.data?.message, 'error')
+    appStore.notify(e.message, 'error')
   }
 }
 
@@ -60,7 +60,7 @@ async function deletePasskey(credentialId: string) {
     auth.value.credentials = auth.value.credentials.filter((c: any) => c.id !== credentialId)
     appStore.notify('deleted', 'success')
   } catch (e: any) {
-    appStore.notify(e.data?.message, 'error')
+    appStore.notify(e.message, 'error')
   }
 }
 
@@ -76,7 +76,7 @@ async function setPassword() {
     showPasswordChange.value = false
     appStore.notify('saved', 'success')
   } catch (e: any) {
-    appStore.notify(e.data?.message, 'error')
+    appStore.notify(e.message, 'error')
   }
 }
 
@@ -98,7 +98,8 @@ async function showTOTPSecret() {
     const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(user.value!.email!)}?secret=${TOTPSecret.value}&issuer=${encodeURIComponent(issuer)}`
     QRCode.toCanvas(canvas, uri)
   } catch (e: any) {
-    appStore.notify(e.data?.message, 'error')
+    showTOTP.value = false
+    appStore.notify(e.message, 'error')
   }
 }
 
@@ -114,7 +115,7 @@ async function confirmTOTP() {
     auth.value.totp = true
     showTOTP.value = false
   } catch (e: any) {
-    appStore.notify(e.data?.message, 'error')
+    appStore.notify(e.message, 'error')
   }
 }
 
@@ -129,7 +130,7 @@ async function disableTOTP() {
     auth.value.totp = null
     showTOTP.value = false
   } catch (e: any) {
-    appStore.notify(e.data?.message, 'error')
+    appStore.notify(e.message, 'error')
   }
 }
 
@@ -142,7 +143,7 @@ async function deleteRefreshTokens() {
     await clearSession()
     navigateTo('/')
   } catch (e: any) {
-    appStore.notify(e.data?.message, 'error')
+    appStore.notify(e.message, 'error')
   } finally {
     appStore.setLoading(false)
   }
@@ -240,34 +241,36 @@ onMounted(getAuth)
   <form
     v-for="credential in auth?.credentials || []"
     :key="credential.id"
-    class="flex-row group mt1"
     @submit.prevent="setPasskeyName(credential.name, credential.id)"
   >
-    <input
-      type="text"
-      v-model="credential.name"
-      maxlength="32"
-    />
-    <button
-      type="button"
-      class="bg flex"
-      @click="deletePasskey(credential.id)"
-    >
-      <Icon name="uil:trash" />
-    </button>
-    <button class="flex fg"><Icon name="uil:save" /></button>
+    <div class="flex-row group mt1">
+      <input
+        type="text"
+        v-model="credential.name"
+        maxlength="32"
+      />
+      <button
+        type="button"
+        class="bg flex"
+        @click="deletePasskey(credential.id)"
+      >
+        <Icon name="uil:trash" />
+      </button>
+      <button class="flex fg"><Icon name="uil:save" /></button>
+    </div>
   </form>
 
   <h3>
     <label
       for="totp"
       class="mt2"
-      >{{ $t('authenticatorApp') }}</label
     >
+      {{ $t('authenticatorApp') }}
+    </label>
     <input
       type="checkbox"
       id="totp"
-      class="ml2"
+      class="ml1"
       :checked="!!auth?.totp"
       @click.prevent="toggleTOTP"
     />
