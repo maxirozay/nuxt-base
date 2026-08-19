@@ -9,6 +9,12 @@ export default defineEventHandler(async (event) => {
       message: 'Anonymous signup not allowed',
     })
   }
+  if (config.forceMfa) {
+    throw createError({
+      status: 403,
+      message: 'Anonymous signup not allowed when MFA is required',
+    })
+  }
 
   const insertedUsers = await db.insert(auth).values({}).returning()
 

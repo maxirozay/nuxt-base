@@ -4,7 +4,8 @@ import { randomBytes } from 'crypto'
 import type { H3Event } from 'h3'
 
 type AuthUser = typeof auth.$inferSelect
-type SessionUser = Pick<AuthUser, 'id'> & Partial<Pick<AuthUser, 'email' | 'role'>>
+type SessionUser = Pick<AuthUser, 'id'> &
+  Partial<Pick<AuthUser, 'email' | 'role'>> & { requiresMfaSetup?: boolean }
 
 export async function createAuth(user: Pick<AuthUser, 'email'>) {
   const insertedUsers = await db
@@ -80,6 +81,7 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
       email: user.email?.trim().toLowerCase() ?? undefined,
       role: user.role || 'user',
       isAnonymous: !user.email,
+      requiresMfaSetup: user.requiresMfaSetup,
     },
     expiresAt: Date.now() + useRuntimeConfig().session.maxAge * 1000,
   })

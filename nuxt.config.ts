@@ -20,7 +20,10 @@ export default defineNuxtConfig({
       url: 'http://localhost:3000',
       name: 'Nuxt base',
       logo: 'https://placehold.co/200x100?text=logo',
+      anonymousSignup: false,
     },
+    autoSignup: false,
+    forceMfa: false,
     rateLimit: {
       routes: {
         // limit: max requests per IP, window: in seconds

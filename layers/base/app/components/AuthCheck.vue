@@ -20,6 +20,10 @@ let isLoading = ref()
 async function refreshSession() {
   await fetchUserSession()
   if (loggedIn.value) {
+    if (user.value?.requiresMfaSetup) {
+      await navigateTo('/user/auth', { replace: true })
+      return
+    }
     appStore.authPromise?.resolve()
     emits('authenticated')
   }

@@ -7,6 +7,13 @@ const bodySchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  if (useRuntimeConfig().forceMfa) {
+    throw createError({
+      status: 401,
+      message: 'MFA required',
+    })
+  }
+
   const { email, otp } = await readValidatedBody(event, bodySchema.parse)
   if (!email || !otp) {
     throw createError({
@@ -29,7 +36,7 @@ export default defineEventHandler(async (event) => {
     return await setSession(event, user)
   }
 
-  const user = await getAuth(event, email).catch((error) => {
+  const user = await getAuth(event, email, true).catch((error) => {
     const config = useRuntimeConfig()
 
     if (error.statusCode === 404 && config.autoSignup) {
@@ -43,7 +50,13 @@ export default defineEventHandler(async (event) => {
       message: 'TOTP required',
     })
   }
-  await setSession(event, user)
+  const config = useRuntimeConfig()
+  const hasMfa = user.totp || (user.credentials?.length ?? 0) > 0
+  if (config.forceMfa && !hasMfa) {
+    await setSession(event, { ...user, requiresMfaSetup: true })
+  } else {
+    await setSession(event, user)
+  }
 })
 
 export async function verifyOTP(email: string, otp: string): Promise<void> {

@@ -39,5 +39,12 @@ export default defineWebAuthnRegisterEventHandler({
       backedUp: credential.backedUp,
       transports: credential.transports as any[],
     })
+    if (session.user?.requiresMfaSetup) {
+      await setSession(event, {
+        id: session.user.id,
+        email: session.user.email,
+        role: session.user.role,
+      })
+    }
   },
 })

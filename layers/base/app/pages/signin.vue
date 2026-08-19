@@ -13,6 +13,10 @@ definePageMeta({
     (to) => {
       const { user } = useUserSession()
 
+      if (user.value?.requiresMfaSetup) {
+        return navigateTo('/user/auth', { replace: true })
+      }
+
       if (user.value?.email) {
         return navigateTo((to.query.goto as string) || '/', { replace: true })
       }

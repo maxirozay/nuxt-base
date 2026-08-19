@@ -7,13 +7,15 @@ const bodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const { email } = await readValidatedBody(event, bodySchema.parse)
 
+  const config = useRuntimeConfig()
   try {
     const user = await getAuth(event, email, true)
     return {
       hasOTP: true,
-      hasPassword: !!user.password,
+      hasPassword: !config.forceMfa && !!user.password,
       hasTOTP: !!user.totp,
       hasPasskey: user.credentials!.length > 0,
+      forceMfa: config.forceMfa,
     }
   } catch {
     return {
@@ -21,6 +23,7 @@ export default defineEventHandler(async (event) => {
       hasPassword: false,
       hasTOTP: false,
       hasPasskey: false,
+      forceMfa: config.forceMfa,
     }
   }
 })

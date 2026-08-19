@@ -21,5 +21,6 @@ export default defineEventHandler(async (event) => {
 
   if (await verify({ secret, token })) {
     await db.update(auth).set({ totp: secret }).where(eq(auth.id, user.id))
+    await setSession(event, { id: user.id, email: user.email, role: user.role })
   } else throw createError({ status: 400, message: 'Invalid code.' })
 })

@@ -34,6 +34,6 @@ export default defineWebAuthnAuthenticateEventHandler({
       .from(auth)
       .where(eq(auth.id, credential.userId as string))
       .then((result) => result[0])
-    await setSession(event, user!)
+    await setSession(event, { ...user!, requiresMfaSetup: false })
   },
 })

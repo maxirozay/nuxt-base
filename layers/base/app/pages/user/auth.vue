@@ -6,7 +6,7 @@ definePageMeta({
 })
 
 const appStore = useAppStore()
-const { user } = useUserSession()
+const { user, fetch: fetchUserSession } = useUserSession()
 const auth = ref()
 const TOTPSecret = ref('')
 const TOTPCode = ref('')
@@ -17,6 +17,8 @@ const showPassword1 = ref(false)
 const showPassword2 = ref(false)
 const showTOTP = ref(false)
 const { clear: clearSession } = useUserSession()
+
+const requiresMfaSetup = computed(() => user.value?.requiresMfaSetup)
 
 async function getAuth() {
   auth.value = await $fetch('/api/auth')
@@ -30,8 +32,12 @@ async function registerPasskey() {
   try {
     if (!(await appStore.checkAuth())) return
     await register({ userName: user.value!.email! })
-    getAuth()
+    await getAuth()
     appStore.notify('saved', 'success')
+    await fetchUserSession()
+    if (!requiresMfaSetup.value) {
+      await navigateTo('/', { replace: true })
+    }
   } catch (e: any) {
     appStore.notify(e.message, 'error')
   }
@@ -114,6 +120,10 @@ async function confirmTOTP() {
     TOTPCode.value = ''
     auth.value.totp = true
     showTOTP.value = false
+    await fetchUserSession()
+    if (!requiresMfaSetup.value) {
+      await navigateTo('/', { replace: true })
+    }
   } catch (e: any) {
     appStore.notify(e.message, 'error')
   }
@@ -154,7 +164,21 @@ onMounted(getAuth)
 
 <template>
   <h1>{{ $t('authentication') }}</h1>
-  <div class="flex-row flex-center g2">
+  <div
+    v-if="requiresMfaSetup"
+    class="bg bg-border p2 mb2 text-center"
+  >
+    <Icon
+      name="uil:shield-exclamation"
+      class="mr1"
+    />
+    <b>{{ $t('mfaRequired') }}</b>
+    <p class="m0">{{ $t('mfaRequiredDescription') }}</p>
+  </div>
+  <div
+    v-if="!requiresMfaSetup"
+    class="flex-row flex-center g2"
+  >
     <h3 class="m0">{{ $t('password') }}</h3>
     <button
       class="flex mr"
@@ -164,7 +188,7 @@ onMounted(getAuth)
     </button>
   </div>
   <div
-    v-if="showPasswordChange"
+    v-if="showPasswordChange && !requiresMfaSetup"
     class="modal"
     @click.self="showPasswordChange = false"
   >
@@ -239,6 +263,7 @@ onMounted(getAuth)
     </button>
   </div>
   <form
+    v-if="!requiresMfaSetup"
     v-for="credential in auth?.credentials || []"
     :key="credential.id"
     @submit.prevent="setPasskeyName(credential.name, credential.id)"
@@ -259,6 +284,17 @@ onMounted(getAuth)
       <button class="flex fg"><Icon name="uil:save" /></button>
     </div>
   </form>
+  <p
+    v-if="requiresMfaSetup"
+    class="text-center"
+  >
+    <button
+      class="w"
+      @click="registerPasskey"
+    >
+      {{ $t('registerPasskey') }}
+    </button>
+  </p>
 
   <h3>
     <label
@@ -268,6 +304,7 @@ onMounted(getAuth)
       {{ $t('authenticatorApp') }}
     </label>
     <input
+      v-if="!requiresMfaSetup"
       type="checkbox"
       id="totp"
       class="ml1"
@@ -275,6 +312,17 @@ onMounted(getAuth)
       @click.prevent="toggleTOTP"
     />
   </h3>
+  <p
+    v-if="requiresMfaSetup"
+    class="text-center"
+  >
+    <button
+      class="w"
+      @click="toggleTOTP"
+    >
+      {{ $t('setupTotp') }}
+    </button>
+  </p>
   <div
     v-if="showTOTP"
     class="modal"
