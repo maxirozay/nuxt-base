@@ -34,7 +34,7 @@ const isCurrentEmail = computed(() => {
 })
 
 const isPasswordValid = computed(() => {
-  return password1.value.length >= 12
+  return password1.value.length >= 16
 })
 
 const canRemovePasskey = computed(
@@ -307,7 +307,8 @@ onMounted(getAuth)
             id="password1"
             v-model.trim="password1"
             autocomplete="new-password"
-            minlength="12"
+            minlength="16"
+            maxlength="64"
             required
             :placeholder="auth?.hasPassword ? '************' : ''"
           />
@@ -352,7 +353,8 @@ onMounted(getAuth)
                 id="password2"
                 v-model.trim="password2"
                 autocomplete="new-password"
-                minlength="12"
+                minlength="16"
+                maxlength="64"
                 required
               />
               <button

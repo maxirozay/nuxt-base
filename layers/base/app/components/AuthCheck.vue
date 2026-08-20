@@ -206,7 +206,7 @@ onMounted(async () => {
         </label>
         <input
           id="password"
-          v-model.trim="password"
+          v-model="password"
           type="password"
           :disabled="isLoading"
           autocomplete="current-password"

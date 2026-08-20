@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { auth } from '#server/database/schema'
 
 const bodySchema = z.object({
-  password: z.string().min(12),
+  password: z.string().min(16).max(64),
 })
 
 export default defineEventHandler(async (event) => {

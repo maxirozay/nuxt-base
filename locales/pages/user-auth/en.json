@@ -13,7 +13,7 @@
   "mfaRequiredDescription": "Set up a passkey or an authenticator app to finish signing in.",
   "passkeyLimit": "Up to 4 passkeys",
   "password": "Password",
-  "passwordPolicy": "At least 12 characters",
+  "passwordPolicy": "At least 16 characters",
   "registerPasskey": "Add a passkey",
   "settings": "Settings",
   "setupTotp": "Use an authenticator app",
