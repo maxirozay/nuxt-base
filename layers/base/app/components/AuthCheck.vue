@@ -20,7 +20,7 @@ let isLoading = ref()
 async function refreshSession() {
   await fetchUserSession()
   if (loggedIn.value) {
-    appStore.authPromise?.resolve()
+    appStore.authPromise?.resolve(true)
     emits('authenticated')
   }
   email.value = ''
@@ -290,7 +290,7 @@ onMounted(async () => {
         class="mt2 w"
         style="background: none; border: none; color: inherit"
         :disabled="isLoading"
-        @click="(appStore.authPromise.reject(), emits('cancel'))"
+        @click="(appStore.authPromise.resolve(false), emits('cancel'))"
       >
         {{ $t('cancel') }}
       </button>

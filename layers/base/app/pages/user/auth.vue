@@ -24,10 +24,6 @@ const { $getLocale } = useI18n()
 
 const isMfaSetup = user.value?.requiresMfaSetup === true
 
-async function checkAuth() {
-  return isMfaSetup || (await appStore.checkAuth())
-}
-
 const isCurrentEmail = computed(() => {
   const value = newEmail.value.toLowerCase()
   return !value || value === user.value?.email?.toLowerCase()
@@ -52,8 +48,7 @@ const { register } = useWebAuthn({
 
 async function registerPasskey() {
   try {
-    if (!(await checkAuth())) return
-    await register({ userName: user.value!.email! })
+    await appStore.withAuth(() => register({ userName: user.value!.email! }), !isMfaSetup)
     await getAuth()
     appStore.notify('saved', 'success')
     if (isMfaSetup) {
@@ -61,44 +56,47 @@ async function registerPasskey() {
       if (!user.value?.requiresMfaSetup) await navigateTo('/', { replace: true })
     }
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
 async function setPasskeyName(name: string, credentialId: string) {
   try {
-    if (!(await checkAuth())) return
-    await $fetch('/api/auth/webauthn', {
-      method: 'POST',
-      body: { name, credentialId },
-    })
+    await appStore.withAuth(() =>
+      $fetch('/api/auth/webauthn', {
+        method: 'POST',
+        body: { name, credentialId },
+      }),
+    )
     appStore.notify('saved', 'success')
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
 async function deletePasskey(credentialId: string) {
   try {
-    if (!(await checkAuth())) return
-    await $fetch('/api/auth/webauthn', {
-      method: 'DELETE',
-      body: { credentialId },
-    })
+    await appStore.withAuth(() =>
+      $fetch('/api/auth/webauthn', {
+        method: 'DELETE',
+        body: { credentialId },
+      }),
+    )
     auth.value.credentials = auth.value.credentials.filter((c: any) => c.id !== credentialId)
     appStore.notify('deleted', 'success')
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
 async function requestEmailChange() {
   try {
-    if (!(await checkAuth())) return
-    await $fetch('/api/auth/email/get', {
-      method: 'POST',
-      body: { email: newEmail.value, locale: $getLocale() },
-    })
+    await appStore.withAuth(() =>
+      $fetch('/api/auth/email/get', {
+        method: 'POST',
+        body: { email: newEmail.value, locale: $getLocale() },
+      }),
+    )
     emailCodeSent.value = true
   } catch (e: any) {
     appStore.notify(e?.data?.message || e?.message, 'error')
@@ -127,18 +125,19 @@ async function confirmEmailChange() {
 
 async function setPassword() {
   try {
-    if (!(await checkAuth())) return
-    await $fetch('/api/auth', {
-      method: 'POST',
-      body: { password: password1.value },
-    })
+    await appStore.withAuth(() =>
+      $fetch('/api/auth', {
+        method: 'POST',
+        body: { password: password1.value },
+      }),
+    )
     password1.value = ''
     password2.value = ''
     showPasswordChange.value = false
     auth.value.hasPassword = true
     appStore.notify('saved', 'success')
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -149,8 +148,10 @@ function toggleTOTP() {
 
 async function showTOTPSecret() {
   try {
-    if (!(await checkAuth())) return
-    const response = await $fetch<{ secret: string }>('/api/auth/totp/generate')
+    const response = await appStore.withAuth(
+      () => $fetch<{ secret: string }>('/api/auth/totp/generate'),
+      !isMfaSetup,
+    )
     TOTPSecret.value = response.secret
     await nextTick()
     const canvas = document.getElementById('totp-qrcode') as HTMLCanvasElement
@@ -161,17 +162,21 @@ async function showTOTPSecret() {
     QRCode.toCanvas(canvas, uri)
   } catch (e: any) {
     showTOTP.value = false
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
 async function confirmTOTP() {
   if (TOTPCode.value.length !== 6) return
   try {
-    await $fetch('/api/auth/totp/confirm', {
-      method: 'POST',
-      body: { secret: TOTPSecret.value, token: TOTPCode.value },
-    })
+    await appStore.withAuth(
+      () =>
+        $fetch('/api/auth/totp/confirm', {
+          method: 'POST',
+          body: { secret: TOTPSecret.value, token: TOTPCode.value },
+        }),
+      !isMfaSetup,
+    )
     TOTPSecret.value = ''
     TOTPCode.value = ''
     auth.value.hasTOTP = true
@@ -181,7 +186,7 @@ async function confirmTOTP() {
       if (!user.value?.requiresMfaSetup) await navigateTo('/', { replace: true })
     }
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -196,7 +201,7 @@ async function disableTOTP() {
     auth.value.hasTOTP = false
     showTOTP.value = false
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -209,7 +214,7 @@ async function deleteRefreshTokens() {
     await clearSession()
     navigateTo('/')
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   } finally {
     appStore.setLoading(false)
   }

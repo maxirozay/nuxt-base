@@ -11,7 +11,7 @@ export function emailChangeKey(userId: string, email: string) {
 }
 
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireRecentAuth(event)
   const { email, locale = 'en' } = await readValidatedBody(event, bodySchema.parse)
   const user = await getAuth(event)
 

@@ -8,7 +8,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { credentialId } = await readValidatedBody(event, bodySchema.parse)
-  const session = await requireUserSession(event)
+  const session = await requireRecentAuth(event)
   const userId = session.user.id
 
   if (!useRuntimeConfig().forceMfa) {

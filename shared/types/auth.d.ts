@@ -9,6 +9,8 @@ declare module '#auth-utils' {
 
   interface UserSession {
     expiresAt: number
+    /** last time a credential was proven on this session, for requireRecentAuth() */
+    authenticatedAt: number
   }
 }
 

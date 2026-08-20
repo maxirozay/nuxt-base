@@ -28,6 +28,12 @@ export default defineNuxtConfig({
     refreshToken: {
       maxAge: 60 * 60 * 24 * 30, // 30 days
     },
+    recentAuth: {
+      // window a sensitive action stays unlocked after a signin. Must stay larger than
+      // the client-side window in checkAuth(), otherwise the UI skips its own prompt
+      // while the server still rejects the call.
+      maxAge: 600, // 10 minutes
+    },
     autoSignup: false,
     forceMfa: false,
     db: '',

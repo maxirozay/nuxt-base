@@ -1,3 +1,14 @@
+/**
+ * Thrown by withAuth() when the user backs out of the identity prompt. Carries an empty
+ * message on purpose: cancelling is not an error to report, and notify() ignores it.
+ */
+export class AuthCancelled extends Error {
+  constructor() {
+    super('')
+    this.name = 'AuthCancelled'
+  }
+}
+
 export const useAppStore = defineStore('app', () => {
   const isLoading = ref(false)
   const notifications = ref(
@@ -15,7 +26,7 @@ export const useAppStore = defineStore('app', () => {
   } | null>(null)
 
   const authVerifiedAt = ref(0)
-  const authPromise = ref()
+  const authPromise = ref<{ resolve: (verified: boolean) => void } | null>(null)
 
   function confirm(message?: string) {
     return new Promise((resolve, reject) => {
@@ -29,23 +40,40 @@ export const useAppStore = defineStore('app', () => {
     })
   }
 
-  function checkAuth(reverifyAfter = 5 * 60 * 1000) {
+  /** resolves true once the identity is proven, false if the user cancels the prompt */
+  function checkAuth(reverifyAfter = 5 * 60 * 1000): Promise<boolean> {
     if (Date.now() - authVerifiedAt.value < reverifyAfter) {
-      return true
+      return Promise.resolve(true)
     }
-    return new Promise((resolve, reject) => {
-      authPromise.value = {
-        resolve,
-        reject,
-      }
+    return new Promise<boolean>((resolve) => {
+      authPromise.value = { resolve }
     })
-      .then(() => {
-        authVerifiedAt.value = Date.now()
-        return true
+      .then((verified) => {
+        if (verified) authVerifiedAt.value = Date.now()
+        return verified
       })
       .finally(() => {
         authPromise.value = null
       })
+  }
+
+  /**
+   * Wraps a call the server gates with requireRecentAuth(). Prompts up front so a stale
+   * session never spends a request — the rate limiter counts those before the handler
+   * ever runs. The retry covers callers that skip the prompt (forced MFA setup) and any
+   * drift between our window and the server's.
+   */
+  async function withAuth<T>(request: () => Promise<T>, prompt = true): Promise<T> {
+    if (prompt && !(await checkAuth())) throw new AuthCancelled()
+    try {
+      return await request()
+    } catch (e: any) {
+      if (e?.data?.statusMessage !== 'reauth_required') throw e
+      authVerifiedAt.value = 0
+      // cancelled at the second chance: surface the server's message instead
+      if (!(await checkAuth())) throw e
+      return request()
+    }
   }
 
   function setLoading(state: boolean) {
@@ -92,5 +120,6 @@ export const useAppStore = defineStore('app', () => {
     removeNotification,
     authPromise,
     checkAuth,
+    withAuth,
   }
 })

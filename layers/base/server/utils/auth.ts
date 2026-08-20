@@ -85,6 +85,14 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
     await createRefreshToken(user.id, event)
   }
 
+  // refresh === false means we are only rebuilding the session payload, not proving a
+  // credential, so carry the stamp over instead of restarting it. Defaulting to 0 also
+  // covers the middleware restoring a session from the refresh_token cookie: that path
+  // proves nothing, so it must not unlock the sensitive actions below.
+  const authenticatedAt = refresh
+    ? Date.now()
+    : ((await getUserSession(event)).authenticatedAt ?? 0)
+
   // replace, not set: setUserSession merges with defu, so an absent
   // requiresMfaSetup would never clear a previously flagged session
   return replaceUserSession(event, {
@@ -95,8 +103,37 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
       isAnonymous: !user.email,
       ...(await mfaSetupFlag(user)),
     },
+    authenticatedAt,
     expiresAt: Date.now() + useRuntimeConfig().session.maxAge * 1000,
   })
+}
+
+/**
+ * Gate for sensitive actions (setting a password, adding or removing a second factor,
+ * changing the email address): the caller must have proven a credential recently, not
+ * merely hold a session cookie.
+ *
+ * The stamp lives in the sealed session cookie rather than in a column on auth.users
+ * on purpose: a column is per user, so a signin on any device would make every other
+ * session count as fresh, including a stolen one.
+ */
+export async function requireRecentAuth(event: H3Event) {
+  const session = await requireUserSession(event)
+
+  // an anonymous user has no credential to prove and no way through AuthCheck: the
+  // cookie is the whole account, so a freshness check would only lock them out
+  if (session.user.isAnonymous) return session
+
+  const maxAge = useRuntimeConfig().recentAuth.maxAge * 1000
+  if (!session.authenticatedAt || Date.now() - session.authenticatedAt > maxAge) {
+    throw createError({
+      status: 403,
+      statusMessage: 'reauth_required',
+      message: 'Please verify your identity again to continue.',
+    })
+  }
+
+  return session
 }
 
 export function generateRefreshToken(): string {
