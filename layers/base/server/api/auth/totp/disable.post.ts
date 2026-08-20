@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { verify } from 'otplib'
 import { eq } from 'drizzle-orm/sql/expressions/conditions'
-import { auth } from '#server/database/schema'
+import { auth, credentials } from '#server/database/schema'
 
 const bodySchema = z.object({
   token: z.string().length(6),
@@ -16,13 +16,34 @@ export default defineEventHandler(async (event) => {
     })
   }
   const session = await requireUserSession(event)
-  const user = await getAuth(event, session.user.email)
+  const userId = session.user.id
 
-  if (!user.totp) {
-    throw createError({ status: 400, message: 'TOTP is not enabled.' })
-  }
+  await db.transaction(async (tx) => {
+    const [locked] = await tx
+      .select({ totp: auth.totp })
+      .from(auth)
+      .where(eq(auth.id, userId))
+      .for('update')
+    if (!locked) {
+      throw createError({ status: 404, message: 'User not found' })
+    }
+    if (!locked.totp) {
+      throw createError({ status: 400, message: 'TOTP is not enabled.' })
+    }
 
-  if (await verify({ secret: user.totp, token })) {
-    await db.update(auth).set({ totp: null }).where(eq(auth.id, session.user.id))
-  } else throw createError({ status: 400, message: 'Invalid TOTP.' })
+    if (useRuntimeConfig().forceMfa) {
+      const remaining = await tx
+        .select({ id: credentials.id })
+        .from(credentials)
+        .where(eq(credentials.userId, userId))
+      if (!remaining.length) {
+        throw createError({ status: 400, message: 'Keep at least one second factor.' })
+      }
+    }
+
+    if (!(await verify({ secret: locked.totp, token }))) {
+      throw createError({ status: 400, message: 'Invalid TOTP.' })
+    }
+    await tx.update(auth).set({ totp: null }).where(eq(auth.id, userId))
+  })
 })

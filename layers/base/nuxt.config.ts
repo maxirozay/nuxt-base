@@ -29,6 +29,7 @@ export default defineNuxtConfig({
       maxAge: 60 * 60 * 24 * 30, // 30 days
     },
     autoSignup: false,
+    forceMfa: false,
     db: '',
     smtp: {
       host: '',

@@ -39,5 +39,6 @@ export default defineWebAuthnRegisterEventHandler({
       backedUp: credential.backedUp,
       transports: credential.transports as any[],
     })
+    await setSession(event, session.user, false) // refresh requiresMfaSetup
   },
 })

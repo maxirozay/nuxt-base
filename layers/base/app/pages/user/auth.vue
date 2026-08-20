@@ -6,7 +6,7 @@ definePageMeta({
 })
 
 const appStore = useAppStore()
-const { user } = useUserSession()
+const { user, fetch: fetchUserSession } = useUserSession()
 const auth = ref()
 const TOTPSecret = ref('')
 const TOTPCode = ref('')
@@ -18,6 +18,17 @@ const showPassword2 = ref(false)
 const showTOTP = ref(false)
 const { clear: clearSession } = useUserSession()
 
+const isMfaSetup = user.value?.requiresMfaSetup === true
+
+async function checkAuth() {
+  return isMfaSetup || (await appStore.checkAuth())
+}
+
+const canRemovePasskey = computed(
+  () => !auth.value?.forceMfa || auth.value.hasTOTP || auth.value.credentials.length > 1,
+)
+const canDisableTOTP = computed(() => !auth.value?.forceMfa || auth.value.credentials.length > 0)
+
 async function getAuth() {
   auth.value = await $fetch('/api/auth')
 }
@@ -28,10 +39,14 @@ const { register } = useWebAuthn({
 
 async function registerPasskey() {
   try {
-    if (!(await appStore.checkAuth())) return
+    if (!(await checkAuth())) return
     await register({ userName: user.value!.email! })
-    getAuth()
+    await getAuth()
     appStore.notify('saved', 'success')
+    if (isMfaSetup) {
+      await fetchUserSession()
+      if (!user.value?.requiresMfaSetup) await navigateTo('/', { replace: true })
+    }
   } catch (e: any) {
     appStore.notify(e.message, 'error')
   }
@@ -39,7 +54,7 @@ async function registerPasskey() {
 
 async function setPasskeyName(name: string, credentialId: string) {
   try {
-    if (!(await appStore.checkAuth())) return
+    if (!(await checkAuth())) return
     await $fetch('/api/auth/webauthn', {
       method: 'POST',
       body: { name, credentialId },
@@ -52,7 +67,7 @@ async function setPasskeyName(name: string, credentialId: string) {
 
 async function deletePasskey(credentialId: string) {
   try {
-    if (!(await appStore.checkAuth())) return
+    if (!(await checkAuth())) return
     await $fetch('/api/auth/webauthn', {
       method: 'DELETE',
       body: { credentialId },
@@ -66,7 +81,7 @@ async function deletePasskey(credentialId: string) {
 
 async function setPassword() {
   try {
-    if (!(await appStore.checkAuth())) return
+    if (!(await checkAuth())) return
     await $fetch('/api/auth', {
       method: 'POST',
       body: { password: password1.value },
@@ -82,12 +97,12 @@ async function setPassword() {
 
 function toggleTOTP() {
   showTOTP.value = !showTOTP.value
-  if (showTOTP.value) showTOTPSecret()
+  if (showTOTP.value && !auth.value?.hasTOTP) showTOTPSecret()
 }
 
 async function showTOTPSecret() {
   try {
-    if (!(await appStore.checkAuth())) return
+    if (!(await checkAuth())) return
     const response = await $fetch<{ secret: string }>('/api/auth/totp/generate')
     TOTPSecret.value = response.secret
     await nextTick()
@@ -112,8 +127,12 @@ async function confirmTOTP() {
     })
     TOTPSecret.value = ''
     TOTPCode.value = ''
-    auth.value.totp = true
+    auth.value.hasTOTP = true
     showTOTP.value = false
+    if (isMfaSetup) {
+      await fetchUserSession()
+      if (!user.value?.requiresMfaSetup) await navigateTo('/', { replace: true })
+    }
   } catch (e: any) {
     appStore.notify(e.message, 'error')
   }
@@ -127,7 +146,7 @@ async function disableTOTP() {
       body: { token: TOTPCode.value },
     })
     TOTPCode.value = ''
-    auth.value.totp = null
+    auth.value.hasTOTP = false
     showTOTP.value = false
   } catch (e: any) {
     appStore.notify(e.message, 'error')
@@ -153,148 +172,186 @@ onMounted(getAuth)
 </script>
 
 <template>
-  <h1>{{ $t('authentication') }}</h1>
-  <div class="flex-row flex-center g2">
-    <h3 class="m0">{{ $t('password') }}</h3>
-    <button
-      class="flex mr"
-      @click="showPasswordChange = true"
-    >
-      <Icon name="uil:edit" />
-    </button>
-  </div>
-  <div
-    v-if="showPasswordChange"
-    class="modal"
-    @click.self="showPasswordChange = false"
-  >
-    <div class="p3">
-      <form
-        v-if="showPasswordChange"
-        @submit.prevent="setPassword"
-      >
-        <input
-          v-show="false"
-          type="email"
-          :value="user?.email"
-          autocomplete="username email"
-        />
-        <label for="password1">{{ $t('password') }} ({{ $t('passwordPolicy') }})</label>
-        <div class="flex-row group mb1">
-          <input
-            :type="showPassword1 ? 'text' : 'password'"
-            id="password1"
-            v-model.trim="password1"
-            autocomplete="new-password"
-            minlength="12"
-            required
-          />
-          <button
-            class="flex fg"
-            type="button"
-            @click="showPassword1 = !showPassword1"
-          >
-            <Icon :name="'uil:' + (showPassword1 ? 'eye-slash' : 'eye')" />
-          </button>
-        </div>
-        <label for="password2">{{ $t('confirm') }} {{ $t('password') }}</label>
-        <div class="flex-row group mb1">
-          <input
-            :type="showPassword2 ? 'text' : 'password'"
-            id="password2"
-            v-model.trim="password2"
-            autocomplete="new-password"
-            minlength="12"
-            required
-          />
-          <button
-            class="flex fg"
-            type="button"
-            @click="showPassword2 = !showPassword2"
-          >
-            <Icon :name="'uil:' + (showPassword2 ? 'eye-slash' : 'eye')" />
-          </button>
-        </div>
-        <div class="text-right">
-          <button
-            type="submit"
-            :disabled="password1 !== password2 || !password1 || password1.length < 12"
-          >
-            {{ $t('save') }}
-          </button>
-        </div>
-      </form>
+  <template v-if="isMfaSetup">
+    <div class="p2 my2 text-center">
+      <b>{{ $t('mfaRequired') }}</b>
+      <p class="m0">{{ $t('mfaRequiredDescription') }}</p>
     </div>
-  </div>
 
-  <h2>{{ $t('2fa') }}</h2>
-  <div class="flex-row flex-center g2">
-    <h3 class="my0">Passkeys</h3>
     <button
-      class="flex mr"
-      :disabled="auth?.credentials.length >= 4"
+      class="w mb2"
       @click="registerPasskey"
     >
-      <Icon name="uil:plus" />
+      {{ $t('registerPasskey') }}
     </button>
-  </div>
-  <form
-    v-for="credential in auth?.credentials || []"
-    :key="credential.id"
-    @submit.prevent="setPasskeyName(credential.name, credential.id)"
-  >
-    <div class="flex-row group mt1">
-      <input
-        type="text"
-        v-model="credential.name"
-        maxlength="32"
-      />
-      <button
-        type="button"
-        class="bg flex"
-        @click="deletePasskey(credential.id)"
-      >
-        <Icon name="uil:trash" />
-      </button>
-      <button class="flex fg"><Icon name="uil:save" /></button>
-    </div>
-  </form>
-
-  <h3>
-    <label
-      for="totp"
-      class="mt2"
+    <button
+      class="w fg fg-border"
+      @click="toggleTOTP"
     >
-      {{ $t('authenticatorApp') }}
-    </label>
-    <input
-      type="checkbox"
-      id="totp"
-      class="ml1"
-      :checked="!!auth?.totp"
-      @click.prevent="toggleTOTP"
-    />
-  </h3>
+      {{ $t('setupTotp') }}
+    </button>
+  </template>
+
+  <template v-else>
+    <h1>{{ $t('authentication') }}</h1>
+    <section>
+      <div class="flex-row flex-center g2">
+        <h3 class="m0">{{ $t('password') }}</h3>
+        <button
+          class="flex mr"
+          @click="showPasswordChange = true"
+        >
+          <Icon name="uil:edit" />
+        </button>
+      </div>
+      <div
+        v-if="showPasswordChange"
+        class="modal"
+        @click.self="showPasswordChange = false"
+      >
+        <div
+          class="p3"
+          style="max-width: min(400px, 90vw)"
+        >
+          <form @submit.prevent="setPassword">
+            <input
+              v-show="false"
+              type="email"
+              :value="user?.email"
+              autocomplete="username email"
+            />
+            <label for="password1">{{ $t('password') }} ({{ $t('passwordPolicy') }})</label>
+            <div class="flex-row group">
+              <input
+                :type="showPassword1 ? 'text' : 'password'"
+                id="password1"
+                v-model.trim="password1"
+                autocomplete="new-password"
+                minlength="12"
+                required
+              />
+              <button
+                class="flex fg"
+                type="button"
+                @click="showPassword1 = !showPassword1"
+              >
+                <Icon :name="'uil:' + (showPassword1 ? 'eye-slash' : 'eye')" />
+              </button>
+            </div>
+            <label for="password2">{{ $t('confirm') }} {{ $t('password') }}</label>
+            <div class="flex-row group">
+              <input
+                :type="showPassword2 ? 'text' : 'password'"
+                id="password2"
+                v-model.trim="password2"
+                autocomplete="new-password"
+                minlength="12"
+                required
+              />
+              <button
+                class="flex fg"
+                type="button"
+                @click="showPassword2 = !showPassword2"
+              >
+                <Icon :name="'uil:' + (showPassword2 ? 'eye-slash' : 'eye')" />
+              </button>
+            </div>
+            <div class="text-right">
+              <button
+                type="submit"
+                :disabled="password1 !== password2 || !password1 || password1.length < 12"
+              >
+                {{ $t('save') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>{{ $t('2fa') }}</h2>
+      <div class="flex-row flex-center g2">
+        <h3 class="m0">Passkeys</h3>
+        <button
+          class="flex mr"
+          :disabled="auth?.credentials.length >= 4"
+          :title="auth?.credentials.length >= 4 ? $t('passkeyLimit') : $t('registerPasskey')"
+          @click="registerPasskey"
+        >
+          <Icon name="uil:plus" />
+        </button>
+      </div>
+      <form
+        v-for="credential in auth?.credentials || []"
+        :key="credential.id"
+        @submit.prevent="setPasskeyName(credential.name, credential.id)"
+      >
+        <div class="flex-row group mt1">
+          <input
+            type="text"
+            v-model="credential.name"
+            maxlength="32"
+          />
+          <button
+            type="button"
+            class="bg danger-text flex"
+            :disabled="!canRemovePasskey"
+            :title="canRemovePasskey ? '' : $t('lastFactor')"
+            @click="deletePasskey(credential.id)"
+          >
+            <Icon name="uil:trash" />
+          </button>
+          <button class="flex fg"><Icon name="uil:save" /></button>
+        </div>
+      </form>
+
+      <div class="flex-row flex-center g2 mt2">
+        <h3 class="m0">
+          <label for="totp">{{ $t('authenticatorApp') }}</label>
+        </h3>
+        <input
+          type="checkbox"
+          id="totp"
+          class="mr"
+          :checked="!!auth?.hasTOTP"
+          @click.prevent="toggleTOTP"
+        />
+      </div>
+    </section>
+    <div class="flex-row my3">
+      <button
+        class="ml bg danger-text danger-border"
+        @click="deleteRefreshTokens"
+      >
+        {{ $t('deleteRefreshTokens') }}
+      </button>
+    </div>
+  </template>
+
   <div
     v-if="showTOTP"
     class="modal"
     @click.self="showTOTP = false"
   >
     <div
-      v-if="auth?.totp"
+      v-if="auth?.hasTOTP"
       class="p3"
+      style="max-width: min(400px, 90vw)"
     >
-      <label for="totp">
+      <label for="totp-code">
         {{ $t('code') }}
       </label>
       <div class="flex-row group">
         <input
-          id="totp"
+          id="totp-code"
           type="text"
           v-model.trim="TOTPCode"
         />
         <button
-          class="bg"
+          class="bg danger-text"
+          :disabled="!canDisableTOTP"
+          :title="canDisableTOTP ? '' : $t('lastFactor')"
           @click="disableTOTP"
         >
           {{ $t('disable') }}
@@ -304,16 +361,25 @@ onMounted(getAuth)
     <div
       v-else-if="TOTPSecret"
       class="p3"
+      style="max-width: min(400px, 90vw)"
     >
-      <p>{{ $t('totpSecret') }}</p>
+      <p class="mt0">{{ $t('totpSecret') }}</p>
       <div class="text-center">
-        <canvas id="totp-qrcode"></canvas>
-        <p>{{ TOTPSecret }}</p>
+        <canvas
+          id="totp-qrcode"
+          class="border-radius"
+        ></canvas>
+        <p
+          class="muted-text"
+          style="word-break: break-all"
+        >
+          {{ TOTPSecret }}
+        </p>
       </div>
-      <label for="totp">{{ $t('code') }}</label>
+      <label for="totp-code">{{ $t('code') }}</label>
       <div class="flex-row group">
         <input
-          id="totp"
+          id="totp-code"
           type="text"
           v-model.trim="TOTPCode"
           autocomplete="one-time-code"
@@ -321,13 +387,5 @@ onMounted(getAuth)
         />
       </div>
     </div>
-  </div>
-  <div>
-    <button
-      class="bg my3 float-right"
-      @click="deleteRefreshTokens"
-    >
-      {{ $t('deleteRefreshTokens') }}
-    </button>
   </div>
 </template>

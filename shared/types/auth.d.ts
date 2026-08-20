@@ -4,6 +4,7 @@ declare module '#auth-utils' {
     email?: string
     role: 'admin' | 'user'
     isAnonymous?: boolean
+    requiresMfaSetup?: boolean
   }
 
   interface UserSession {

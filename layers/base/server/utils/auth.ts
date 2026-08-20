@@ -6,6 +6,17 @@ import type { H3Event } from 'h3'
 type AuthUser = typeof auth.$inferSelect
 type SessionUser = Pick<AuthUser, 'id'> & Partial<Pick<AuthUser, 'email' | 'role'>>
 
+export async function mfaSetupFlag(user: SessionUser) {
+  const config = useRuntimeConfig()
+  if (!config.forceMfa || !user.email) return
+
+  const row = await db.query.auth.findFirst({
+    where: { id: user.id },
+    with: { credentials: true },
+  })
+  return { requiresMfaSetup: !row?.totp && !row?.credentials.length }
+}
+
 export async function createAuth(user: Pick<AuthUser, 'email'>) {
   const insertedUsers = await db
     .insert(auth)
@@ -74,12 +85,15 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
     await createRefreshToken(user.id, event)
   }
 
-  return setUserSession(event, {
+  // replace, not set: setUserSession merges with defu, so an absent
+  // requiresMfaSetup would never clear a previously flagged session
+  return replaceUserSession(event, {
     user: {
       id: user.id,
       email: user.email?.trim().toLowerCase() ?? undefined,
       role: user.role || 'user',
       isAnonymous: !user.email,
+      ...(await mfaSetupFlag(user)),
     },
     expiresAt: Date.now() + useRuntimeConfig().session.maxAge * 1000,
   })

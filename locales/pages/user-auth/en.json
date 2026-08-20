@@ -5,8 +5,14 @@
   "code": "Code",
   "codeInvalid": "Code invalid",
   "deleteRefreshTokens": "Sign out from all devices",
+  "lastFactor": "Keep at least one second factor.",
+  "mfaRequired": "Two-factor authentication required",
+  "mfaRequiredDescription": "Set up a passkey or an authenticator app to finish signing in.",
+  "passkeyLimit": "Up to 4 passkeys",
   "password": "Password",
   "passwordPolicy": "at least 12 characters",
+  "registerPasskey": "Add a passkey",
   "settings": "Settings",
+  "setupTotp": "Use an authenticator app",
   "totpSecret": "Scan this QR code with your authenticator app or copy the code manually."
 }
