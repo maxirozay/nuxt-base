@@ -9,7 +9,7 @@ import {
   primaryKey,
   pgEnum,
   jsonb,
-  bigserial,
+  bigint,
 } from 'drizzle-orm/pg-core'
 
 export const authSchema = snakeCase.schema('auth')
@@ -49,7 +49,7 @@ export const credentials = authSchema.table(
 )
 
 export const logs = authSchema.table('logs', {
-  id: bigserial({ mode: 'number' }).primaryKey(),
+  id: bigint({ mode: 'number' }).generatedByDefaultAsIdentity().primaryKey(),
   userId: uuid().references(() => auth.id, { onDelete: 'cascade' }),
   type: text().notNull().default('info'),
   origin: text(),
