@@ -16,13 +16,26 @@ const showPasswordChange = ref(false)
 const showPassword1 = ref(false)
 const showPassword2 = ref(false)
 const showTOTP = ref(false)
+const newEmail = ref('')
+const emailCode = ref('')
+const emailCodeSent = ref(false)
 const { clear: clearSession } = useUserSession()
+const { $getLocale } = useI18n()
 
 const isMfaSetup = user.value?.requiresMfaSetup === true
 
 async function checkAuth() {
   return isMfaSetup || (await appStore.checkAuth())
 }
+
+const isCurrentEmail = computed(() => {
+  const value = newEmail.value.toLowerCase()
+  return !value || value === user.value?.email?.toLowerCase()
+})
+
+const isPasswordValid = computed(() => {
+  return password1.value.length >= 12
+})
 
 const canRemovePasskey = computed(
   () => !auth.value?.forceMfa || auth.value.hasTOTP || auth.value.credentials.length > 1,
@@ -79,6 +92,39 @@ async function deletePasskey(credentialId: string) {
   }
 }
 
+async function requestEmailChange() {
+  try {
+    if (!(await checkAuth())) return
+    await $fetch('/api/auth/email/get', {
+      method: 'POST',
+      body: { email: newEmail.value, locale: $getLocale() },
+    })
+    emailCodeSent.value = true
+  } catch (e: any) {
+    appStore.notify(e?.data?.message || e?.message, 'error')
+  }
+}
+
+async function confirmEmailChange() {
+  if (emailCode.value.length !== 6) return
+  try {
+    await $fetch('/api/auth/email/verify', {
+      method: 'POST',
+      body: { email: newEmail.value, otp: emailCode.value, locale: $getLocale() },
+    })
+    await fetchUserSession()
+    emailCodeSent.value = false
+    emailCode.value = ''
+    appStore.notify('saved', 'success')
+  } catch (e: any) {
+    if ((e?.status ?? e?.statusCode) === 409) {
+      emailCodeSent.value = false
+      emailCode.value = ''
+    }
+    appStore.notify(e?.data?.message || e?.message, 'error')
+  }
+}
+
 async function setPassword() {
   try {
     if (!(await checkAuth())) return
@@ -89,6 +135,7 @@ async function setPassword() {
     password1.value = ''
     password2.value = ''
     showPasswordChange.value = false
+    auth.value.hasPassword = true
     appStore.notify('saved', 'success')
   } catch (e: any) {
     appStore.notify(e.message, 'error')
@@ -194,16 +241,94 @@ onMounted(getAuth)
 
   <template v-else>
     <h1>{{ $t('authentication') }}</h1>
+
     <section>
-      <div class="flex-row flex-center g2">
-        <h3 class="m0">{{ $t('password') }}</h3>
-        <button
-          class="flex mr"
-          @click="showPasswordChange = true"
+      <form @submit.prevent="requestEmailChange">
+        <label for="email">{{ $t('email') }} </label>
+        <div class="group flex-row">
+          <input
+            id="email"
+            type="email"
+            autocapitalize="none"
+            v-model.trim="newEmail"
+            :placeholder="user?.email"
+          />
+          <button
+            class="flex fg"
+            :title="$t('changeEmail')"
+            :disabled="isCurrentEmail"
+            type="submit"
+          >
+            <Icon name="uil:save" />
+          </button>
+        </div>
+      </form>
+      <div
+        v-if="emailCodeSent"
+        class="modal"
+        @click.self="emailCodeSent = false"
+      >
+        <div
+          class="p3"
+          style="max-width: min(400px, 90vw)"
         >
-          <Icon name="uil:edit" />
-        </button>
+          <form @submit.prevent="confirmEmailChange">
+            <label for="email-code">{{ $t('code') }}</label>
+            <input
+              id="email-code"
+              v-model.trim="emailCode"
+              type="text"
+              autocomplete="one-time-code"
+              maxlength="6"
+              required
+            />
+            <p class="muted-text">{{ $t('emailChangeCodeSent', { email: newEmail }) }}</p>
+            <div class="text-right">
+              <button
+                type="submit"
+                :disabled="emailCode.length !== 6"
+              >
+                {{ $t('save') }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
+      <form
+        class="mt1"
+        @submit.prevent="showPasswordChange = true"
+      >
+        <label for="password">
+          {{ $t('password') }}
+        </label>
+        <div class="group flex-row">
+          <input
+            :type="showPassword1 ? 'text' : 'password'"
+            id="password1"
+            v-model.trim="password1"
+            autocomplete="new-password"
+            minlength="12"
+            required
+            :placeholder="auth?.hasPassword ? '************' : ''"
+          />
+          <button
+            class="flex fg"
+            type="button"
+            @click="showPassword1 = !showPassword1"
+          >
+            <Icon :name="'uil:' + (showPassword1 ? 'eye-slash' : 'eye')" />
+          </button>
+          <button
+            class="fg flex"
+            :title="$t('changePassword')"
+            type="submit"
+            :disabled="!isPasswordValid"
+          >
+            <Icon name="uil:save" />
+          </button>
+        </div>
+        <small class="warning-text">{{ $t('passwordPolicy') }}</small>
+      </form>
       <div
         v-if="showPasswordChange"
         class="modal"
@@ -220,24 +345,6 @@ onMounted(getAuth)
               :value="user?.email"
               autocomplete="username email"
             />
-            <label for="password1">{{ $t('password') }} ({{ $t('passwordPolicy') }})</label>
-            <div class="flex-row group">
-              <input
-                :type="showPassword1 ? 'text' : 'password'"
-                id="password1"
-                v-model.trim="password1"
-                autocomplete="new-password"
-                minlength="12"
-                required
-              />
-              <button
-                class="flex fg"
-                type="button"
-                @click="showPassword1 = !showPassword1"
-              >
-                <Icon :name="'uil:' + (showPassword1 ? 'eye-slash' : 'eye')" />
-              </button>
-            </div>
             <label for="password2">{{ $t('confirm') }} {{ $t('password') }}</label>
             <div class="flex-row group">
               <input
@@ -259,7 +366,7 @@ onMounted(getAuth)
             <div class="text-right">
               <button
                 type="submit"
-                :disabled="password1 !== password2 || !password1 || password1.length < 12"
+                :disabled="password1 !== password2 || !isPasswordValid"
               >
                 {{ $t('save') }}
               </button>
@@ -271,17 +378,7 @@ onMounted(getAuth)
 
     <section>
       <h2>{{ $t('2fa') }}</h2>
-      <div class="flex-row flex-center g2">
-        <h3 class="m0">Passkeys</h3>
-        <button
-          class="flex mr"
-          :disabled="auth?.credentials.length >= 4"
-          :title="auth?.credentials.length >= 4 ? $t('passkeyLimit') : $t('registerPasskey')"
-          @click="registerPasskey"
-        >
-          <Icon name="uil:plus" />
-        </button>
-      </div>
+      <h3 class="m0">Passkeys</h3>
       <form
         v-for="credential in auth?.credentials || []"
         :key="credential.id"
@@ -305,19 +402,23 @@ onMounted(getAuth)
           <button class="flex fg"><Icon name="uil:save" /></button>
         </div>
       </form>
+      <button
+        class="flex mt1 mb2"
+        :disabled="auth?.credentials.length >= 4"
+        :title="auth?.credentials.length >= 4 ? $t('passkeyLimit') : $t('registerPasskey')"
+        @click="registerPasskey"
+      >
+        {{ $t('registerPasskey') }}
+      </button>
 
-      <div class="flex-row flex-center g2 mt2">
-        <h3 class="m0">
-          <label for="totp">{{ $t('authenticatorApp') }}</label>
-        </h3>
-        <input
-          type="checkbox"
-          id="totp"
-          class="mr"
-          :checked="!!auth?.hasTOTP"
-          @click.prevent="toggleTOTP"
-        />
-      </div>
+      <label for="totp">{{ $t('authenticatorApp') }}</label>
+      <input
+        type="checkbox"
+        id="totp"
+        class="ml1"
+        :checked="!!auth?.hasTOTP"
+        @click.prevent="toggleTOTP"
+      />
     </section>
     <div class="flex-row my3">
       <button

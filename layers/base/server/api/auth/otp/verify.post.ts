@@ -57,7 +57,8 @@ export async function verifyOTP(email: string, otp: string): Promise<void> {
     throw createError({ status: 400, message: 'Request a new OTP.' })
   }
 
-  if (await verifyPassword(otp.length > 6 ? record.token : record.otp, otp)) {
+  const hash = otp.length > 6 ? record.token : record.otp
+  if (hash && (await verifyPassword(hash, otp))) {
     await storage.removeItem(email)
   } else {
     record.attempts++

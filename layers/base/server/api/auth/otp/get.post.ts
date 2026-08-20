@@ -10,7 +10,7 @@ const bodySchema = z.object({
 
 export interface OTP {
   otp: string
-  token: string
+  token?: string // magic link only, absent on flows that issue no link
   attempts: number
   sentAt: number
 }
@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
   }
 })
 
-function generateOTP(length = 6): string {
+export function generateOTP(length = 6): string {
   const otp = crypto.randomInt(Math.pow(10, length - 1), Math.pow(10, length))
   return otp.toString()
 }
