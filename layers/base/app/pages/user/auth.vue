@@ -61,7 +61,7 @@ async function registerPasskey() {
       if (!user.value?.requiresMfaSetup) await navigateTo('/', { replace: true })
     }
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -74,7 +74,7 @@ async function setPasskeyName(name: string, credentialId: string) {
     })
     appStore.notify('saved', 'success')
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -88,7 +88,7 @@ async function deletePasskey(credentialId: string) {
     auth.value.credentials = auth.value.credentials.filter((c: any) => c.id !== credentialId)
     appStore.notify('deleted', 'success')
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -138,7 +138,7 @@ async function setPassword() {
     auth.value.hasPassword = true
     appStore.notify('saved', 'success')
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -149,7 +149,10 @@ function toggleTOTP() {
 
 async function showTOTPSecret() {
   try {
-    if (!(await checkAuth())) return
+    if (!(await checkAuth())) {
+      showTOTP.value = false
+      return
+    }
     const response = await $fetch<{ secret: string }>('/api/auth/totp/generate')
     TOTPSecret.value = response.secret
     await nextTick()
@@ -161,13 +164,14 @@ async function showTOTPSecret() {
     QRCode.toCanvas(canvas, uri)
   } catch (e: any) {
     showTOTP.value = false
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
 async function confirmTOTP() {
   if (TOTPCode.value.length !== 6) return
   try {
+    if (!(await checkAuth())) return
     await $fetch('/api/auth/totp/confirm', {
       method: 'POST',
       body: { secret: TOTPSecret.value, token: TOTPCode.value },
@@ -181,7 +185,7 @@ async function confirmTOTP() {
       if (!user.value?.requiresMfaSetup) await navigateTo('/', { replace: true })
     }
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -196,7 +200,7 @@ async function disableTOTP() {
     auth.value.hasTOTP = false
     showTOTP.value = false
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   }
 }
 
@@ -209,7 +213,7 @@ async function deleteRefreshTokens() {
     await clearSession()
     navigateTo('/')
   } catch (e: any) {
-    appStore.notify(e.message, 'error')
+    appStore.notify(e?.data?.message || e?.message, 'error')
   } finally {
     appStore.setLoading(false)
   }

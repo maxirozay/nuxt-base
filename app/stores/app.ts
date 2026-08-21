@@ -29,19 +29,17 @@ export const useAppStore = defineStore('app', () => {
     })
   }
 
-  function checkAuth(reverifyAfter = 5 * 60 * 1000) {
+  async function checkAuth(): Promise<boolean> {
+    const reverifyAfter = useRuntimeConfig().public.recentAuth.maxAge * 1000
     if (Date.now() - authVerifiedAt.value < reverifyAfter) {
       return true
     }
-    return new Promise((resolve, reject) => {
-      authPromise.value = {
-        resolve,
-        reject,
-      }
+    return new Promise<boolean>((resolve) => {
+      authPromise.value = { resolve }
     })
-      .then(() => {
-        authVerifiedAt.value = Date.now()
-        return true
+      .then((verified) => {
+        if (verified) authVerifiedAt.value = Date.now()
+        return verified
       })
       .finally(() => {
         authPromise.value = null

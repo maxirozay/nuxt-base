@@ -6,6 +6,9 @@ export default defineNuxtConfig({
       refreshToken: {
         rotateAfter: 60 * 60 * 24, // 1 day
       },
+      recentAuth: {
+        maxAge: 300, // 5 minutes
+      },
       oauth: {
         microsoft: false,
       },
