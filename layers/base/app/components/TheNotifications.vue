@@ -3,7 +3,11 @@ const appStore = useAppStore()
 </script>
 
 <template>
-  <div class="notifications flex-column fixed bottom right g2 m1">
+  <TransitionGroup
+    name="notifications"
+    class="notifications flex-column fixed bottom right g2 m1"
+    tag="div"
+  >
     <div
       v-for="notification in appStore.notifications"
       :key="notification.id"
@@ -42,12 +46,26 @@ const appStore = useAppStore()
         </svg>
       </button>
     </div>
-  </div>
+  </TransitionGroup>
 </template>
 
 <style scoped>
 .notifications {
   z-index: 999999;
   max-width: 400px;
+}
+
+.notifications-move,
+.notifications-enter-active,
+.notifications-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.notifications-enter-from {
+  transform: translateY(120%);
+}
+
+.notifications-leave-to {
+  transform: translateX(100%);
 }
 </style>
