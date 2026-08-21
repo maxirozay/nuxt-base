@@ -1,6 +1,6 @@
 import { generateSecret } from 'otplib'
 
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireRecentAuth(event)
   return { secret: generateSecret() }
 })

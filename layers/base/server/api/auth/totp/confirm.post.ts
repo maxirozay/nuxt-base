@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { user } = await requireUserSession(event)
+  const { user } = await requireRecentAuth(event)
 
   if (await verify({ secret, token })) {
     await db.update(auth).set({ totp: secret }).where(eq(auth.id, user.id))

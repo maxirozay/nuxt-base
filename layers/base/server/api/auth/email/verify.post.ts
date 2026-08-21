@@ -12,7 +12,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { email, otp, locale = 'en' } = await readValidatedBody(event, bodySchema.parse)
-  await requireUserSession(event)
+  await requireRecentAuth(event)
   const user = await getAuth(event)
   const previousEmail = user.email
 

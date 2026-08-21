@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { credentials } from '#server/database/schema'
 
-export default defineWebAuthnRegisterEventHandler({
+const registerHandler = defineWebAuthnRegisterEventHandler({
   async storeChallenge(event, challenge, attemptId) {
     await useStorage('auth').setItem(`attempt:${attemptId}`, challenge)
   },
@@ -41,4 +41,9 @@ export default defineWebAuthnRegisterEventHandler({
     })
     await setSession(event, session.user, false) // refresh requiresMfaSetup
   },
+})
+
+export default defineEventHandler(async (event) => {
+  await requireRecentAuth(event)
+  return registerHandler(event)
 })

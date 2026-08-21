@@ -1,4 +1,4 @@
 export default defineEventHandler(async (event) => {
-  const session = await requireUserSession(event)
+  const session = await requireRecentAuth(event)
   await revokeAllUserTokens(session.user.id)
 })

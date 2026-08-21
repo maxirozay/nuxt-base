@@ -9,7 +9,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { name, credentialId } = await readValidatedBody(event, bodySchema.parse)
-  const session = await requireUserSession(event)
+  const session = await requireRecentAuth(event)
   await db
     .update(credentials)
     .set({ name })

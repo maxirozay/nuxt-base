@@ -9,6 +9,7 @@ declare module '#auth-utils' {
 
   interface UserSession {
     expiresAt: number
+    authenticatedAt: number
   }
 }
 

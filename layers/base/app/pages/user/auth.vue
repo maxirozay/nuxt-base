@@ -7,7 +7,12 @@ definePageMeta({
 
 const appStore = useAppStore()
 const { user, fetch: fetchUserSession } = useUserSession()
-const auth = ref()
+const auth = ref({
+  credentials: [] as { id: string; name: string }[],
+  hasPassword: false,
+  hasTOTP: false,
+  forceMfa: false,
+})
 const TOTPSecret = ref('')
 const TOTPCode = ref('')
 const password1 = ref('')
@@ -20,12 +25,12 @@ const newEmail = ref('')
 const emailCode = ref('')
 const emailCodeSent = ref(false)
 const { clear: clearSession } = useUserSession()
-const { $getLocale } = useI18n()
+const { $getLocale, $t } = useI18n()
 
-const isMfaSetup = user.value?.requiresMfaSetup === true
+const isMfaSetup = computed(() => user.value?.requiresMfaSetup === true)
 
 async function checkAuth() {
-  return isMfaSetup || (await appStore.checkAuth())
+  return isMfaSetup.value || (await appStore.checkAuth())
 }
 
 const isCurrentEmail = computed(() => {
@@ -43,7 +48,11 @@ const canRemovePasskey = computed(
 const canDisableTOTP = computed(() => !auth.value?.forceMfa || auth.value.credentials.length > 0)
 
 async function getAuth() {
-  auth.value = await $fetch('/api/auth')
+  try {
+    auth.value = await $fetch('/api/auth')
+  } catch (e: any) {
+    appStore.notify(e?.data?.message || e?.message, 'error')
+  }
 }
 
 const { register } = useWebAuthn({
@@ -56,7 +65,7 @@ async function registerPasskey() {
     await register({ userName: user.value!.email! })
     await getAuth()
     appStore.notify('saved', 'success')
-    if (isMfaSetup) {
+    if (isMfaSetup.value) {
       await fetchUserSession()
       if (!user.value?.requiresMfaSetup) await navigateTo('/', { replace: true })
     }
@@ -85,7 +94,7 @@ async function deletePasskey(credentialId: string) {
       method: 'DELETE',
       body: { credentialId },
     })
-    auth.value.credentials = auth.value.credentials.filter((c: any) => c.id !== credentialId)
+    await getAuth()
     appStore.notify('deleted', 'success')
   } catch (e: any) {
     appStore.notify(e?.data?.message || e?.message, 'error')
@@ -94,7 +103,6 @@ async function deletePasskey(credentialId: string) {
 
 async function requestEmailChange() {
   try {
-    if (!(await checkAuth())) return
     await $fetch('/api/auth/email/get', {
       method: 'POST',
       body: { email: newEmail.value, locale: $getLocale() },
@@ -108,6 +116,7 @@ async function requestEmailChange() {
 async function confirmEmailChange() {
   if (emailCode.value.length !== 6) return
   try {
+    if (!(await checkAuth())) return
     await $fetch('/api/auth/email/verify', {
       method: 'POST',
       body: { email: newEmail.value, otp: emailCode.value, locale: $getLocale() },
@@ -143,17 +152,17 @@ async function setPassword() {
 }
 
 function toggleTOTP() {
-  showTOTP.value = !showTOTP.value
-  if (showTOTP.value && !auth.value?.hasTOTP) showTOTPSecret()
+  if (auth.value?.hasTOTP) disableTOTP()
+  else showTOTPSecret()
 }
 
 async function showTOTPSecret() {
   try {
     if (!(await checkAuth())) {
-      showTOTP.value = false
       return
     }
     const response = await $fetch<{ secret: string }>('/api/auth/totp/generate')
+    showTOTP.value = true
     TOTPSecret.value = response.secret
     await nextTick()
     const canvas = document.getElementById('totp-qrcode') as HTMLCanvasElement
@@ -180,7 +189,7 @@ async function confirmTOTP() {
     TOTPCode.value = ''
     auth.value.hasTOTP = true
     showTOTP.value = false
-    if (isMfaSetup) {
+    if (isMfaSetup.value) {
       await fetchUserSession()
       if (!user.value?.requiresMfaSetup) await navigateTo('/', { replace: true })
     }
@@ -190,12 +199,9 @@ async function confirmTOTP() {
 }
 
 async function disableTOTP() {
-  if (TOTPCode.value.length !== 6) return appStore.notify('codeInvalid', 'error')
   try {
-    await $fetch('/api/auth/totp/disable', {
-      method: 'POST',
-      body: { token: TOTPCode.value },
-    })
+    if (!(await appStore.confirm($t('disableTOTP') as string)) || !(await checkAuth())) return
+    await $fetch('/api/auth/totp/disable', { method: 'POST' })
     TOTPCode.value = ''
     auth.value.hasTOTP = false
     showTOTP.value = false
@@ -205,6 +211,7 @@ async function disableTOTP() {
 }
 
 async function deleteRefreshTokens() {
+  if (!(await checkAuth())) return
   appStore.setLoading(true)
   try {
     await $fetch('/api/auth/refresh', {
@@ -423,6 +430,8 @@ onMounted(getAuth)
         id="totp"
         class="ml1"
         :checked="!!auth?.hasTOTP"
+        :disabled="!canDisableTOTP"
+        :title="canDisableTOTP ? '' : $t('lastFactor')"
         @click.prevent="toggleTOTP"
       />
     </section>
@@ -437,36 +446,11 @@ onMounted(getAuth)
   </template>
 
   <div
-    v-if="showTOTP"
+    v-if="showTOTP && TOTPSecret"
     class="modal"
     @click.self="showTOTP = false"
   >
     <div
-      v-if="auth?.hasTOTP"
-      class="p3"
-      style="max-width: min(400px, 90vw)"
-    >
-      <label for="totp-code">
-        {{ $t('code') }}
-      </label>
-      <div class="flex-row group">
-        <input
-          id="totp-code"
-          type="text"
-          v-model.trim="TOTPCode"
-        />
-        <button
-          class="bg danger-text"
-          :disabled="!canDisableTOTP"
-          :title="canDisableTOTP ? '' : $t('lastFactor')"
-          @click="disableTOTP"
-        >
-          {{ $t('disable') }}
-        </button>
-      </div>
-    </div>
-    <div
-      v-else-if="TOTPSecret"
       class="p3"
       style="max-width: min(400px, 90vw)"
     >

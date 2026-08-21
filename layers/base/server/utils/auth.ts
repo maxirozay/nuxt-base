@@ -85,6 +85,10 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
     await createRefreshToken(user.id, event)
   }
 
+  const authenticatedAt = refresh
+    ? Date.now()
+    : ((await getUserSession(event)).authenticatedAt ?? 0)
+
   // replace, not set: setUserSession merges with defu, so an absent
   // requiresMfaSetup would never clear a previously flagged session
   return replaceUserSession(event, {
@@ -95,8 +99,26 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
       isAnonymous: !user.email,
       ...(await mfaSetupFlag(user)),
     },
+    authenticatedAt,
     expiresAt: Date.now() + useRuntimeConfig().session.maxAge * 1000,
   })
+}
+
+export async function requireRecentAuth(event: H3Event) {
+  const session = await requireUserSession(event)
+
+  if (session.user.isAnonymous || session.user.requiresMfaSetup) return session
+
+  const maxAge = useRuntimeConfig().public.recentAuth.maxAge * 1000
+  if (!session.authenticatedAt || Date.now() - session.authenticatedAt > maxAge) {
+    throw createError({
+      status: 403,
+      statusMessage: 'reauth_required',
+      message: 'Please verify your identity again to continue.',
+    })
+  }
+
+  return session
 }
 
 export function generateRefreshToken(): string {

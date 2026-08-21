@@ -1,21 +1,8 @@
-import { z } from 'zod'
-import { verify } from 'otplib'
 import { eq } from 'drizzle-orm/sql/expressions/conditions'
 import { auth, credentials } from '#server/database/schema'
 
-const bodySchema = z.object({
-  token: z.string().length(6),
-})
-
 export default defineEventHandler(async (event) => {
-  const { token } = await readValidatedBody(event, bodySchema.parse)
-  if (!token) {
-    throw createError({
-      status: 400,
-      message: 'Missing required fields',
-    })
-  }
-  const session = await requireUserSession(event)
+  const session = await requireRecentAuth(event)
   const userId = session.user.id
 
   await db.transaction(async (tx) => {
@@ -41,9 +28,6 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    if (!(await verify({ secret: locked.totp, token }))) {
-      throw createError({ status: 400, message: 'Invalid TOTP.' })
-    }
     await tx.update(auth).set({ totp: null }).where(eq(auth.id, userId))
   })
 })
