@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useAppStore } from '@/stores/app'
 import { ref } from 'vue'
 
 const app = useAppStore()
