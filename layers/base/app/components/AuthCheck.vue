@@ -158,15 +158,15 @@ async function getSignInOptions(email: string) {
       method: 'POST',
       body: { email },
     })
-    optionsFetched.value = true
     if (route.query.token) {
       password.value = route.query.token as string
       if (!options.value.hasTOTP) await signInWithOtp()
     } else if (options.value.hasPasskey) {
-      signInWithPasskey()
+      await signInWithPasskey()
     } else if (!options.value.hasPassword) {
-      requestOtp()
+      await requestOtp()
     }
+    optionsFetched.value = true
   } catch (e: any) {
     handleError(e)
   } finally {
@@ -228,7 +228,7 @@ onMounted(async () => {
         <button
           type="submit"
           :disabled="isLoading || (!password && !otpRequested) || (options.hasTOTP && !totp)"
-          class="w mt1"
+          :class="['w mt1', isLoading ? 'spin' : '']"
         >
           {{ $t('authCheck.signin') }}
         </button>
@@ -236,7 +236,7 @@ onMounted(async () => {
           v-if="!otpRequested"
           type="button"
           :disabled="isLoading"
-          class="flex-1 w mt1 bg bg-border"
+          :class="['flex-1 w mt1 bg bg-border', isLoading ? 'spin' : '']"
           @click="requestOtp"
         >
           {{ $t('authCheck.getCode') }}
@@ -264,7 +264,7 @@ onMounted(async () => {
           />
         </label>
         <button
-          class="w"
+          :class="['w', isLoading ? 'spin' : '']"
           :disabled="isLoading || !email.includes('@')"
         >
           {{ $t('continue') }}
