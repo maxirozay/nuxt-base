@@ -42,14 +42,10 @@ async function copyFiles(deleteSrc = false) {
 }
 
 function testConfirmation() {
-  appStore
-    .confirm('Are you sure?')
-    .then(() => {
-      appStore.notify('Confirmed', 'success')
-    })
-    .catch(() => {
-      appStore.notify('Cancelled', 'error')
-    })
+  appStore.confirm('Are you sure?').then((confirmed) => {
+    if (confirmed) appStore.notify('Confirmed', 'success')
+    else appStore.notify('Cancelled', 'error')
+  })
 }
 </script>
 

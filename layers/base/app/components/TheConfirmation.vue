@@ -8,12 +8,12 @@ const isWorking = ref()
 async function confirm() {
   if (isWorking.value) return
   isWorking.value = true
-  app.confirmation!.resolve()
+  app.confirmation!.resolve(true)
   isWorking.value = false
 }
 
 function cancel() {
-  app.confirmation!.reject()
+  app.confirmation!.resolve(false)
 }
 </script>
 
