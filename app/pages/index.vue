@@ -82,7 +82,6 @@ function testConfirmation() {
         class="label__file primary flex-row g2 flex-center"
       >
         <b>{{ $t('upload') }}</b>
-        <Icon name="uil:upload" />
         <FilesUpload
           id="upload"
           :path="path"
