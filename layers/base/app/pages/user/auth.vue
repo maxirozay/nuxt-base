@@ -256,24 +256,26 @@ onMounted(getAuth)
 
       <section>
         <form @submit.prevent="requestEmailChange">
-          <label for="email">{{ $t('email') }} </label>
-          <div class="group flex-row">
-            <input
-              id="email"
-              type="email"
-              autocapitalize="none"
-              v-model.trim="newEmail"
-              :placeholder="user?.email"
-            />
-            <button
-              class="flex fg"
-              :title="$t('changeEmail')"
-              :disabled="isCurrentEmail"
-              type="submit"
-            >
-              <Icon name="uil:save" />
-            </button>
-          </div>
+          <label for="email">
+            {{ $t('email') }}
+            <div class="group flex-row">
+              <input
+                id="email"
+                type="email"
+                autocapitalize="none"
+                v-model.trim="newEmail"
+                :placeholder="user?.email"
+              />
+              <button
+                class="flex-center fg"
+                :title="$t('changeEmail')"
+                :disabled="isCurrentEmail"
+                type="submit"
+              >
+                <Icon name="uil:save" />
+              </button>
+            </div>
+          </label>
         </form>
         <div
           v-if="emailCodeSent"
@@ -310,37 +312,37 @@ onMounted(getAuth)
           class="mt1"
           @submit.prevent="showPasswordChange = true"
         >
-          <label for="password">
+          <label for="password1">
             {{ $t('password') }}
+            <div class="group flex-row">
+              <input
+                :type="showPassword1 ? 'text' : 'password'"
+                id="password1"
+                v-model.trim="password1"
+                autocomplete="new-password"
+                minlength="16"
+                maxlength="64"
+                required
+                :placeholder="auth?.hasPassword ? '************' : ''"
+              />
+              <button
+                class="flex-center fg"
+                type="button"
+                @click="showPassword1 = !showPassword1"
+              >
+                <Icon :name="'uil:' + (showPassword1 ? 'eye-slash' : 'eye')" />
+              </button>
+              <button
+                class="fg flex-center"
+                :title="$t('changePassword')"
+                type="submit"
+                :disabled="!isPasswordValid"
+              >
+                <Icon name="uil:save" />
+              </button>
+            </div>
+            <small class="warning-text">{{ $t('passwordPolicy') }}</small>
           </label>
-          <div class="group flex-row">
-            <input
-              :type="showPassword1 ? 'text' : 'password'"
-              id="password1"
-              v-model.trim="password1"
-              autocomplete="new-password"
-              minlength="16"
-              maxlength="64"
-              required
-              :placeholder="auth?.hasPassword ? '************' : ''"
-            />
-            <button
-              class="flex fg"
-              type="button"
-              @click="showPassword1 = !showPassword1"
-            >
-              <Icon :name="'uil:' + (showPassword1 ? 'eye-slash' : 'eye')" />
-            </button>
-            <button
-              class="fg flex"
-              :title="$t('changePassword')"
-              type="submit"
-              :disabled="!isPasswordValid"
-            >
-              <Icon name="uil:save" />
-            </button>
-          </div>
-          <small class="warning-text">{{ $t('passwordPolicy') }}</small>
         </form>
         <div
           v-if="showPasswordChange"
