@@ -20,6 +20,7 @@ export default defineNuxtConfig({
     session: {
       maxAge: 3600, // 1 hour
       password: '',
+      unique: false,
     },
     oauth: {
       microsoft: {

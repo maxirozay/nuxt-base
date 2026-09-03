@@ -78,9 +78,13 @@ export async function getAuth(event: H3Event, email?: string, credentials = fals
 
 export async function setSession(event: H3Event, user: SessionUser, refresh = true) {
   if (refresh) {
-    const existingToken = getCookie(event, 'refresh_token')
-    if (existingToken) {
-      await revokeRefreshToken(existingToken)
+    if (useRuntimeConfig().session.unique) {
+      await revokeAllUserTokens(user.id)
+    } else {
+      const existingToken = getCookie(event, 'refresh_token')
+      if (existingToken) {
+        await revokeRefreshToken(existingToken)
+      }
     }
     await createRefreshToken(user.id, event)
   }
