@@ -3,19 +3,38 @@ const appStore = useAppStore()
 </script>
 
 <template>
-  <div
-    v-if="appStore.isLoading"
-    class="loading fixed ripple"
-  />
+  <transition
+    name="loading"
+    mode="out-in"
+  >
+    <div
+      v-if="appStore.isLoading"
+      class="loading spin bottom left shadow"
+    />
+  </transition>
 </template>
 
 <style scoped>
 .loading {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   z-index: 999999;
+  backdrop-filter: blur(3px);
+  border-radius: 50%;
+  height: 2em;
+  aspect-ratio: 1;
+  margin: 8px;
+}
+
+.loading-enter-active,
+.loading-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.loading-enter-from {
+  transform: translateY(120%);
+}
+
+.loading-leave-to {
+  transform: translateX(-100%);
 }
 </style>
