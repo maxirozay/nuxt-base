@@ -140,10 +140,19 @@ onMounted(() => {
     >
       <label :for="log.id">
         <div class="flex g1">
-          <div class="flex-1 mr">{{ log.duplicates.length }} {{ log.type }} @ {{ log.origin }}</div>
+          <div class="flex-1 mr line">
+            {{ log.duplicates.length }} {{ log.type }} @
+            <a
+              :href="log.origin"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ log.origin }}
+            </a>
+          </div>
           <div>{{ formatDateTime(log.time) }}</div>
         </div>
-        <small>{{ log.summary }}</small>
+        <small style="word-wrap: break-word">{{ log.summary }}</small>
       </label>
       <input
         :id="log.id"
