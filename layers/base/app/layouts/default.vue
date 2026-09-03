@@ -1,7 +1,7 @@
 <template>
   <div class="page flex-column">
     <TheHeader />
-    <div class="flex-auto portrait px2 w">
+    <div class="flex-auto">
       <slot />
     </div>
     <TheFooter />
