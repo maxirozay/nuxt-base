@@ -70,116 +70,117 @@ onMounted(() => {
 </script>
 
 <template>
-  <form
-    @submit.prevent="getLogs"
-    class="flex group my2"
-  >
-    <div class="flex-row group fg flex-1">
-      <label
-        for="type"
-        class="flex-center p-input flex-1"
-      >
-        <Icon
-          name="uil:search"
-          class="mr"
-        />
-      </label>
-      <input
-        type="text"
-        class="m0 flex-4"
-        v-model="search"
-      />
-    </div>
-    <div class="flex-row group fg flex-1">
-      <label
-        for="from"
-        class="p-input flex-1"
-      >
-        From
-      </label>
-      <input
-        id="from"
-        type="datetime-local"
-        class="m0 flex-4"
-        v-model="from"
-      />
-    </div>
-    <div class="flex-row group fg flex-1">
-      <label
-        for="to"
-        class="p-input flex-1"
-      >
-        To
-      </label>
-      <input
-        id="to"
-        type="datetime-local"
-        class="m0 flex-4"
-        v-model="to"
-      />
-    </div>
-    <button
-      type="submit"
-      class="flex-1"
+  <div class="portrait px2">
+    <form
+      @submit.prevent="getLogs"
+      class="flex my2"
     >
-      Get Logs
-    </button>
-  </form>
-  <label>
-    Hide duplicates
-    <input
-      type="checkbox"
-      class="ml1"
-      v-model="hideDuplicates"
-    />
-  </label>
-  <div
-    v-for="log in filteredLogs"
-    :key="log.id"
-    class="accordion fg p2 mt1"
-  >
-    <label :for="log.id">
-      <div class="flex g1">
-        <div class="flex-1 mr">{{ log.duplicates.length }} {{ log.type }} @ {{ log.origin }}</div>
-        <div>{{ formatDateTime(log.time) }}</div>
-      </div>
-      <small>{{ log.summary }}</small>
-    </label>
-    <input
-      :id="log.id"
-      type="checkbox"
-    />
-    <div>
-      <ul>
-        <li
-          v-for="duplicate in log.duplicates"
-          :key="duplicate.id"
-          class="mb1"
+      <div class="flex-row group fg flex-1">
+        <label
+          for="search"
+          class="flex-center p-input"
         >
-          <small>
-            <div class="flex g1">
-              <div class="mr">
-                <b>User:</b> IP: {{ duplicate.ipAddress }}
-                <span v-if="duplicate.auth">
-                  {{ duplicate.auth.email }} (ID: {{ duplicate.userId }})
-                </span>
+          <Icon
+            name="uil:search"
+            class="mr"
+          />
+        </label>
+        <input
+          id="search"
+          type="text"
+          class="m0 flex-4"
+          v-model="search"
+        />
+      </div>
+      <div class="flex group fg flex-1">
+        <label
+          for="from"
+          class="p-input"
+        >
+          From
+        </label>
+        <input
+          id="from"
+          type="datetime-local"
+          class="m0 flex-4"
+          v-model="from"
+        />
+        <label
+          for="to"
+          class="p-input"
+        >
+          To
+        </label>
+        <input
+          id="to"
+          type="datetime-local"
+          class="m0 flex-4"
+          v-model="to"
+        />
+      </div>
+      <button
+        type="submit"
+        class="flex-1"
+      >
+        Get Logs
+      </button>
+    </form>
+    <label>
+      Hide duplicates
+      <input
+        type="checkbox"
+        class="ml1"
+        v-model="hideDuplicates"
+      />
+    </label>
+    <div
+      v-for="log in filteredLogs"
+      :key="log.id"
+      class="accordion fg p2 mt1"
+    >
+      <label :for="log.id">
+        <div class="flex g1">
+          <div class="flex-1 mr">{{ log.duplicates.length }} {{ log.type }} @ {{ log.origin }}</div>
+          <div>{{ formatDateTime(log.time) }}</div>
+        </div>
+        <small>{{ log.summary }}</small>
+      </label>
+      <input
+        :id="log.id"
+        type="checkbox"
+      />
+      <div>
+        <ul>
+          <li
+            v-for="duplicate in log.duplicates"
+            :key="duplicate.id"
+            class="mb1"
+          >
+            <small>
+              <div class="flex g1">
+                <div class="mr">
+                  <b>User:</b> IP: {{ duplicate.ipAddress }}
+                  <span v-if="duplicate.auth">
+                    {{ duplicate.auth.email }} (ID: {{ duplicate.userId }})
+                  </span>
+                </div>
+                <div>{{ formatDateTime(duplicate.time) }}</div>
               </div>
-              <div>{{ formatDateTime(duplicate.time) }}</div>
-            </div>
-            <b>User Agent:</b> {{ duplicate.userAgent }}
-            <div
-              v-if="Object.keys(duplicate.data).length"
-              class=""
-            >
-              <b>Data:</b>
-              <DataExplorer
-                :data="duplicate.data"
-                class="bl pl1"
-              />
-            </div>
-          </small>
-        </li>
-      </ul>
+              <b>User Agent:</b> {{ duplicate.userAgent }}
+              <div
+                v-if="duplicate.data && Object.keys(duplicate.data).length"
+                class=""
+              >
+                <b>Data:</b>
+                <DataExplorer
+                  :data="duplicate.data"
+                  class="bl pl1"
+                />
+              </div>
+            </small>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
