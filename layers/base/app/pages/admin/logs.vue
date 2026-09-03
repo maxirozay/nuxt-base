@@ -181,6 +181,15 @@ onMounted(() => {
                 class=""
               >
                 <b>Data:</b>
+                <button
+                  class="fg fg-border p0 ml1"
+                  @click="copyToClipboard(JSON.stringify(duplicate.data))"
+                >
+                  <Icon
+                    name="uil:copy"
+                    class="mr"
+                  />
+                </button>
                 <DataExplorer
                   :data="duplicate.data"
                   class="bl pl1"

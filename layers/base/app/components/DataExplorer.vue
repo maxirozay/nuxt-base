@@ -20,7 +20,7 @@ function toggle(key: string | number) {
       :key="key"
     >
       <div
-        class="line"
+        :class="openKeys.has(key) ? '' : 'line'"
         style="cursor: pointer"
         @click="toggle(key)"
       >
