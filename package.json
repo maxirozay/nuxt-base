@@ -33,7 +33,7 @@
     "goku-css": "^9.0.7",
     "nodemailer": "^9.0.3",
     "nuxt": "^4.5.1",
-    "nuxt-auth-utils": "0.5.29",
+    "nuxt-auth-utils": "0.5.30",
     "nuxt-i18n-micro": "^3.21.4",
     "otplib": "^13.4.1",
     "pg": "^8.22.0",
