@@ -3,7 +3,9 @@ import type { NuxtError } from '#app'
 
 const props = defineProps<{ error: NuxtError }>()
 
-if (import.meta.client) {
+const isClientError = props.error.status && props.error.status >= 400 && props.error.status < 500
+
+if (import.meta.client && !isClientError) {
   $fetch('/api/log', {
     method: 'POST',
     body: {
