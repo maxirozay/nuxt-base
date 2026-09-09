@@ -11,6 +11,7 @@ const to = ref(new Date(Date.now() - offset).toISOString().substring(0, 16))
 const search = ref('')
 const hideDuplicates = ref(true)
 const duplicateMap = ref({} as Record<string, any[]>)
+const sortBy = ref('time')
 
 const filteredLogs = computed(() => {
   let filteredLogs = logs.value
@@ -30,6 +31,18 @@ const filteredLogs = computed(() => {
       log.origin.toLowerCase().includes(searchLower) ||
       log.auth?.email.toLowerCase().includes(searchLower),
   )
+})
+
+const sortedLogs = computed(() => {
+  if (sortBy.value === 'time') return filteredLogs.value
+  return filteredLogs.value.toSorted((a, b) => {
+    if (sortBy.value === 'type') {
+      return a.type.localeCompare(b.type)
+    } else if (sortBy.value === 'duplicates') {
+      return b.duplicates.length - a.duplicates.length
+    }
+    return 0
+  })
 })
 
 function toUTC(datetimeLocal: string) {
@@ -75,6 +88,7 @@ onMounted(() => {
       @submit.prevent="getLogs"
       class="flex my2"
     >
+      <div class="flex"></div>
       <div class="flex-row group fg flex-1">
         <label
           for="search"
@@ -125,6 +139,23 @@ onMounted(() => {
         Get Logs
       </button>
     </form>
+    <div class="flex group fg flex-1 mb1">
+      <label
+        for="sortBy"
+        class="p-input"
+        style="white-space: nowrap"
+      >
+        Sort by
+      </label>
+      <select
+        v-model="sortBy"
+        id="sortBy"
+      >
+        <option value="time">Time</option>
+        <option value="type">Type</option>
+        <option value="duplicates">Duplicates</option>
+      </select>
+    </div>
     <label>
       Hide duplicates
       <input
@@ -134,7 +165,7 @@ onMounted(() => {
       />
     </label>
     <div
-      v-for="log in filteredLogs"
+      v-for="log in sortedLogs"
       :key="log.id"
       class="accordion fg mt1"
     >
@@ -144,7 +175,7 @@ onMounted(() => {
       >
         <div class="flex g1">
           <div class="flex-1 mr line">
-            <span :class="log.type === 'error' ? 'danger-text' : ''">
+            <span :class="log.type.toLowerCase() === 'error' ? 'danger-text' : ''">
               {{ log.duplicates.length }} {{ log.type }}
             </span>
             @
