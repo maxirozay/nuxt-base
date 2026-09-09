@@ -143,7 +143,7 @@ onMounted(() => {
           <div class="flex-1 mr line">
             {{ log.duplicates.length }} {{ log.type }} @
             <a
-              :href="log.origin"
+              :href="log.origin?.replace(/ .*/, '')"
               target="_blank"
               rel="noopener noreferrer"
             >
