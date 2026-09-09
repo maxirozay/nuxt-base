@@ -144,7 +144,10 @@ onMounted(() => {
       >
         <div class="flex g1">
           <div class="flex-1 mr line">
-            {{ log.duplicates.length }} {{ log.type }} @
+            <span :class="log.type === 'error' ? 'danger-text' : ''">
+              {{ log.duplicates.length }} {{ log.type }}
+            </span>
+            @
             <a
               :href="log.origin?.replace(/ .*/, '')"
               target="_blank"
@@ -161,7 +164,7 @@ onMounted(() => {
         :id="log.id"
         type="checkbox"
       />
-      <div class="p2">
+      <div class="px2 bt">
         <ul>
           <li
             v-for="duplicate in log.duplicates"
