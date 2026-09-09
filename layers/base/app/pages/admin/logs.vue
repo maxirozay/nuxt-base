@@ -136,9 +136,12 @@ onMounted(() => {
     <div
       v-for="log in filteredLogs"
       :key="log.id"
-      class="accordion fg p2 mt1"
+      class="accordion fg mt1"
     >
-      <label :for="log.id">
+      <label
+        :for="log.id"
+        class="p2"
+      >
         <div class="flex g1">
           <div class="flex-1 mr line">
             {{ log.duplicates.length }} {{ log.type }} @
@@ -158,7 +161,7 @@ onMounted(() => {
         :id="log.id"
         type="checkbox"
       />
-      <div>
+      <div class="p2">
         <ul>
           <li
             v-for="duplicate in log.duplicates"
