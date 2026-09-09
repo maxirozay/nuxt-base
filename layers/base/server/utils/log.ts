@@ -8,7 +8,7 @@ export async function log(
   type?: string,
   event?: any,
 ) {
-  const session = await getUserSession(event)
+  const session = event ? await getUserSession(event) : null
   const userAgent = event?.node?.req?.headers['user-agent']
 
   await db.insert(logs).values({
