@@ -82,6 +82,28 @@ check the whole chain works:
 ./scripts/db/restore.sh backups/backup-....dump.age key.txt
 ```
 
+### Restoring
+
+Backups include the schema, so restore into a database straight from `addDB.sh` (use the same user and password as the old DB):
+
+```sh
+./remote-db/postgres/addDB.sh backup
+```
+
+Set NUXT_DB to this new DB then restore.
+
+```sh
+./scripts/db/restore.sh backups/backup-....dump.age key.txt
+```
+
+To roll a database back, restore into a new one and swap the names. Stop the app first, the rename needs zero connections. Restore as the app user, or the tables end up owned by
+`postgres` and the app gets `permission denied`:
+
+```sh
+psql -c "alter database app rename to old;" \
+     -c "alter database backup rename to app;"
+```
+
 ## Nuxt layer
 
 Clone this repo and delete the `layers` folder or copy folders in `app` and `server` into your project. Then add `extends: [['github:maxirozay/nuxt-base']]` to your nuxt config to use this project as a layer. Check the `.env.example` and `nuxt.config.ts` to change the config.
