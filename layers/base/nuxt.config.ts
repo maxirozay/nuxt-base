@@ -54,7 +54,7 @@ export default defineNuxtConfig({
       secretAccessKey: '',
     },
     backup: {
-      dumpArgs: '--data-only -F c',
+      dumpArgs: '-F c',
       retentionDays: 30,
       agePublicKey: '', // age public key to encrypt backups
     },
