@@ -56,6 +56,7 @@ export default defineNuxtConfig({
     backup: {
       dumpArgs: '--data-only -F c',
       retentionDays: 30,
+      agePublicKey: '', // age public key to encrypt backups
     },
     logs: {
       retentionDays: 90,

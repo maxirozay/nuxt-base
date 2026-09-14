@@ -54,6 +54,34 @@ Run `./scripts/deploy.sh` to deploy the website. To deploy other env file just d
 
 Push your migration with `pnpm db:push-server` or `./scripts/db/push-server.sh` to push trough SSH.
 
+## Backups
+
+The `backup` task dumps the DB to `backups/` every night and uploads it to the private S3
+bucket when one is configured. `clean` drops both copies past `NUXT_BACKUP_RETENTION_DAYS`.
+
+### Encrypting them
+
+A dump is every row you have in one portable file, so the offsite copy is worth encrypting.
+Set `NUXT_BACKUP_AGE_PUBLIC_KEY` and backups become `.dump.age`, encrypted with
+[age](https://github.com/FiloSottile/age).
+
+It is public-key encryption on purpose: the server holds only the public key, so it can write
+backups but cannot read any of them back, and a compromise of the app or of the bucket yields
+ciphertext. Never reuse the postgres password for this, it sits in the same env as the S3
+credentials, so an attacker who reaches the backups already has it.
+
+```sh
+age-keygen -o key.txt   # prints the public key, keep key.txt off the server
+```
+
+Put the `age1...` public key in the server's `.env` and store `key.txt` in a password manager
+plus one offline copy. **Lose it and every backup is unrecoverable**, so restore one now to
+check the whole chain works:
+
+```sh
+./scripts/db/restore.sh backups/backup-....dump.age key.txt
+```
+
 ## Nuxt layer
 
 Clone this repo and delete the `layers` folder or copy folders in `app` and `server` into your project. Then add `extends: [['github:maxirozay/nuxt-base']]` to your nuxt config to use this project as a layer. Check the `.env.example` and `nuxt.config.ts` to change the config.

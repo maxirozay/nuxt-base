@@ -15,7 +15,7 @@ RUN pnpm build
 FROM node:24-alpine
 WORKDIR /app
 
-RUN apk add --no-cache postgresql-client
+RUN apk add --no-cache postgresql-client age
 
 COPY --from=build /app/.output/ ./
 

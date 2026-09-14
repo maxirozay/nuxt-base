@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import { createReadStream } from 'fs'
 
 export default defineTask({
   meta: {
@@ -7,14 +7,15 @@ export default defineTask({
   },
   async run() {
     const timestamp = new Date().toISOString()
-    const backupName = `backups/backup-${timestamp}.dump`
     const config = useRuntimeConfig()
+    const agePublicKey = config.backup.agePublicKey
+    const backupName = `backups/backup-${timestamp}.dump${agePublicKey ? '.age' : ''}`
 
-    await createDatabaseBackup(backupName, config.db, config.backup.dumpArgs)
+    await createDatabaseBackup(backupName, config.db, config.backup.dumpArgs, agePublicKey)
     if (config.s3.privateBucket) {
-      await uploadToS3(
+      await uploadStreamToS3(
         backupName,
-        await fs.readFile(backupName),
+        createReadStream(backupName),
         'application/octet-stream',
         'private',
         true,
