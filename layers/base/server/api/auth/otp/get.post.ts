@@ -36,7 +36,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const baseUrl = useRuntimeConfig().public.url.replace(/\/+$/, '')
-  const magicLinkPath = path.startsWith('/') ? path : `/${path}`
+  const magicLinkPath = safePath(path.startsWith('/') ? path : `/${path}`, '/signin')
+  const linkGoto = goto ? safePath(goto, '') : ''
 
   const otp = generateOTP()
   const token = crypto.randomBytes(32).toString('base64url')
@@ -53,7 +54,7 @@ export default defineEventHandler(async (event) => {
       locale,
       {
         otp,
-        magicLink: `${baseUrl}${magicLinkPath}?email=${encodeURIComponent(email)}&token=${token}${goto ? `&goto=${encodeURIComponent(goto)}` : ''}`,
+        magicLink: `${baseUrl}${magicLinkPath}?email=${encodeURIComponent(email)}&token=${token}${linkGoto ? `&goto=${encodeURIComponent(linkGoto)}` : ''}`,
       },
       email,
     )

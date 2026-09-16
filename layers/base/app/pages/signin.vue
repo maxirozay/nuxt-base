@@ -14,7 +14,7 @@ definePageMeta({
       const { user } = useUserSession()
 
       if (user.value?.email) {
-        return navigateTo((to.query.goto as string) || '/', { replace: true })
+        return navigateTo(safePath(to.query.goto), { replace: true })
       }
     },
   ],
@@ -24,7 +24,7 @@ const route = useRoute()
 </script>
 
 <template>
-  <AuthCheck @authenticated="navigateTo((route.query.goto as string) || '/', { replace: true })">
+  <AuthCheck @authenticated="navigateTo(safePath(route.query.goto), { replace: true })">
     <template #header>
       <h1 class="text-center">{{ $t('authCheck.signin') }}</h1>
     </template>
