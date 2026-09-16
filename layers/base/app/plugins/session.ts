@@ -8,7 +8,8 @@ export default defineNuxtPlugin(async () => {
   const lastRefreshed = parseInt(localStorage.getItem('rotate-token-at') || '0')
   if (lastRefreshed) {
     const refreshAfter = lastRefreshed + useRuntimeConfig().public.refreshToken.rotateAfter * 1000
-    if (session.value.expiresAt < Date.now() || refreshAfter > Date.now()) return
+    const { expiresAt } = session.value
+    if ((expiresAt !== undefined && expiresAt < Date.now()) || refreshAfter > Date.now()) return
     try {
       await $fetch('/api/auth/refresh', { method: 'POST' })
     } catch (error) {

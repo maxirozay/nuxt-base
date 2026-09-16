@@ -89,6 +89,7 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
     await createRefreshToken(user.id, event)
   }
 
+  const sessionMaxAge = useRuntimeConfig().session.maxAge
   const authenticatedAt = refresh
     ? Date.now()
     : ((await getUserSession(event)).authenticatedAt ?? 0)
@@ -104,7 +105,7 @@ export async function setSession(event: H3Event, user: SessionUser, refresh = tr
       ...(await mfaSetupFlag(user)),
     },
     authenticatedAt,
-    expiresAt: Date.now() + useRuntimeConfig().session.maxAge * 1000,
+    expiresAt: sessionMaxAge ? Date.now() + sessionMaxAge * 1000 : undefined,
   })
 }
 
