@@ -8,8 +8,14 @@ declare module '#auth-utils' {
   }
 
   interface UserSession {
-    expiresAt: number
+    expiresAt?: number
     authenticatedAt: number
+  }
+}
+
+declare module 'h3' {
+  interface SessionConfig {
+    unique?: boolean
   }
 }
 
