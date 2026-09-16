@@ -4,6 +4,8 @@ export async function formatImage(
   format: string = 'webp',
   quality: number = 0.8,
 ): Promise<File> {
+  if (file.type === 'image/svg+xml') return file
+
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
 
   try {
