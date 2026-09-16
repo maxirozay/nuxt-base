@@ -10,6 +10,8 @@ export async function formatImage(
 
   try {
     const ratio = maxHeight ? Math.min(1, maxHeight / bitmap.height) : 1
+    if (ratio === 1 && file.type === `image/${format}`) return file
+
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(bitmap.width * ratio)
     canvas.height = Math.round(bitmap.height * ratio)
