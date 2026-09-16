@@ -1,4 +1,24 @@
 import nodemailer from 'nodemailer'
+import type { Transporter } from 'nodemailer'
+
+let transporter: Transporter | null = null
+
+function useTransporter() {
+  const config = useRuntimeConfig()
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: config.smtp.host,
+      port: config.smtp.port,
+      secure: true,
+      pool: true,
+      auth: {
+        user: config.smtp.user,
+        pass: config.smtp.pass,
+      },
+    })
+  }
+  return transporter
+}
 
 export async function sendEmail(
   to: string,
@@ -9,18 +29,9 @@ export async function sendEmail(
   bcc?: string,
 ) {
   const config = useRuntimeConfig()
-  const transporter = nodemailer.createTransport({
-    host: config.smtp.host,
-    port: config.smtp.port,
-    secure: true,
-    auth: {
-      user: config.smtp.user,
-      pass: config.smtp.pass,
-    },
-  })
   const appName = useRuntimeConfig().public.name
   const base = await buildEmail(html, locale)
-  const mail = await transporter.sendMail({
+  const mail = await useTransporter().sendMail({
     from: config.smtp.from,
     to,
     bcc,
