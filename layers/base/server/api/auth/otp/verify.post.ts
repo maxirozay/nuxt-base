@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { OTP } from './get.post'
+import type { OTP } from './get.post'
 
 const bodySchema = z.object({
   email: emailSchema,
@@ -46,13 +46,15 @@ export default defineEventHandler(async (event) => {
   await setSession(event, user)
 })
 
+const MAX_OTP_ATTEMPTS = 3
+
 export async function verifyOTP(email: string, otp: string): Promise<void> {
   const storage = useStorage('auth')
   const record = await storage.getItem<OTP>(email)
   if (!record) {
     throw createError({ status: 400, message: 'Request a new OTP.' })
   }
-  if (Date.now() > record.sentAt! + 5 * 60 * 1000 || record.attempts > 3) {
+  if (Date.now() > record.sentAt! + 5 * 60 * 1000 || record.attempts >= MAX_OTP_ATTEMPTS) {
     await storage.removeItem(email)
     throw createError({ status: 400, message: 'Request a new OTP.' })
   }
