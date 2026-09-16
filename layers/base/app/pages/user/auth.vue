@@ -7,8 +7,15 @@ definePageMeta({
 
 const appStore = useAppStore()
 const { user, fetch: fetchUserSession } = useUserSession()
-const auth = ref({
-  credentials: [] as { id: string; name: string }[],
+type AuthInfo = {
+  credentials: { id: string; name: string }[]
+  hasPassword: boolean
+  hasTOTP: boolean
+  forceMfa: boolean
+}
+
+const auth = ref<AuthInfo>({
+  credentials: [],
   hasPassword: false,
   hasTOTP: false,
   forceMfa: false,
@@ -49,7 +56,7 @@ const canDisableTOTP = computed(() => !auth.value?.forceMfa || auth.value.creden
 
 async function getAuth() {
   try {
-    auth.value = await $fetch('/api/auth')
+    auth.value = await $fetch<AuthInfo>('/api/auth')
   } catch (e: any) {
     appStore.notify(e?.data?.message || e?.message, 'error')
   }
