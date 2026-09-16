@@ -20,6 +20,15 @@ function useTransporter() {
   return transporter
 }
 
+export function escapeHtml(value: unknown) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
 export async function sendEmail(
   to: string,
   subject: string,
@@ -88,8 +97,10 @@ export async function buildEmailTemplate(
   const subject = match ? (match[1] as string) : '{{appName}}'
   const html = template
   return {
-    subject: subject.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
-    html: html.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] || ''),
+    subject: subject.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] ?? ''),
+    html: html.replace(/{{(\w+)}}/g, (_: string, key: string) =>
+      params[key] === undefined || params[key] === null ? '' : escapeHtml(params[key]),
+    ),
   }
 }
 
