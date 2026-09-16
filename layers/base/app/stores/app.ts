@@ -6,6 +6,7 @@ export const useAppStore = defineStore('app', () => {
       message: string
       type: 'error' | 'danger' | 'success'
       isSticky: boolean
+      params?: Record<string, string | number>
     }[],
   )
   const confirmation = ref<{
@@ -52,10 +53,15 @@ export const useAppStore = defineStore('app', () => {
 
   let lastNotificationId = 0
 
-  function notify(message: string, type: 'success' | 'error' = 'success', isSticky = false) {
+  function notify(
+    message: string,
+    type: 'success' | 'error' = 'success',
+    isSticky = false,
+    params?: Record<string, string | number>,
+  ) {
     if (!message) return
     const id = ++lastNotificationId
-    notifications.value.push({ id, message: handleZodError(message), type, isSticky })
+    notifications.value.push({ id, message: handleZodError(message), type, isSticky, params })
 
     if (!isSticky) {
       setTimeout(() => removeNotification(id), 5000)

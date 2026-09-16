@@ -16,7 +16,7 @@ const appStore = useAppStore()
         notification.type === 'error' ? 'danger' : notification.type || 'fg',
       ]"
     >
-      {{ $t(notification.message) }}
+      {{ $t(notification.message, notification.params) }}
       <button
         v-if="notification.isSticky"
         :class="[notification.type, notification.type + '-border', 'py0 pr0']"
