@@ -1,4 +1,6 @@
-# Nuxt Minimal Starter
+# Nuxt base
+
+A Nuxt layer with auth, files, logs and backups, meant to be extended by other projects.
 
 ## Dev
 
@@ -53,6 +55,16 @@ location /files/ {
 Run `./scripts/deploy.sh` to deploy the website. To deploy other env file just do `./scripts/deploy.sh {name}` and it will deploy .env.{name}.
 
 Push your migration with `pnpm db:push-server` or `./scripts/db/push-server.sh` to push trough SSH.
+
+### Run one instance
+
+Rate limit counters and the `auth` storage that holds OTPs and email-change codes both
+live in the process memory (`nitro.storage.auth` is the `memory` driver). A second
+container, or node in cluster mode, gets its own copy: rate limits are multiplied by the
+number of instances, and an OTP verified on the instance that did not issue it fails.
+
+Scale up only after pointing both at shared storage — swap the `auth` storage driver for
+Redis and move `enforceRateLimit`'s map to the same place.
 
 ## Backups
 
@@ -109,3 +121,21 @@ psql -c "alter database app rename to old;" \
 Clone this repo and delete the `layers` folder or copy folders in `app` and `server` into your project. Then add `extends: [['github:maxirozay/nuxt-base']]` to your nuxt config to use this project as a layer. Check the `.env.example` and `nuxt.config.ts` to change the config.
 
 Install the same packages as this project or uses `extends: [['github:maxirozay/nuxt-base', { install: true }]]` but this config can cause some issues during builds.
+
+### What your project must provide
+
+The layer's server code reaches into your project for its data layer and assets, through
+Nitro's `#server` alias. None of these ship with the layer, and a missing one fails the
+build with an unresolved import:
+
+| Path                           | Must export                                                                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `server/database/db.ts`        | `db`, a drizzle client built with your relations                                                                                         |
+| `server/database/schema.ts`    | `auth`, `refreshTokens`, `credentials`, `logs` tables (plus `organizations` / `organizationMembers` if you use `server/utils/access.ts`) |
+| `server/database/relations.ts` | `relations`, wiring `auth` to its refresh tokens and credentials                                                                         |
+| `server/database/access.ts`    | `checkFileAccess(event, path)`, which decides who may read and write a given file path                                                   |
+| `server/assets/emails/**`      | `base.html` and a `{locale}/{templateId}.html` per template you send                                                                     |
+| `locales/**`                   | the translation files for the locales in your `i18n.locales`                                                                             |
+
+Copy them from this repo as a starting point: only `access.ts` is really meant to be
+rewritten per project, the rest is the schema the layer's queries expect.
