@@ -11,6 +11,7 @@
   "disable": "Disable",
   "email": "Email",
   "enable": "Enable",
+  "formatFailed": "Could not format or upload {files}",
   "language": "Language | Languages",
   "rename": "Rename",
   "retry": "Retry",
