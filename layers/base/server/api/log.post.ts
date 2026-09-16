@@ -11,7 +11,7 @@ const bodySchema = z.object({
       message: 'data too large',
     }),
   origin: z.string().max(500).optional(),
-  type: z.string().max(100).optional(),
+  type: z.enum(['info', 'warn', 'error', 'debug']).catch('info').optional(),
 })
 
 export default defineEventHandler(async (event) => {
