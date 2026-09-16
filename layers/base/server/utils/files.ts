@@ -198,7 +198,7 @@ export function getFileURL(path: string, isPrivate = true) {
   return config.public.files.url + join('/', url)
 }
 
-function parseRangeHeader(range: string | undefined, size: number) {
+export function parseRangeHeader(range: string | undefined, size: number) {
   if (!range) return null
 
   const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim())
