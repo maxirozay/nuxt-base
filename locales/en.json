@@ -13,6 +13,7 @@
   "enable": "Enable",
   "formatFailed": "Could not format or upload {files}",
   "language": "Language | Languages",
+  "paste": "Paste",
   "rename": "Rename",
   "retry": "Retry",
   "save": "Save",

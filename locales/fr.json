@@ -13,6 +13,7 @@
   "enable": "Activer",
   "formatFailed": "Impossible de formater ou téléverser {files}",
   "language": "Langue | Langues",
+  "paste": "Coller",
   "rename": "Renommer",
   "retry": "Réessayer",
   "save": "Enregistrer",

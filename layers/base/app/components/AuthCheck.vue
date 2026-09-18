@@ -174,6 +174,11 @@ async function getSignInOptions(email: string) {
   }
 }
 
+async function pastePassword() {
+  password.value = await navigator.clipboard.readText()
+  signIn()
+}
+
 onMounted(async () => {
   email.value = user.value?.email || (route.query.email as string) || ''
   if (email.value) {
@@ -204,15 +209,25 @@ onMounted(async () => {
             options.hasPassword && !otpRequested ? $t('authCheck.password') : $t('authCheck.code')
           }}
         </label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          :disabled="isLoading"
-          autocomplete="current-password"
-          pattern=".{12,}|[0-9]{6}"
-          @paste="signIn"
-        />
+        <div class="group flex-row">
+          <input
+            id="password"
+            v-model="password"
+            type="password"
+            :disabled="isLoading"
+            autocomplete="current-password"
+            pattern=".{12,}|[0-9]{6}"
+            @paste="signIn"
+          />
+          <button
+            type="button"
+            class="flex-center fg"
+            :title="$t('paste')"
+            @click="pastePassword"
+          >
+            <Icon name="lucide:clipboard-paste" />
+          </button>
+        </div>
         <div v-if="options.hasTOTP">
           <label for="totp">{{ $t('authCheck.authenticatorCode') }}</label>
           <input
