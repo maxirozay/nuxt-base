@@ -95,7 +95,7 @@ onMounted(() => {
           class="flex-center p-input"
         >
           <Icon
-            name="uil:search"
+            name="lucide:search"
             class="mr"
           />
         </label>
@@ -223,7 +223,7 @@ onMounted(() => {
                   @click="copyToClipboard(JSON.stringify(duplicate.data))"
                 >
                   <Icon
-                    name="uil:copy"
+                    name="lucide:copy"
                     class="mr"
                   />
                 </button>

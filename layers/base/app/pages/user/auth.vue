@@ -279,7 +279,7 @@ onMounted(getAuth)
                 :disabled="isCurrentEmail"
                 type="submit"
               >
-                <Icon name="uil:save" />
+                <Icon name="lucide:save" />
               </button>
             </div>
           </label>
@@ -337,7 +337,7 @@ onMounted(getAuth)
                 type="button"
                 @click="showPassword1 = !showPassword1"
               >
-                <Icon :name="'uil:' + (showPassword1 ? 'eye-slash' : 'eye')" />
+                <Icon :name="showPassword1 ? 'lucide:eye-off' : 'lucide:eye'" />
               </button>
               <button
                 class="fg flex-center"
@@ -345,7 +345,7 @@ onMounted(getAuth)
                 type="submit"
                 :disabled="!isPasswordValid"
               >
-                <Icon name="uil:save" />
+                <Icon name="lucide:save" />
               </button>
             </div>
             <small class="warning-text">{{ $t('passwordPolicy') }}</small>
@@ -383,7 +383,7 @@ onMounted(getAuth)
                   type="button"
                   @click="showPassword2 = !showPassword2"
                 >
-                  <Icon :name="'uil:' + (showPassword2 ? 'eye-slash' : 'eye')" />
+                  <Icon :name="showPassword2 ? 'lucide:eye-off' : 'lucide:eye'" />
                 </button>
               </div>
               <div class="text-right">
@@ -420,9 +420,9 @@ onMounted(getAuth)
               :title="canRemovePasskey ? '' : $t('lastFactor')"
               @click="deletePasskey(credential.id)"
             >
-              <Icon name="uil:trash" />
+              <Icon name="lucide:trash" />
             </button>
-            <button class="flex fg"><Icon name="uil:save" /></button>
+            <button class="flex fg"><Icon name="lucide:save" /></button>
           </div>
         </form>
         <button

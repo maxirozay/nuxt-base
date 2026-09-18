@@ -35,9 +35,8 @@ const route = useRoute()
       >
         <a
           href="/auth/microsoft"
-          class="flex-center g2 p-input text-center bg"
+          class="flex-center p-input text-center bg"
         >
-          <Icon name="uil:microsoft" />
           <b>Continue with Microsoft</b>
         </a>
       </div>
