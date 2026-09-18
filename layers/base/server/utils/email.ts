@@ -36,34 +36,28 @@ export async function sendEmail(
   locale: string = 'en',
   attachments?: any[],
   bcc?: string,
+  params = {},
 ) {
   const config = useRuntimeConfig()
-  const appName = useRuntimeConfig().public.name
-  const base = await buildEmail(html, locale)
   const mail = await useTransporter().sendMail({
     from: config.smtp.from,
     to,
     bcc,
-    subject: subject.replaceAll('{{appName}}', appName),
-    html: base,
+    subject: fillTemplate(subject, params, false),
+    html: await buildEmail(html, locale, params),
     attachments,
   })
   return mail
 }
 
-export async function buildEmail(html: string, locale: string = 'en') {
-  const config = useRuntimeConfig()
-  const appName = useRuntimeConfig().public.name
+export async function buildEmail(html: string, locale: string = 'en', params = {}) {
   const base = (await useStorage('assets:server').getItem(`emails/base.html`)) as string
   const localeBase = (await useStorage('assets:server').getItem(
     `emails/${locale}/base.html`,
   )) as string
-  return inlineStyles(
-    base
-      .replace('{{content}}', localeBase?.replace('{{content}}', html) || html)
-      .replaceAll('{{appName}}', appName)
-      .replaceAll('{{url}}', config.public.url)
-      .replaceAll('{{logo}}', config.public.logo),
+  return fillTemplate(
+    inlineStyles(base.replace('{{content}}', localeBase?.replace('{{content}}', html) || html)),
+    params,
   )
 }
 
@@ -75,15 +69,11 @@ export async function sendEmailTemplate(
   attachments?: any[],
   bcc?: string,
 ) {
-  const { subject, html } = await buildEmailTemplate(templateId, locale, params)
-  return sendEmail(to, subject, html, locale, attachments, bcc)
+  const { subject, html } = await buildEmailTemplate(templateId, locale)
+  return sendEmail(to, subject, html, locale, attachments, bcc, params)
 }
 
-export async function buildEmailTemplate(
-  templateId: string,
-  locale: string = 'en',
-  params: Record<string, any>,
-) {
+export async function buildEmailTemplate(templateId: string, locale: string = 'en') {
   let template = (await useStorage('assets:server').getItem(
     `emails/${locale}/${templateId}.html`,
   )) as string
@@ -95,12 +85,9 @@ export async function buildEmailTemplate(
   }
   const match = template.match(/<title>(.*?)<\/title>/i)
   const subject = match ? (match[1] as string) : '{{appName}}'
-  const html = template
   return {
-    subject: subject.replace(/{{(\w+)}}/g, (_: string, key: string) => params[key] ?? ''),
-    html: html.replace(/{{(\w+)}}/g, (_: string, key: string) =>
-      params[key] === undefined || params[key] === null ? '' : escapeHtml(params[key]),
-    ),
+    subject,
+    html: template,
   }
 }
 
@@ -127,5 +114,19 @@ function inlineStyles(html: string): string {
       .map((name: string) => classes[name] || '')
       .join('; ')
     return `style="${styles}"`
+  })
+}
+
+function appPlaceholders() {
+  const config = useRuntimeConfig()
+  return { appName: config.public.name, url: config.public.url, logo: config.public.logo }
+}
+
+export function fillTemplate(html: string, params = {}, escape = true) {
+  const context: Record<string, any> = { ...appPlaceholders(), ...params }
+  return html.replace(/{{(\w+)}}/g, (_, key: string) => {
+    const value = context[key]
+    if (value === undefined || value === null) return ''
+    return escape ? escapeHtml(value) : String(value)
   })
 }

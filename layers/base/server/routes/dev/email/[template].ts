@@ -10,6 +10,6 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const locale = (query.locale as string) || 'en'
 
-  const template = (await buildEmailTemplate(templateId, locale, query)).html
-  return buildEmail(template, locale)
+  const template = (await buildEmailTemplate(templateId, locale)).html
+  return buildEmail(template, locale, query)
 })
