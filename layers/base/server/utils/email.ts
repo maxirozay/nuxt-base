@@ -122,11 +122,15 @@ function appPlaceholders() {
   return { appName: config.public.name, url: config.public.url, logo: config.public.logo }
 }
 
+// {{value}} is escaped, {{{value}}} is inserted as raw html. Reach for the raw
+// form only for markup we build ourselves, never for a user-controlled value.
 export function fillTemplate(html: string, params = {}, escape = true) {
   const context: Record<string, any> = { ...appPlaceholders(), ...params }
-  return html.replace(/{{(\w+)}}/g, (_, key: string) => {
-    const value = context[key]
+  return html.replace(/{{{(\w+)}}}|{{(\w+)}}/g, (match, rawKey?: string, key?: string) => {
+    const name = rawKey ?? key
+    if (!name) return match
+    const value = context[name]
     if (value === undefined || value === null) return ''
-    return escape ? escapeHtml(value) : String(value)
+    return escape && !rawKey ? escapeHtml(value) : String(value)
   })
 }

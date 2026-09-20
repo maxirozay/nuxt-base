@@ -56,6 +56,23 @@ describe('fillTemplate', () => {
     expect(fillTemplate('{{name}} & co', { name: 'A&B' }, false)).toBe('A&B & co')
   })
 
+  // A template that needs real markup in a param asks for it explicitly, so the
+  // escaped form stays the default everywhere else.
+  it('inserts a triple-braced param as raw html', () => {
+    expect(fillTemplate('<p>{{{body}}}</p>', { body: '<strong>hi</strong>' })).toBe(
+      '<p><strong>hi</strong></p>',
+    )
+  })
+
+  it('still escapes the double-braced params alongside a raw one', () => {
+    const html = fillTemplate('{{{body}}}{{name}}', { body: '<b>x</b>', name: '<b>y</b>' })
+    expect(html).toBe('<b>x</b>&lt;b&gt;y&lt;/b&gt;')
+  })
+
+  it('renders a missing raw param as empty', () => {
+    expect(fillTemplate('[{{{missing}}}]', {})).toBe('[]')
+  })
+
   it('renders a missing param as empty, not as the placeholder', () => {
     expect(fillTemplate('[{{missing}}]', {})).toBe('[]')
   })
