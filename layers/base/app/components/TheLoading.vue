@@ -9,7 +9,7 @@ const appStore = useAppStore()
   >
     <div
       v-if="appStore.isLoading"
-      class="loading spin bottom left shadow"
+      class="loading primary spin bottom left shadow"
     />
   </transition>
 </template>
@@ -18,7 +18,6 @@ const appStore = useAppStore()
 .loading {
   position: fixed;
   z-index: 999999;
-  backdrop-filter: blur(3px);
   border-radius: 50%;
   height: 2em;
   aspect-ratio: 1;
