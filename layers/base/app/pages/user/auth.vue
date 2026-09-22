@@ -7,6 +7,7 @@ definePageMeta({
 
 const appStore = useAppStore()
 const { user, fetch: fetchUserSession } = useUserSession()
+const passwordPolicy = useRuntimeConfig().public.password
 type AuthInfo = {
   credentials: { id: string; name: string }[]
   hasPassword: boolean
@@ -46,7 +47,7 @@ const isCurrentEmail = computed(() => {
 })
 
 const isPasswordValid = computed(() => {
-  return password1.value.length >= 16
+  return password1.value.length >= passwordPolicy.min
 })
 
 const canRemovePasskey = computed(
@@ -327,8 +328,8 @@ onMounted(getAuth)
                 id="password1"
                 v-model.trim="password1"
                 autocomplete="new-password"
-                minlength="16"
-                maxlength="64"
+                :minlength="passwordPolicy.min"
+                :maxlength="passwordPolicy.max"
                 required
                 :placeholder="auth?.hasPassword ? '************' : ''"
               />
@@ -348,7 +349,9 @@ onMounted(getAuth)
                 <Icon name="lucide:save" />
               </button>
             </div>
-            <small class="warning-text">{{ $t('passwordPolicy') }}</small>
+            <small class="warning-text">{{
+              $t('passwordPolicy', { count: passwordPolicy.min })
+            }}</small>
           </label>
         </form>
         <div
@@ -374,8 +377,8 @@ onMounted(getAuth)
                   id="password2"
                   v-model.trim="password2"
                   autocomplete="new-password"
-                  minlength="16"
-                  maxlength="64"
+                  :minlength="passwordPolicy.min"
+                  :maxlength="passwordPolicy.max"
                   required
                 />
                 <button

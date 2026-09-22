@@ -14,7 +14,7 @@
   "mfaRequiredDescription": "Configurez une passkey ou une application d'authentification pour terminer la connexion.",
   "passkeyLimit": "Jusqu'à 4 passkeys",
   "password": "Mot de passe",
-  "passwordPolicy": "Au moins 16 caractères",
+  "passwordPolicy": "Au moins {count} caractères",
   "registerPasskey": "Ajouter une passkey",
   "settings": "Paramètres",
   "setupTotp": "Utiliser une application d'authentification",

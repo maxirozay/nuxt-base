@@ -216,7 +216,11 @@ onMounted(async () => {
             type="password"
             :disabled="isLoading"
             autocomplete="current-password"
-            pattern=".{12,}|[0-9]{6}"
+            :pattern="
+              otpRequested
+                ? '[0-9]{6}'
+                : `.{${config.public.password.min},${config.public.password.max}}`
+            "
             @paste="signIn"
           />
           <button

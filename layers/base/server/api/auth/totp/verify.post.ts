@@ -2,15 +2,16 @@ import { z } from 'zod'
 import { verify } from 'otplib'
 import { verifyOTP } from '../otp/verify.post'
 
-const bodySchema = z.object({
-  email: emailSchema,
-  password: z.string().min(12).optional(),
-  otp: z.string().length(6).or(z.string().min(32)).optional(),
-  token: z.string().length(6),
-})
-
 export default defineEventHandler(async (event) => {
-  const { email, password, otp, token } = await readValidatedBody(event, bodySchema.parse)
+  const { email, password, otp, token } = await readValidatedBody(
+    event,
+    z.object({
+      email: emailSchema,
+      password: passwordSchema().optional(),
+      otp: z.string().length(6).or(z.string().min(32)).optional(),
+      token: z.string().length(6),
+    }).parse,
+  )
   if (!email || !(otp || password) || !token) {
     throw createError({
       status: 400,

@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       anonymousSignup: false,
+      password: {
+        min: 16,
+        max: 64,
+      },
       refreshToken: {
         rotateAfter: 60 * 60 * 24, // 1 day
       },
