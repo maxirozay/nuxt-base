@@ -13,6 +13,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   ListObjectsV2Command,
   GetObjectCommand,
   CopyObjectCommand,
@@ -625,25 +626,31 @@ export async function deleteFromS3(path: string, isPrivate = true) {
   if (!client) return
 
   const config = useRuntimeConfig()
+  const bucket = isPrivate ? config.s3.privateBucket : config.s3.publicBucket
 
-  const response = await client.send(
-    new ListObjectsV2Command({
-      Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
-      Prefix: path,
-    }),
-  )
-  return await Promise.all(
-    (response.Contents || [])
+  let ContinuationToken: string | undefined
+  do {
+    const response = await client.send(
+      new ListObjectsV2Command({ Bucket: bucket, Prefix: path, ContinuationToken }),
+    )
+    ContinuationToken = response.NextContinuationToken
+
+    const keys = (response.Contents || [])
       .filter((item) => item.Key === path || item.Key?.startsWith(`${path}/`))
-      .map(async (item) =>
-        client.send(
-          new DeleteObjectCommand({
-            Bucket: isPrivate ? config.s3.privateBucket : config.s3.publicBucket,
-            Key: item.Key,
-          }),
-        ),
-      ),
-  )
+      .map((item) => ({ Key: item.Key! }))
+
+    if (keys.length) {
+      const result = await client.send(
+        new DeleteObjectsCommand({ Bucket: bucket, Delete: { Objects: keys } }),
+      )
+      if (result.Errors?.length) {
+        throw createError({
+          statusCode: 502,
+          message: `Failed to delete ${result.Errors.length} file(s): ${result.Errors.map((e) => `${e.Key} (${e.Code})`).join(', ')}`,
+        })
+      }
+    }
+  } while (ContinuationToken)
 }
 
 export async function listFromS3(path: string, isPrivate = true) {
