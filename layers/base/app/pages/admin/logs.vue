@@ -286,11 +286,14 @@ onMounted(() => {
           >
             <div class="flex g1">
               <div class="flex-1 line mr1">
-                <span :class="logTypes.find((t) => t.value === log.type.toLowerCase())?.color">
+                <span
+                  :class="logTypes.find((t) => t.value === log.type.toLowerCase())?.color"
+                  style="text-transform: capitalize"
+                >
                   {{ log.type }}
-                  <template v-if="log.duplicates.length > 1"
-                    >({{ log.duplicates.length }})</template
-                  >
+                  <template v-if="log.duplicates.length > 1">
+                    ({{ log.duplicates.length }})
+                  </template>
                 </span>
                 @
                 <a
