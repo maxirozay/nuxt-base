@@ -24,6 +24,7 @@ const route = useRoute()
 </script>
 
 <template>
+  <div class="page" />
   <AuthCheck @authenticated="navigateTo(safePath(route.query.goto), { replace: true })">
     <template #header>
       <h1 class="text-center">{{ $t('authCheck.signin') }}</h1>
@@ -47,3 +48,10 @@ const route = useRoute()
     style="z-index: 99999"
   />
 </template>
+
+<style scoped>
+.page {
+  box-shadow: inset 0 0 40vh var(--g-fg);
+  height: 100dvh;
+}
+</style>
