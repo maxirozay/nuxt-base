@@ -6,7 +6,6 @@ export default defineTask({
   async run() {
     const config = useRuntimeConfig()
 
-    let backup = 'success'
     try {
       await cleanOldBackups()
       if (config.s3.privateBucket) {
@@ -21,20 +20,20 @@ export default defineTask({
           }),
         )
       }
-    } catch (e: any) {
-      backup = e.message
-    }
+      await cleanLogs()
 
-    let logs = 'success'
-    await cleanLogs().catch((e) => {
-      logs = e.message
-    })
-
-    return {
-      result: {
-        backup,
-        logs,
-      },
+      return {
+        result: {
+          success: true,
+        },
+      }
+    } catch (error: any) {
+      await log(error.message, { stack: error.stack, cause: error.cause }, 'clean task', 'error')
+      return {
+        result: {
+          success: false,
+        },
+      }
     }
   },
 })
