@@ -26,14 +26,11 @@ const appStore = useAppStore()
 
 .loading-enter-active,
 .loading-leave-active {
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-out;
 }
 
-.loading-enter-from {
-  transform: translateY(120%);
-}
-
+.loading-enter-from,
 .loading-leave-to {
-  transform: translateX(-100%);
+  opacity: 0;
 }
 </style>
