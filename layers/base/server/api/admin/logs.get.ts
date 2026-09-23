@@ -4,27 +4,34 @@ const querySchema = z.object({
   from: z.iso.datetime(),
   to: z.iso.datetime(),
   search: z.string().optional(),
+  type: z.enum(logTypeValues).optional().catch(undefined),
+  limit: z.coerce.number().int().positive().max(2000).default(200),
 })
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const { from, to, search } = querySchema.parse(query)
+  const { from, to, search, type, limit } = querySchema.parse(query)
   const text = prepareStringForSearch(search)
 
-  return db.query.logs.findMany({
+  const rows = await db.query.logs.findMany({
     where: {
       time: {
         gte: new Date(from),
         lte: new Date(to),
       },
-      OR: [
-        { summary: search ? { ilike: text } : undefined },
-        { type: search ? { ilike: text } : undefined },
-      ],
+      type: type ? { eq: type } : undefined,
+      OR: text
+        ? [
+            { summary: { ilike: text } },
+            { origin: { ilike: text } },
+            { auth: { email: { ilike: text } } },
+          ]
+        : undefined,
     },
     orderBy: {
       time: 'desc',
     },
+    limit: limit + 1,
     with: {
       auth: {
         columns: {
@@ -33,4 +40,10 @@ export default defineEventHandler(async (event) => {
       },
     },
   })
+
+  return {
+    logs: rows.slice(0, limit),
+    hasMore: rows.length > limit,
+    limit,
+  }
 })

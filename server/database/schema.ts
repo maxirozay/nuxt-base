@@ -10,6 +10,7 @@ import {
   pgEnum,
   jsonb,
   bigint,
+  index,
 } from 'drizzle-orm/pg-core'
 
 export const authSchema = snakeCase.schema('auth')
@@ -48,17 +49,21 @@ export const credentials = authSchema.table(
   (table) => [primaryKey({ columns: [table.userId, table.id] })],
 )
 
-export const logs = authSchema.table('logs', {
-  id: bigint({ mode: 'number' }).generatedByDefaultAsIdentity().primaryKey(),
-  userId: uuid().references(() => auth.id, { onDelete: 'cascade' }),
-  type: text().notNull().default('info'),
-  origin: text(),
-  summary: text(),
-  data: jsonb(),
-  time: timestamp({ withTimezone: true }).notNull().defaultNow(),
-  ipAddress: text(),
-  userAgent: text(),
-})
+export const logs = authSchema.table(
+  'logs',
+  {
+    id: bigint({ mode: 'number' }).generatedByDefaultAsIdentity().primaryKey(),
+    userId: uuid().references(() => auth.id, { onDelete: 'cascade' }),
+    type: text().notNull().default('info'),
+    origin: text(),
+    summary: text(),
+    data: jsonb(),
+    time: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    ipAddress: text(),
+    userAgent: text(),
+  },
+  (table) => [index('logs_time_idx').on(table.time)],
+)
 
 export const organizations = snakeCase.table('organizations', {
   id: uuid().primaryKey().defaultRandom(),
