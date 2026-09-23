@@ -242,22 +242,25 @@ onMounted(() => {
         />
       </label>
     </div>
-    <div class="flex-auto p3">
+    <div
+      class="flex-auto p3"
+      style="min-width: 0"
+    >
       <div
         v-if="error"
-        class="danger-text p2"
+        class="danger-text mb2"
       >
         {{ error }}
       </div>
       <div
         v-else-if="!isLoading && !sortedLogs.length"
-        class="muted-text p2"
+        class="muted-text mb2"
       >
         {{ 'No logs match this search.' }}
       </div>
       <div
         v-if="hasMore"
-        class="warning-text p2"
+        class="warning-text mb2"
       >
         Showing the first {{ shownLimit }} matches. Narrow the period or refine the search.
       </div>
@@ -282,7 +285,7 @@ onMounted(() => {
             class="p2"
           >
             <div class="flex g1">
-              <div class="flex-1 line">
+              <div class="flex-1 line mr1">
                 <span :class="logTypes.find((t) => t.value === log.type.toLowerCase())?.color">
                   {{ log.type }}
                   <template v-if="log.duplicates.length > 1"
