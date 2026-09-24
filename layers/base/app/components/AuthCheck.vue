@@ -9,6 +9,7 @@ const password = ref('')
 const otpRequested = ref(false)
 const totp = ref('')
 const optionsFetched = ref(false)
+const showPassword = ref(false)
 const options = ref({
   hasOTP: true,
   hasPassword: false,
@@ -213,7 +214,7 @@ onMounted(async () => {
           <input
             id="password"
             v-model="password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             :disabled="isLoading"
             autocomplete="current-password"
             :pattern="
@@ -223,6 +224,13 @@ onMounted(async () => {
             "
             @paste="signIn"
           />
+          <button
+            type="button"
+            class="flex-center fg"
+            @click="showPassword = !showPassword"
+          >
+            <Icon :name="showPassword ? 'lucide:eye-off' : 'lucide:eye'" />
+          </button>
           <button
             type="button"
             class="flex-center fg"
